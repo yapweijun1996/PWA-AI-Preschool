@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "StudentPortfolioDraft",
+  "description": "Expected AI response shape for the fictional-data demo; evidence IDs still require application-level authorization and fact checks.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "summary",
+    "domains",
+    "nextSteps",
+    "evidenceIds"
+  ],
+  "properties": {
+    "summary": {
+      "type": "string",
+      "maxLength": 4000
+    },
+    "domains": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "Communication",
+        "Literacy",
+        "Numeracy",
+        "Social-emotional",
+        "Creative expression"
+      ],
+      "properties": {
+        "Communication": {
+          "type": "string",
+          "maxLength": 3000
+        },
+        "Literacy": {
+          "type": "string",
+          "maxLength": 3000
+        },
+        "Numeracy": {
+          "type": "string",
+          "maxLength": 3000
+        },
+        "Social-emotional": {
+          "type": "string",
+          "maxLength": 3000
+        },
+        "Creative expression": {
+          "type": "string",
+          "maxLength": 3000
+        }
+      }
+    },
+    "nextSteps": {
+      "type": "string",
+      "maxLength": 4000
+    },
+    "evidenceIds": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z0-9-]{3,80}$"
+      },
+      "uniqueItems": true,
+      "maxItems": 250
+    }
+  }
+}

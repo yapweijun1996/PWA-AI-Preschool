@@ -1,0 +1,72 @@
+openapi: 3.1.0
+info:
+  title: AI Preschool Studio - Proposed Secure Backend API
+  version: 0.1.0-proposal
+  description: |
+    FUTURE DESIGN ONLY. No authenticated backend exists in the static demo.
+    Tenant and student authorization, guardian notices, consent and audit are not implemented.
+servers:
+  - url: https://private-backend.example.invalid
+security:
+  - bearerAuth: []
+paths:
+  /api/v1/me:
+    get:
+      summary: Return authenticated principal and tenant scope
+      responses:
+        '200': {description: Authorized identity}
+        '401': {description: Not authenticated}
+  /api/v1/students:
+    get:
+      summary: List students within authorized assignment scope
+      responses:
+        '200': {description: Authorized student subset}
+        '403': {description: Denied}
+  /api/v1/students/{studentId}/evidence:
+    parameters:
+      - name: studentId
+        in: path
+        required: true
+        schema: {type: string, format: uuid}
+    get:
+      summary: Read approved evidence with authorized tenant/student scope
+      responses:
+        '200': {description: Evidence list}
+        '403': {description: Denied}
+  /api/v1/students/{studentId}/portfolio-drafts:
+    parameters:
+      - name: studentId
+        in: path
+        required: true
+        schema: {type: string, format: uuid}
+    post:
+      summary: Generate a draft from verified approved evidence
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                templateVersion: {type: string}
+      responses:
+        '202': {description: Generation enqueued}
+        '403': {description: Denied}
+        '429': {description: Quota exceeded}
+  /api/v1/portfolio-drafts/{draftId}/approve:
+    parameters:
+      - name: draftId
+        in: path
+        required: true
+        schema: {type: string, format: uuid}
+    post:
+      summary: Approve educator-reviewed draft
+      responses:
+        '200': {description: Approved}
+        '403': {description: Denied}
+        '409': {description: Draft state conflict}
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

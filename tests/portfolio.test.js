@@ -1,0 +1,9 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {students,domains,evidenceFor,mockPortfolio,validatePortfolio,teacherAssignments} from '../src/data.js';
+import {parsePortfolio,makePrompt} from '../src/providers.js';
+test('all synthetic students have unique IDs and 18-month sample span',()=>{assert.equal(students.length,5);assert.equal(new Set(students.map(s=>s.id)).size,5);for(const s of students){const e=evidenceFor(s);assert.ok(e.length>=5);assert.ok(e.some(x=>x.date.startsWith('2025')));assert.ok(e.some(x=>x.date.startsWith('2026')));assert.equal(new Set(e.map(x=>x.id)).size,e.length)}});
+test('teacher simulated visibility partitions the fictional roster',()=>{const a=new Set(teacherAssignments.jordan),b=new Set(teacherAssignments.lee);assert.equal(a.size+b.size,students.length);for(const id of a)assert.ok(!b.has(id));assert.deepEqual(new Set(teacherAssignments.all),new Set(students.map(x=>x.id)))});
+test('portfolio maps source citations only to own records',()=>{for(const s of students){const e=evidenceFor(s);const p=validatePortfolio(mockPortfolio(s,e),e);assert.ok(p.summary.includes(s.name));assert.ok(domains.every(d=>typeof p.domains[d]==='string'));assert.deepEqual(p.evidenceIds,e.map(x=>x.id));assert.equal(p.evidenceIds.filter(x=>x.startsWith(s.id)).length,e.length)}});
+test('hallucinated evidence references are dropped',()=>{const s=students[0],e=evidenceFor(s);const p=mockPortfolio(s,e);p.evidenceIds.push('OTHER-STUDENT-SOURCE');assert.ok(!validatePortfolio(p,e).evidenceIds.includes('OTHER-STUDENT-SOURCE'))});
+test('fenced JSON can be parsed from provider response',()=>assert.deepEqual(parsePortfolio('```json\n{"summary":"abc"}\n```'),{summary:'abc'}));
+test('prompt instructs untrusted evidence and fictional data',()=>{const p=makePrompt(students[0],evidenceFor(students[0]));assert.match(p,/synthetic demonstration/);assert.match(p,/untrusted source DATA/);assert.match(p,/ST-001/)});

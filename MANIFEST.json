@@ -1,0 +1,243 @@
+{
+  "project": "AI Preschool Studio",
+  "version": "0.2.0",
+  "white_label": true,
+  "company_name_embedded": false,
+  "fictional_data_only": true,
+  "browser_e2e": "not verified; environment navigation blocked",
+  "gateway_live": "not tested in this packaging run",
+  "node_tests_passed": 9,
+  "static_http_routes_verified": 9,
+  "files": [
+    {
+      "path": ".gitignore",
+      "size": 105,
+      "sha256": "ac9496f8dd97b9a0f96d4640fad1f681fb5c0ad6292a7a3688a5aa59f19a8233"
+    },
+    {
+      "path": ".nojekyll",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "AGENTS.md",
+      "size": 1653,
+      "sha256": "0a8f9c26e67aa35163c129227cdfb1d97ab180e42694ba81b5cc5b4fca9c4e17"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "size": 715,
+      "sha256": "2ac7fad9bf893edb8788cd85e5065243ec1f18a10970427d6fe0eb1e666110ef"
+    },
+    {
+      "path": "LICENSE",
+      "size": 1094,
+      "sha256": "7a89ea5c2655504568a29ad5c81162a929a39012178f2e509093f0ee6986eae2"
+    },
+    {
+      "path": "README.md",
+      "size": 4042,
+      "sha256": "2090b13e06e65d5798e06a16d93e690c044c019711c9e999e5b6db5f402a8761"
+    },
+    {
+      "path": "docs/01-vision.md",
+      "size": 2428,
+      "sha256": "271c563918efa1b7bddb83cad5907ea2175be8eae1b4911e039da53b6d074ecd"
+    },
+    {
+      "path": "docs/02-prd.md",
+      "size": 3707,
+      "sha256": "a2da5bd90a0ea8dd80118fb1a4aae62dc00c91227e709b724b0bc54725ade275"
+    },
+    {
+      "path": "docs/03-scope-and-acceptance.md",
+      "size": 2270,
+      "sha256": "e3d8d661583b4349225768d8e91f9c07a32004378d1057ac89ac7c258e744b6c"
+    },
+    {
+      "path": "docs/04-architecture.md",
+      "size": 2728,
+      "sha256": "71bce960ff9842440bdafcdce37e6c71a4909e53be45290869a2bdd8adbf85f1"
+    },
+    {
+      "path": "docs/05-data-and-rag.md",
+      "size": 3505,
+      "sha256": "d14275fb5f9fe9052d9749d766120ba2da94f9c32a58992b0cdd745863415661"
+    },
+    {
+      "path": "docs/06-provider-integrations.md",
+      "size": 3997,
+      "sha256": "5bb481f656a1c16d6d7bb4420d4962c47469ab364332381ca01e76643e7f1ea3"
+    },
+    {
+      "path": "docs/07-security-privacy.md",
+      "size": 4148,
+      "sha256": "eaae238a385b95624aac7e0f06e3f8e85b09963f6b979cbc8d48c3d4798ef205"
+    },
+    {
+      "path": "docs/08-ui-and-branding.md",
+      "size": 2686,
+      "sha256": "5b32533adba4d40ae0720b9f1224ff31de0135dfe4d83a68ef786d875dbe0346"
+    },
+    {
+      "path": "docs/09-deployment.md",
+      "size": 2965,
+      "sha256": "be94a322e74f863c3eb2d19374647d1c35000d6e04c20505f73dd4ce4d6ab50e"
+    },
+    {
+      "path": "docs/10-testing.md",
+      "size": 2994,
+      "sha256": "c9705fa44c870a991930c6db6b94d1ab3765adb99da30bee9da014f159acd60b"
+    },
+    {
+      "path": "docs/11-roadmap.md",
+      "size": 2620,
+      "sha256": "292f3c45086ff1d19c5dac3be2e0937ca9369a0146d0866354bba8285a74f29a"
+    },
+    {
+      "path": "docs/12-demo-walkthrough.md",
+      "size": 2776,
+      "sha256": "48f73c63b54acb6a0422c015d4f52c2592c76767098f101d5db8a0394911d1ad"
+    },
+    {
+      "path": "docs/13-risks-and-decisions.md",
+      "size": 2824,
+      "sha256": "ef4a6976f5804db03b8762e21badac0f7e94034d9a39896280ccda14a77b789c"
+    },
+    {
+      "path": "docs/14-backend-api.md",
+      "size": 2497,
+      "sha256": "5899736fd3b5552d6dcbe674c9f965a9c72d79d6dc0c3a7d691457ce08bd5c07"
+    },
+    {
+      "path": "docs/15-operations-and-costs.md",
+      "size": 2258,
+      "sha256": "1d680954acd779e79e6f3a44391fa99aeaa524d5935cf93234871e8869ce5f94"
+    },
+    {
+      "path": "docs/16-singapore-compliance.md",
+      "size": 3295,
+      "sha256": "59af8d4ed97ce9f57f421e2cd8de8dfdeb973f3ce624565506cfe8d1ef886961"
+    },
+    {
+      "path": "docs/17-ai-agent-task.md",
+      "size": 3362,
+      "sha256": "abb02849c29b882249454375256581a7caa2220d782a2495625f32d7b45a78c8"
+    },
+    {
+      "path": "docs/18-zh-quickstart.md",
+      "size": 2076,
+      "sha256": "f1a6b81001d9709484863169d9fe75e5497a4bd5edf2f681e54e21dc96fb7f52"
+    },
+    {
+      "path": "docs/19-sources.md",
+      "size": 1678,
+      "sha256": "8e84da7857039e160babccf8e898a78423bc284ff40439080ac9a83af9359700"
+    },
+    {
+      "path": "docs/20-changelog.md",
+      "size": 1043,
+      "sha256": "d99504e6407012d3462345adb6c7a210ea6cb7b93bc8e691e3c0ec1721dac9a4"
+    },
+    {
+      "path": "docs/21-future-classroom.md",
+      "size": 2192,
+      "sha256": "058e412d9eab57f7ef5d748d811ff2bac6d806aeb2eb5878ac0f24e22e53ec40"
+    },
+    {
+      "path": "docs/22-transition-exports.md",
+      "size": 1451,
+      "sha256": "18b24f72e6b53f092428131dff5d78a1b939e966c9ec000caddf310ee71904a5"
+    },
+    {
+      "path": "docs/23-course-commerce.md",
+      "size": 1308,
+      "sha256": "46a82934260cc36472840326c80f08f823cb883d9e6916df2d23faa64a384315"
+    },
+    {
+      "path": "docs/24-verification-report.md",
+      "size": 2206,
+      "sha256": "3d7def5056af750dcd2af02feb58b03cd618065d7b41dfb604a38741f7e8d1e6"
+    },
+    {
+      "path": "docs/README.md",
+      "size": 2063,
+      "sha256": "c6db8c33d8ba3ee37dd75e3adf03da77791137bc3d642ddff5441e2ae3efe0c5"
+    },
+    {
+      "path": "examples/config-example.md",
+      "size": 661,
+      "sha256": "71d523fc2e42f55b13afd3946d091a621117f53d4dd68650ec8a5f50b809b42e"
+    },
+    {
+      "path": "examples/portfolio.sample.json",
+      "size": 696,
+      "sha256": "60e42caee22d6110defa00d8cd2a0f9d6230dd531030aad22d9eb1081084d1a3"
+    },
+    {
+      "path": "favicon.svg",
+      "size": 289,
+      "sha256": "8a8c5d9dcfdbf3cba067428ff48565a58f526abaa6423f0808dcac014f5bf357"
+    },
+    {
+      "path": "index.html",
+      "size": 12501,
+      "sha256": "7c23fd194c60051be6b20563dd33bd8309290c07f206b986e2d832fd1ca5b309"
+    },
+    {
+      "path": "package.json",
+      "size": 438,
+      "sha256": "b6871ebc0895b007adc886f85b58a57087e614f300e221b308f30071930aefa8"
+    },
+    {
+      "path": "schema/future-postgres.sql",
+      "size": 3758,
+      "sha256": "6f900434575c3f13a3df577c2220d2ad7d24e5c4f9eaca54841a14a7f81e09e4"
+    },
+    {
+      "path": "spec/future-api.openapi.yaml",
+      "size": 2201,
+      "sha256": "656b7afe10b91a3b214cafff2f0cc4a3f46e8e5d692306c6b70c8d8db5166fd4"
+    },
+    {
+      "path": "spec/portfolio.schema.json",
+      "size": 1485,
+      "sha256": "121ce9b2a77c9c76c2ba24331588331ddbe1fe6f58fc9ac80f76116e44fda2ff"
+    },
+    {
+      "path": "src/app.js",
+      "size": 14398,
+      "sha256": "03e4730396a739e7667075c20f5ae87ea10ab28ca6d57634362dfaa2d8f6fe12"
+    },
+    {
+      "path": "src/config.js",
+      "size": 790,
+      "sha256": "c9a8a179030571c57fd6b86a69fdea7129a159e09f54168c07382f4398bc4ae1"
+    },
+    {
+      "path": "src/data.js",
+      "size": 6579,
+      "sha256": "ddfa32b71211f015e4c614175f007d4c224eca6e23164df9b22875b070828161"
+    },
+    {
+      "path": "src/providers.js",
+      "size": 5450,
+      "sha256": "316b6acc4e1e8373a009c62f5a3220caadf996a7a36f51b9d1e12507150582b5"
+    },
+    {
+      "path": "styles.css",
+      "size": 21522,
+      "sha256": "e9651e3620e3f2e1811c78f6a16add706e3f3cde1cd341bbf2b4160d50294a8f"
+    },
+    {
+      "path": "tests/configuration.test.js",
+      "size": 1474,
+      "sha256": "7d48b96bea5707e76d01a9935fac6baba07a6a188c5fe5805399e8617d239f9d"
+    },
+    {
+      "path": "tests/portfolio.test.js",
+      "size": 1956,
+      "sha256": "5b72af5d714e442e8d699616e659b3310a799243649f33b843a0870ca19a1414"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "name": "ai-preschool-studio",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "White-label browser-first AI preschool portfolio concept demo (synthetic data only)",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "check": "node --check src/app.js && node --check src/config.js && node --check src/data.js && node --check src/providers.js",
+    "start": "python3 -m http.server 4173"
+  }
+}
