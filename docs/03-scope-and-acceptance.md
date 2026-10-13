@@ -18,9 +18,9 @@ The shipped UI is static and accesses only bundled fictional records plus curren
 
 | ID | Condition | Type |
 |---|---|---|
-| AC-01 | No organization/company name is hardcoded; config defaults to neutral studio | Automated search + code test |
+| AC-01 | No organization/company name is hardcoded; config defaults to neutral studio | Source scan + browser inspection |
 | AC-02 | Mock produces complete portfolio for 5 fictional students | Automated |
-| AC-03 | No fabricated evidence ID survives `validatePortfolio` | Automated |
+| AC-03 | Malformed portfolios, fabricated/cross-student IDs and cross-domain inline citations are rejected, never silently dropped | Automated |
 | AC-04 | Teacher role switching never claims to enforce real security | Content/UI inspection |
 | AC-05 | BYOK key is never placed into URL, storage or source control | Static search + manual browser inspection |
 | AC-06 | Failure of cloud model does not silently fake a success | Manual/error injection |

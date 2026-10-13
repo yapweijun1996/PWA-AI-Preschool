@@ -1,15 +1,19 @@
 {
-  "summary": "Fictional sample: the student practiced story sequencing, shared materials and counted objects in guided play.",
+  "summary": "Fictional sample: Avery retold a favourite story in sequence [ST-001-E05], invited a new classmate to join block-building and shared materials [ST-001-E02], and counted ten objects with minimal prompting [ST-001-E04]. Educator verification is required before any use.",
   "domains": {
-    "Communication": "Retold a familiar story in an observed small-group activity.",
-    "Literacy": "Recognised letters in a fictional observation.",
-    "Numeracy": "Counted ten objects during a mock lesson.",
-    "Social-emotional": "Shared blocks with peers during a demonstration activity.",
-    "Creative expression": "Created shapes from coloured paper in pretend play."
+    "Communication": "Used gestures and a few spoken words to share an idea during circle time [ST-001-E01]. Retold a favourite story with a beginning, middle and ending [ST-001-E05].",
+    "Literacy": "Recognised letters in her name and identified familiar words on picture cards [ST-001-E03].",
+    "Numeracy": "Counted ten objects and matched sets to numeral cards with minimal prompting [ST-001-E04].",
+    "Social-emotional": "Invited a new classmate to join a block-building activity and shared materials [ST-001-E02].",
+    "Creative expression": "Combined paper shapes and drawings to illustrate a group story [ST-001-E06]."
   },
   "nextSteps": "Educator to confirm whether to continue storytelling and group construction opportunities.",
   "evidenceIds": [
     "ST-001-E01",
-    "ST-001-E02"
+    "ST-001-E02",
+    "ST-001-E03",
+    "ST-001-E04",
+    "ST-001-E05",
+    "ST-001-E06"
   ]
 }

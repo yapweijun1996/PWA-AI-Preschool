@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "StudentPortfolioDraft",
-  "description": "Expected AI response shape for the fictional-data demo; evidence IDs still require application-level authorization and fact checks.",
+  "description": "Strict four-field AI response shape for the fictional-only static demo. Local generationMode labels are not provider fields. Runtime validation also checks supplied-student IDs, inline [EVIDENCE-ID] references and same-domain citation ownership; educator review must still establish factual support.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -13,10 +13,13 @@
   "properties": {
     "summary": {
       "type": "string",
+      "minLength": 1,
+      "pattern": "\\S",
       "maxLength": 4000
     },
     "domains": {
       "type": "object",
+      "description": "Every domain with supplied evidence must cite its own domain evidence inline as [EVIDENCE-ID]. Unsupported domains must state the evidence gap rather than invent observations.",
       "additionalProperties": false,
       "required": [
         "Communication",
@@ -28,32 +31,47 @@
       "properties": {
         "Communication": {
           "type": "string",
+          "minLength": 1,
+          "pattern": "\\S",
           "maxLength": 3000
         },
         "Literacy": {
           "type": "string",
+          "minLength": 1,
+          "pattern": "\\S",
           "maxLength": 3000
         },
         "Numeracy": {
           "type": "string",
+          "minLength": 1,
+          "pattern": "\\S",
           "maxLength": 3000
         },
         "Social-emotional": {
           "type": "string",
+          "minLength": 1,
+          "pattern": "\\S",
           "maxLength": 3000
         },
         "Creative expression": {
           "type": "string",
+          "minLength": 1,
+          "pattern": "\\S",
           "maxLength": 3000
         }
       }
     },
     "nextSteps": {
       "type": "string",
+      "description": "Provisional educator-confirmed suggestions, not assertions of observed outcomes. Any factual claims need inline citations.",
+      "minLength": 1,
+      "pattern": "\\S",
       "maxLength": 4000
     },
     "evidenceIds": {
       "type": "array",
+      "description": "Unique supplied evidence IDs for the selected student; every inline citation must also appear here.",
+      "minItems": 1,
       "items": {
         "type": "string",
         "pattern": "^[A-Z0-9-]{3,80}$"

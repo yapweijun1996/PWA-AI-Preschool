@@ -7,6 +7,7 @@ export const STUDIO_CONFIG = Object.freeze({
   productName: 'AI Preschool Studio',
   organizationName: '', // Optional licensed organisation display name (blank by default)
   portfolioTitle: 'Learning & Development Portfolio',
+  logoUrl: '', // Optional public logo asset URL; blank preserves the neutral mark.
   portfolioSubtitle: 'Evidence-based preschool progress',
   demoOnly: true,
   metrics: Object.freeze({

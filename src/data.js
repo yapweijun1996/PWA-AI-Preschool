@@ -51,17 +51,71 @@ export const domains=["Communication","Literacy","Numeracy","Social-emotional","
 export const teacherAssignments = {jordan:["ST-001","ST-002","ST-003"],lee:["ST-004","ST-005"],all:students.map(s=>s.id)};
 export function evidenceFor(student,extra=[]){return [...student.observations.map((r,i)=>({id:`${student.id}-E${String(i+1).padStart(2,"0")}`,date:r[0],domain:r[1],text:r[2]})),...extra.filter(e=>e.studentId===student.id)].sort((a,b)=>b.date.localeCompare(a.date));}
 export function mockPortfolio(student,observations){
- const itemsByDomain=d=>observations.filter(x=>x.domain===d);
- const domainText=(d)=>{const items=itemsByDomain(d);if(!items.length)return `No ${d.toLowerCase()} evidence has been recorded in this demonstration. Additional teacher observations are needed.`;return `${student.name.split(" ")[0]}'s documented progress includes ${items.map(x=>x.text.replace(/\.$/,"").replace(/^[A-Z]/,s=>s.toLowerCase())).slice(0,2).join("; ")}.`;};
- return {summary:`Over the 18-month period, ${student.name} has participated in a range of preschool learning experiences. Available teacher observations describe growth in ${[...new Set(observations.map(x=>x.domain))].slice(0,3).join(", ").toLowerCase()}. This example is assembled from fictional records and needs educator verification.`,domains:Object.fromEntries(domains.map(d=>[d,domainText(d)])),nextSteps:`Provide ${student.name.split(" ")[0]} with regular opportunities to practise collaborative play, communicate ideas and revisit learning through teacher-guided activities. Confirm priorities with the student's teacher before publishing.`,evidenceIds:observations.map(x=>x.id),generationMode:"mock"};
+ const domainText=d=>{
+  const items=observations.filter(x=>x.domain===d);
+  if(!items.length)return `No ${d.toLowerCase()} evidence has been recorded in this fictional demonstration. Additional teacher observations are needed.`;
+  return items.map(x=>`${x.text} [${x.id}]`).join(" ");
+ };
+ return {
+  summary:`SIMULATED DRAFT — fictional records only, not an AI response. ${student.name}'s supplied observations cover ${period}. ${observations.length?`Recorded learning moments: ${observations.slice(0,2).map(x=>`${x.text} [${x.id}]`).join(" ")}`:"No observations are available; educator evidence is needed."} Educator verification is required.`,
+  domains:Object.fromEntries(domains.map(d=>[d,domainText(d)])),
+  nextSteps:`Suggested opportunities for ${student.name.split(" ")[0]} include collaborative play, sharing ideas and teacher-guided learning activities. These are provisional suggestions, not observed outcomes; confirm priorities with the educator before publishing.`,
+  evidenceIds:observations.map(x=>x.id),
+  generationMode:"mock"
+ };
 }
+
+const portfolioFields=["summary","domains","nextSteps","evidenceIds"];
+const isRecord=value=>value!==null&&typeof value==="object"&&!Array.isArray(value);
+const validText=(value,max)=>typeof value==="string"&&value.trim().length>0&&Array.from(value).length<=max;
+
 export function validatePortfolio(obj,observations){
- if(!obj||typeof obj!=="object")throw new Error("AI response was not a portfolio object.");
- const fallback = {summary:"",domains:{},nextSteps:"",evidenceIds:[]};
- const merged={...fallback,...obj};
- if(typeof merged.summary!=="string"||typeof merged.nextSteps!=="string")throw new Error("Portfolio is missing textual sections.");
- const allowed=new Set(observations.map(x=>x.id));
- merged.evidenceIds=Array.isArray(obj.evidenceIds)?obj.evidenceIds.filter(x=>allowed.has(x)):[];
- merged.domains=Object.fromEntries(domains.map(d=>[d,typeof obj.domains?.[d]==="string"?obj.domains[d]:"Not covered in the current generated evidence."]));
- return merged;
+ if(!isRecord(obj))throw new Error("AI response was not a portfolio object.");
+ if(portfolioFields.some(key=>!Object.hasOwn(obj,key))||Object.keys(obj).some(key=>!portfolioFields.includes(key)&&key!=="generationMode")){
+  throw new Error("Portfolio must contain exactly summary, domains, nextSteps and evidenceIds; generation labels are local metadata only.");
+ }
+ if(Object.hasOwn(obj,"generationMode")&&!["mock","ai"].includes(obj.generationMode)){
+  throw new Error("Portfolio generation label is invalid.");
+ }
+ if(!validText(obj.summary,4000)||!validText(obj.nextSteps,4000)){
+  throw new Error("Portfolio summary and next steps must be nonempty text of at most 4000 characters.");
+ }
+ if(!isRecord(obj.domains)||Object.keys(obj.domains).length!==domains.length||domains.some(d=>!Object.hasOwn(obj.domains,d)||!validText(obj.domains[d],3000))){
+  throw new Error("Portfolio must include exactly five nonempty domain sections of at most 3000 characters each.");
+ }
+ if(!Array.isArray(obj.evidenceIds)||obj.evidenceIds.length>250||!obj.evidenceIds.length){
+  throw new Error("Portfolio must include between 1 and 250 evidence IDs.");
+ }
+ const allowed=new Map(observations.map(x=>[x.id,x]));
+ const listed=new Set();
+ for(const id of obj.evidenceIds){
+  if(typeof id!=="string"||!/^[A-Z0-9-]{3,80}$/.test(id)||!allowed.has(id)){
+   throw new Error("Portfolio contains an invalid or unknown evidence ID for this student.");
+  }
+  if(listed.has(id))throw new Error("Portfolio contains duplicate evidence IDs.");
+  listed.add(id);
+ }
+ const checkCitations=(text,domain)=>{
+  let count=0;
+  for(const match of text.matchAll(/\[([^\[\]\r\n]*)\]/g)){
+   const id=match[1];
+   if(!allowed.has(id)||!listed.has(id)){
+    throw new Error("Every inline citation must reference supplied evidence for this student and be listed in evidenceIds.");
+   }
+   if(domain&&allowed.get(id).domain!==domain){
+    throw new Error("A domain citation references evidence from a different learning domain.");
+   }
+   count++;
+  }
+  return count;
+ };
+ checkCitations(obj.summary);
+ checkCitations(obj.nextSteps);
+ for(const d of domains){
+  const count=checkCitations(obj.domains[d],d);
+  if(observations.some(x=>x.domain===d)&&!count){
+   throw new Error("Every domain with supplied observations must cite its own evidence inline.");
+  }
+ }
+ return {...obj,domains:{...obj.domains},evidenceIds:[...obj.evidenceIds]};
 }

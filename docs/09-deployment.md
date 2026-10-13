@@ -2,47 +2,55 @@
 
 ## Prerequisites
 
-A neutral-name GitHub repo you control; GitHub Pages permission; HTTPS browser; no secrets in tracked files; Node for tests and Python/any web server for local preview.
+A neutral-name GitHub repository you control; GitHub Pages permission; an HTTPS browser; no secrets in tracked files; Node 24 (the CI version) and Python 3 or another static HTTP server for local preview. No npm dependencies or install step are required.
 
-### Local verification
+## Local verification and repository-subpath smoke
 
 ```bash
 npm run check
 npm test
-python3 -m http.server 4173
-# Open http://localhost:4173 in a browser
+npm run build
+python3 -m http.server 4173 --directory dist
+# Open http://localhost:4173/
 ```
 
-Test Offline Mock **first**. Source uses ES modules; opening `index.html` through `file://` is not a valid acceptance test.
+The deterministic, no-bundler build recreates only the fixed repository-relative `dist/` directory. It first requires every runtime asset to exist, then copies `index.html`, `styles.css`, `favicon.svg`, the four current `src/` modules, and an empty `.nojekyll`. It does not publish docs, tests, specs, schemas, MANIFEST, Git history or keys. If a new runtime module is introduced, add it to the explicit allowlist in `scripts/build.mjs`. `dist/` is ignored by Git.
 
-### Upload and publish (not performed by packaging)
+To test the built artifact under a repository path without serving source files, run this exact command from the repository root after building:
 
-1. Create a new public GitHub repository with a generic name (example: `ai-preschool-studio`).
-2. Upload all project files from the ZIP root, including `src/`, `tests/`, `styles.css`, `index.html`, `favicon.svg`, `.nojekyll` and `README.md`; documentation can be included alongside source.
-3. Set **Settings → Pages → Deploy from a branch**, branch `main`, directory `/ (root)`.
-4. Verify Pages deployment reaches success; open `https://USERNAME.github.io/REPOSITORY/` and re-run the browser scenario.
-5. Confirm no real child material or API keys are visible in repository history, browser network traffic or compiled assets.
-6. For the GPT Demo Gateway, confirm the **exact real Origin** is server-allowed, project identity is permitted, sessions work, model is enabled and quota/abuse controls are active. Never disable access control just to pass smoke tests.
+```bash
+python3 -c 'import functools, http.server; from urllib.parse import urlsplit; root="dist"; prefix="/REPOSITORY"; Subpath=type("Subpath", (http.server.SimpleHTTPRequestHandler,), {"translate_path": lambda self, url: http.server.SimpleHTTPRequestHandler.translate_path(self, url[len(prefix):] if urlsplit(url).path.startswith(prefix + "/") else "/__not_published__")}); http.server.ThreadingHTTPServer(("127.0.0.1", 4173), functools.partial(Subpath, directory=root)).serve_forever()'
+# Open http://127.0.0.1:4173/REPOSITORY/
+```
 
-> GitHub Pages is **public static hosting**, not a private student records server. GitHub pages cannot keep server-side secrets in client JavaScript.
+Select Offline Mock **first** and exercise generation, edits, evidence links, review and print. Offline Mock does not require a working Gateway, OpenAI or Gemini after the static files load. Source uses ES modules; opening `index.html` through `file://` is not valid acceptance evidence. A local smoke does not prove live hosting or external provider health.
+
+## Publish through GitHub Actions (owner action)
+
+1. Include the project and `.github/workflows/pages.yml` in the repository. Review fictional-data and credential safety before publishing.
+2. Set **Settings → Pages → Build and deployment → Source → GitHub Actions**.
+3. The owner manually pushes the reviewed commit to `main`; this documentation does not perform or authorize an automatic push. Alternatively, the owner can select `main` in **Actions → Static checks and Pages deployment → Run workflow**.
+4. Wait for checks, tests and build to pass, and for the `github-pages` deployment to succeed. Use the actual URL shown by the deployment, normally `https://USERNAME.github.io/REPOSITORY/`.
+5. Repeat the browser scenarios at that actual HTTPS origin and repository path. Inspect module/asset requests for 404s and confirm only runtime files are hosted.
+6. Record Offline Mock and any live provider results separately. For Gateway tests, its existing server configuration must allow the actual Origin/project identity and enforce session, model and quota controls. Never change live configuration or disable access control merely to pass a smoke test.
+
+The workflow checks PRs to `main` with read-only repository/Pages metadata permission and no Pages upload/deployment. Pushes to `main`, or manual dispatch specifically on `main`, upload `dist/` and deploy only after checks pass. Other-branch dispatch performs checks only. Official `configure-pages`, `upload-pages-artifact` and `deploy-pages` actions handle publication. Only deployment has `pages: write` and `id-token: write`; it uses the `github-pages` environment. Complete runs are serialized per Git ref so an older main build cannot overtake a newer deployment. No provider secrets or npm dependencies are added.
+
+> GitHub Pages is **public static hosting**, not a private student records server. It cannot keep server-side secrets in client JavaScript.
 
 ## Before showing external reviewers
 
-- Confirm all student profiles and evidence are fictional.
-- Demo mode defaults to publicly rate-limited Gateway or Offline Mock.
-- BYOK modal explains temporary test-key risk and CORS limitations.
-- Test and record actual Gateway session status, Responses API, 429 behavior and total spend guardrail.
-- Check Edge, Chrome and Safari where possible; inspect both mobile/desktop layout.
-- Ensure reviewers know this is a concept demo, not a purchase-ready school system.
-
-## Optional GitHub Actions (later)
-
-The initial project needs no bundler. You can add a CI workflow to run `npm run check && npm test` on PRs and publish only on approved merges; do not store cloud provider keys in public Actions or print them to logs.
+- Confirm every profile and observation is fictional.
+- Verify Offline Mock independently of live provider availability.
+- Explain temporary BYOK risk and CORS limitations.
+- Record actual Gateway session/Responses status and quota behavior only if exercised.
+- Check desktop/mobile layouts and print/PDF disclaimers in actual browsers; automated Node checks do not establish these outcomes.
+- Explain that this is a concept demo, not a purchase-ready school records system.
 
 ## Rollback
 
-Revert to the last known-good commit, confirm Pages deploys successfully, disable the Demo Gateway project if abused, revoke/rotate any exposed test key, and record an incident/change note. GitHub history may preserve leaked keys; deleting a file alone is insufficient to clean a disclosed credential — rotate it.
+The owner can revert to a known-good commit on `main` and let the same checked deployment workflow publish it; confirm deployment success and repeat the actual-origin smoke. If abuse or a leaked key is discovered, authorized operators must revoke/rotate credentials or disable the Gateway project and record an incident. Deleting a file alone does not remove leaked credentials from Git history.
 
 ## Proof of live readiness
 
-Track *separately*: repo created; branch pushed; GitHub Pages enabled; URL opened; mock works; Gateway returns healthy response; BYOK smoke success if browser supports it; mobile QA screenshots; usage cap confirmed. Do not claim "deployed" when you only have a ZIP or guessed URL.
+Track separately: reviewed commit; owner push; Pages settings; Actions result; deployed URL opened; Offline Mock result; live Gateway/BYOK result if attempted; mobile/desktop and PDF evidence. A local build is not proof of deployment. Record PASS / FAIL / NOT TESTED with actual observations in the verification report; do not infer success from an expected URL.

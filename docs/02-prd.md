@@ -21,7 +21,7 @@
 - **FR-05** AI must return structured fields: summary, five domains, next steps, evidence IDs. `LIVE IN STATIC MVP` with validation; factual alignment still requires human inspection.
 - **FR-06** Educator can review, edit, optionally mark approved, and print/save PDF. `LIVE IN STATIC MVP` (approval is local only).
 - **FR-07** Show unproven sample metrics as hypotheses, not claimed savings. `LIVE IN STATIC MVP`.
-- **FR-08** Configure product name, optional operator name, portfolio title and Gateway routing in a public config. `LIVE IN STATIC MVP`.
+- **FR-08** Configure product name, optional operator name/public logo URL, portfolio title and Gateway routing in a public config. `LIVE IN STATIC MVP`.
 - **FR-09** Authenticate staff and enforce student access on every query and retrieval step. `PROPOSED`.
 - **FR-10** Store student-specific observations, evidence lineage, teacher edits and approval history in encrypted DB/object storage. `PROPOSED`.
 - **FR-11** Export an approved controlled-format portfolio, with school-defined layout. `PROPOSED`.

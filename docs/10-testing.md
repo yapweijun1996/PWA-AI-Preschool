@@ -2,7 +2,9 @@
 
 ## Automated tests in package
 
-`npm run check` parses all JS modules. `npm test` exercises bundled student identities, evidence ID uniqueness, role partitions in the *simulated* data, mock portfolio shape, invalid evidence ID rejection, JSON parsing, and prompt instructions.
+`npm run check` parses all runtime JS modules and `scripts/build.mjs`. The 27 Node tests cover simulated roster partitions, complete labelled mocks, session-observation isolation, strict portfolio bounds, missing sections, duplicate/unknown/cross-student IDs, cross-domain citations, parsing, immutable public configuration, provider credential leakage, fresh Gateway sessions, timeouts, malformed envelopes and sanitized failures. `npm run build` stages only runtime HTML/CSS/favicon/modules plus `.nojekyll`; it is not a browser or live-provider test.
+
+The Pages workflow runs these commands on PRs to `main`, pushes to `main`, and manual dispatch. PR CI has read-only repository access and never uploads/deploys Pages; arbitrary-branch manual dispatch also cannot deploy. Publishing requires `main` and a successful check job. Verify the workflow execution, deployment environment and actual deployed URL separately; configuration alone is not evidence of a live deployment.
 
 ## Required manual browser tests (not proven by Node unit tests)
 
@@ -11,13 +13,18 @@
 | B-01 | Open app in mobile Chrome / Safari | No broken layout, click targets accessible |
 | B-02 | Select Ms Jordan and Mr Lee | Appropriate fictional cards change; UI labels simulation |
 | B-03 | Select Offline Mock and generate | Ribbon explicitly says simulated/no AI call |
-| B-04 | Generate and edit each portfolio text area | Edits shown and not lost within current page session |
-| B-05 | Check approval | Status changes to educator reviewed locally |
+| B-04 | Generate and edit all seven portfolio sections | Saved edits remain in the current session; invalid citations are rejected without changing the saved draft |
+| B-05 | Approve, edit again, and regenerate | Local reviewed status is explicit; edits clear the checkbox; regeneration resets approval |
 | B-06 | Print / PDF | Only portfolio on printed pages; demo disclaimer visible |
 | B-07 | Invalid OpenAI key | Error message; no mock response substituted |
 | B-08 | Invalid Gemini key | Error message; no secret in URL or page logs |
 | B-09 | Gateway CORS block or 429 | Useful error; provider can be changed safely |
 | B-10 | Refresh page | In-memory test data, approval and BYOK key reset |
+| B-11 | Serve built `dist/` under `/REPOSITORY/` using the deployment guide command | Relative modules, stylesheet and favicon load without 404s; source/docs/tests are not served |
+| B-12 | Repeat Offline Mock at actual Pages HTTPS origin | Generation succeeds without external provider availability; evidence links remain within the selected fictional student |
+| B-13 | Compare built file list with allowlist | Only index.html, styles.css, favicon.svg, four src modules and .nojekyll; no docs/tests/spec/schema/MANIFEST/history/keys |
+
+Run the subpath smoke command from [the deployment guide](09-deployment.md). Browser interaction, layout, print/PDF, external-provider availability and deployed-origin CORS require manual verification and are not established by syntax checks, Node tests or build success. Record each unexercised scenario as **NOT TESTED**, not PASS. Offline Mock is independent of live Gateway/BYOK health after static assets load.
 
 ## Security-focused negative tests (future API, not static demo)
 

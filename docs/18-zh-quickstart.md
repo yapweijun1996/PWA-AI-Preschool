@@ -10,6 +10,7 @@
 python3 -m http.server 4173
 npm run check
 npm test
+npm run build
 ```
 
 浏览器打开 `http://localhost:4173`，进入 **AI provider settings**，选择以下其中一个：
@@ -17,15 +18,21 @@ npm test
 - **GPT Demo Gateway（默认）**：通过现有公开 Demo Gateway 申请临时 Session，然后调用 Responses API；实时连通性要另测。
 - **OpenAI BYOK**：访客自己输入短期测试用 API Key；只存在这个页面的记忆体；不是生产级安全方案。
 - **Gemini BYOK**：同上，而且浏览器可能遇到 CORS 限制。
-- **Offline Mock**：不调用 AI，始终可供展示；必须标明模拟输出。
+- **Offline Mock**：不调用 AI；静态文件加载后，不依赖 Gateway、OpenAI 或 Gemini 的实时可用性；必须标明模拟输出。
 
 ## 如何换品牌
 
-修改 `src/config.js`：`productName`、`organizationName`、`portfolioTitle`。不要把学校名称写死在 HTML、JS 或 SQL 中。Logo/颜色未来可以扩展成 tenant configuration。
+修改 `src/config.js`：`productName`、`organizationName`、`portfolioTitle` 和 `logoUrl`。`organizationName` 与 `logoUrl` 默认留空。Logo 可指定获授权的公开资源 URL；相对 URL 必须指向已发布的文件（例如 `./favicon.svg`），新增本地资源需加入 `scripts/build.mjs` 白名单。不要把学校名称写死在 HTML、JS 或 SQL 中，公开模板不要包含真实学校 Logo 或资料。
 
 ## GitHub Pages
 
-将 ZIP 解压并把项目文件上传至新的 GitHub Repository。进入 Settings → Pages → Deploy from a branch → main → root。检查真实 URL 是否能访问，不能只凭预计 URL 就说已经上线。公开 Demo **绝对不能上传真实学生资料**。
+1. 将项目文件提交到中性名称的 GitHub Repository，必须包含 `.github/workflows/pages.yml`。
+2. 进入 **Settings → Pages → Build and deployment → Source → GitHub Actions**。
+3. 由仓库拥有者**手动 push 已审核的提交到 `main`**；此说明不会自动 push 或部署。也可在 Actions 的 **Static checks and Pages deployment → Run workflow** 中选择 `main`。
+4. 等待语法检查、测试、静态构建及 `github-pages` 部署成功，再打开部署页面给出的真实 HTTPS URL，通常为 `https://USERNAME.github.io/REPOSITORY/`。
+5. 在真实来源先验证 Offline Mock、证据链接、编辑、审核及打印 PDF，再单独记录 Gateway/BYOK 的实际结果。不能只凭预计 URL 就说已经上线；不应为展示而修改实时 Gateway 配置或关闭访问控制。
+
+PR 只运行只读 CI 检查，不发布 Pages；在非 `main` 分支手动运行也不会发布。`npm run build` 不需要 npm 依赖或 bundler，只把 HTML、CSS、favicon、四个 `src/` 模块和 `.nojekyll` 放入 `dist/`，不会发布文档、测试、schema、历史或密钥。相对路径支持 `/REPOSITORY/`；本地构建及子路径验证命令见 [部署说明](09-deployment.md)。公开 Demo **绝对不能上传真实学生资料**。
 
 ## 第一版真正有的功能
 
