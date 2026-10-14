@@ -2,7 +2,7 @@
 
 ## Automated tests in package
 
-`npm run check` parses all runtime JS modules and `scripts/build.mjs`. The 27 Node tests cover simulated roster partitions, complete labelled mocks, session-observation isolation, strict portfolio bounds, missing sections, duplicate/unknown/cross-student IDs, cross-domain citations, parsing, immutable public configuration, provider credential leakage, fresh Gateway sessions, timeouts, malformed envelopes and sanitized failures. `npm run build` stages only runtime HTML/CSS/favicon/modules plus `.nojekyll`; it is not a browser or live-provider test.
+`npm run check` parses five browser modules, the worker template and `scripts/build.mjs`. The **43 Node tests** cover the original roster, portfolio/citation, review, provider and credential contracts plus PWA atomic installation, strict cache boundaries, scoped cleanup, cold shell routing, explicit activation, first control without reset, multi-tab handoff, busy/duplicate guards and timeout recovery. `npm run build` emits only runtime assets, manifests/icons, release metadata, worker and `.nojekyll`; it is not proof of browser installation or live-provider availability.
 
 The Pages workflow runs these commands on PRs to `main`, pushes to `main`, and manual dispatch. PR CI has read-only repository access and never uploads/deploys Pages; arbitrary-branch manual dispatch also cannot deploy. Publishing requires `main` and a successful check job. Verify the workflow execution, deployment environment and actual deployed URL separately; configuration alone is not evidence of a live deployment.
 
@@ -22,7 +22,14 @@ The Pages workflow runs these commands on PRs to `main`, pushes to `main`, and m
 | B-10 | Refresh page | In-memory test data, approval and BYOK key reset |
 | B-11 | Serve built `dist/` under `/REPOSITORY/` using the deployment guide command | Relative modules, stylesheet and favicon load without 404s; source/docs/tests are not served |
 | B-12 | Repeat Offline Mock at actual Pages HTTPS origin | Generation succeeds without external provider availability; evidence links remain within the selected fictional student |
-| B-13 | Compare built file list with allowlist | Only index.html, styles.css, favicon.svg, four src modules and .nojekyll; no docs/tests/spec/schema/MANIFEST/history/keys |
+| B-13 | Compare built file list with allowlist | HTML/CSS/favicon, five src modules, three PNG icons, two manifests, build-info.json, sw.js and .nojekyll only; no docs/tests/spec/schema/history/keys |
+| B-14 | Warm cache, disable network and ordinary HTTP cache, cold-reload | Ready offline shell; explicit Mock generation/edit/review/print; cloud generation disabled |
+| B-15 | Install through browser/home-screen UI | Neutral name/icons; repository scope; standalone launch; actual iOS safe areas/status bars inspected |
+| B-16 | Publish N+1 at the same origin; cancel then confirm update | Waiting prompt; session preserved on cancel; reset warning, loader and newest version on explicit activation |
+| B-17 | Update with two open tabs, repeat clicks and generation in flight | Only confirming tab reloads; duplicate/busy guard; other tab offers explicit reload |
+| B-18 | Fail one required install asset or activation handoff | No partial cache activation; old offline release survives; visible error, bounded timeout and retry recovery |
+| B-19 | Inspect caches after query/API/POST attempts | Exact static routes only; no session, key, response, narrative, unrelated route or query cached |
+| B-20 | Theme/reduced-motion/keyboard/viewport checks | Metadata/manifests match theme; motion respected; 44px targets and 16px inputs; no overflow at 320/390/430/768/1440 widths |
 
 Run the subpath smoke command from [the deployment guide](09-deployment.md). Browser interaction, layout, print/PDF, external-provider availability and deployed-origin CORS require manual verification and are not established by syntax checks, Node tests or build success. Record each unexercised scenario as **NOT TESTED**, not PASS. Offline Mock is independent of live Gateway/BYOK health after static assets load.
 

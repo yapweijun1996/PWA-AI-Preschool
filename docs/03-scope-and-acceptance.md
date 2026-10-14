@@ -28,6 +28,11 @@ The shipped UI is static and accesses only bundled fictional records plus curren
 | AC-08 | Dashboard usable at 390×844, 430×932 and desktop 1440×900 | Browser E2E required |
 | AC-09 | All visible content is explicitly fictional | UI/source review |
 | AC-10 | Real school name/logo can be added by configuring only neutral public fields | Manual smoke |
+| AC-11 | Warm cache supports offline cold reload, explicit Mock generation, local review and print; cloud calls never silently become Mock | Browser E2E + cache inspection |
+| AC-12 | Waiting updates require reset confirmation; loader, busy/duplicate guards and failure recovery work; other tabs never silently reload | Two-build/multi-tab browser E2E |
+| AC-13 | Install assets, scoped worker, system themes, safe areas, 44px controls, 16px inputs and reduced motion follow the PWA contract | Browser verification + separate physical-device acceptance |
+
+PWA-specific gates and device limitations are defined in [25 — PWA standard](25-pwa-standard.md); evidence is recorded in [24 — verification](24-verification-report.md). Real-device and deployed-origin checks must not be inferred from emulation.
 
 ### Strict production go/no-go
 

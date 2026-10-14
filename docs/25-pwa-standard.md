@@ -21,7 +21,7 @@ Drafts, added observations, approvals and BYOK keys remain memory-only and reset
 
 ## Acceptance gates
 
-1. Build and serve only public runtime files through GitHub Actions; all URLs and worker scope remain within the repository path.
+1. Build and serve only public runtime files through GitHub Actions; bundled runtime URLs and worker scope remain within the repository path.
 2. Inspect generated manifests/icons and launch in an installed/standalone context where supported.
 3. Warm the cache, disable network and ordinary HTTP cache, then reload and exercise the complete local portfolio journey.
 4. Publish a local test build N+1 at the same origin. Confirm waiting notification, postponement, reset warning, loader, activation and newest build identity after reload.
@@ -33,3 +33,5 @@ Drafts, added observations, approvals and BYOK keys remain memory-only and reset
 ## Completion evidence
 
 Record PASS, FAIL, PARTIAL, N/A or NOT TESTED per gate in `24-verification-report.md`. A manifest, worker file, passing unit test or successful build alone is not proof of product-grade PWA completion. Real device/system chrome and browser installation limitations must remain explicit.
+
+Implementation and desktop-browser acceptance are recorded in the current report: atomic static caching, cold offline Mock/edit/review/print, user-controlled N→N+1 activation, other-tab preservation, busy/duplicate guards, timeout and incomplete-install recovery, themes/motion and responsive controls were exercised. Native installation, physical iOS and publication of this new PWA require their actual environments and remain explicitly NOT TESTED. Do not convert those external checks into a blanket certification claim.

@@ -8,11 +8,15 @@ Dashboard → Student directory → Evidence library → AI Portfolio → Teache
 
 - Clean professional, education-neutral design; no customer logos, school names, internal materials or bespoke colour palettes.
 - English-first text and label naming; future i18n extension points for school-specific language needs.
-- Laptop and mobile browser support; review at 390×844, 430×932 and 1440×900.
+- Laptop and mobile browser support; review at 390×844, 430×932, 768×1024 and 1440×900, plus a 320px narrow-screen boundary.
 - Keyboard focus visible; all icon buttons labelled; ARIA-live status for model calls; dialog trap/escape behavior tested in browser.
 - Review mode visually separates **AI Draft**, **Simulated Draft**, and **Educator Reviewed** states. Edits clear the approval checkbox; saving requires valid section citations. Local review metadata is unauthenticated and is retained on the printout.
 - Each observed domain includes inline [EVIDENCE-ID] citations. The evidence index links to the selected student's full fictional timeline, including session-added observations. Citation membership does not establish factual entailment.
 - Do not represent estimated productivity or edit targets as achieved customer outcomes.
+- System light/dark surfaces, opaque theme metadata and matching generated manifests. Portfolio paper remains light for print fidelity. Safe-area insets protect shell, dialogs and floating controls; visual-viewport sizing accommodates keyboard-constrained sheets.
+- Primary controls have at least 44px targets; text/password/select/textarea inputs use at least 16px. Reduced motion disables the loader animation and uses nonanimated JavaScript scrolling.
+- A contextual safe-area-aware return-to-top button appears only on long, scrolled screens. The current topbar is not persistent; smart hide/reveal is not applicable.
+- Install/offline/update status is visible near the top of the shell. Updates require an explicit session-reset warning and confirmation, show a branded loader, reject activation during generation and preserve other tabs until their own confirmation. Error messages offer retry/reload guidance without claiming the offline cache is ready when it is not.
 
 ## White-label configuration
 

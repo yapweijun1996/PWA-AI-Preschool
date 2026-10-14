@@ -19,6 +19,14 @@
 | Sensitive logs | No backend data logs in demo | Redacted logs, access controls, retention/deletion, breach response |
 | School-to-school transfer error | Not present | Confirm authority and minimum dataset; recipient verification and access expiry |
 
+## Static PWA security boundary
+
+- The HTML CSP restricts scripts, styles, fonts, workers and manifests to this origin; connections are limited to this origin and the configured default Gateway/OpenAI/Gemini hosts. HTTPS images allow authorized public branding. Objects are disabled and base/form destinations remain same-origin. A custom Gateway origin requires updating the CSP in `index.html` as well as public configuration.
+- The worker admits only exact, same-origin, query-free GET routes in its generated static allowlist. POST, other paths/origins, provider sessions, responses and credential-bearing URLs are not cached. Cache names include registration scope and release identity; cleanup touches only this app's obsolete releases.
+- Drafts, extra observations, approvals and BYOK keys never enter Cache Storage, localStorage or sessionStorage. Reload and an accepted update reset them. Static bundled fictional examples remain public and cached.
+- HTTPS is provided by GitHub Pages; localhost is only a development secure-context exception. CSP and scoped caches do not provide staff authentication, tenant isolation, secure BYOK custody or protection from trusted same-origin scripts/extensions.
+
+
 ## Production access model
 
 `SchoolTenant -> StaffIdentity -> AssignedClass -> Student -> Evidence`. RBAC role is necessary but not sufficient; implement **ABAC** based on assignment, active date, document purpose, guardian relationship and school.
