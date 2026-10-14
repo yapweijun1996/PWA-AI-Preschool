@@ -2,14 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#142a37" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+  <meta name="theme-color" content="#f8f8f4" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="AI Preschool Studio" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; worker-src 'self'; style-src 'self'; connect-src 'self' https://gpt.yapweijun1996.com https://api.openai.com https://generativelanguage.googleapis.com; img-src 'self' https:; font-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
   <meta name="description" content="Browser-first, privacy-conscious AI preschool portfolio demo using fictional student records." />
   <title>AI Preschool Studio — Student Growth, Simplified</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
-<body>
+<body data-build-id="__BUILD_ID__">
   <div id="app" class="app-shell">
     <aside class="sidebar" aria-label="Main navigation">
       <div class="brand"><div class="brand-icon" aria-hidden="true"><span></span><span></span><span></span></div><div><strong id="app-brand">AI Preschool Studio</strong><small id="app-brand-subtitle">STUDENT GROWTH DEMO</small></div></div>
@@ -28,6 +36,7 @@
     <main class="main-content">
       <header class="topbar"><div class="breadcrumbs">WORKSPACE <span>/</span> <strong id="breadcrumb-current">Overview</strong></div><div class="top-actions"><span class="top-demo"><span class="live-dot"></span> INTERACTIVE DEMO</span><button class="btn btn-plain" id="header-settings" title="Provider settings" aria-label="Provider settings">⚙</button><span class="avatar avatar-small">MJ</span></div></header>
       <div class="content-inner">
+        <div id="pwa-controls-host"></div>
         <div class="demo-warning" role="note"><strong>Fictional demo only.</strong> Do not enter real child, family, staff, photo or voice records. Educator access is simulated; this is not a production school system.</div>
         <noscript><p class="demo-warning">Enable JavaScript to explore the static demo. No installation or sign-in is required.</p></noscript>
         <section class="hero"><div class="hero-copy"><div class="eyebrow">THE FUTURE OF PRESCHOOL DOCUMENTATION <span class="tiny-line"></span> DEMO V1</div><h1>More time for <em>little moments.</em></h1><p>Turn everyday learning observations into meaningful student portfolios — supported by AI, guided by educators.</p><div class="hero-actions"><button class="btn btn-primary" id="hero-generate">Create a portfolio <span>↗</span></button><button class="btn btn-outline-light" id="hero-evidence">Explore student records <span>→</span></button></div></div><div class="hero-visual" aria-hidden="true"><div class="visual-orbit orbit-one"></div><div class="visual-orbit orbit-two"></div><div class="hero-paper"><div class="hero-paper-top"><span class="paper-leaf">✦</span><span class="paper-label">GROWTH PORTFOLIO</span></div><div class="paper-avatar"></div><span class="paper-line wide"></span><span class="paper-line medium"></span><div class="paper-chart"><i></i><i></i><i></i><i></i><i></i></div><span class="paper-line short"></span></div><div class="hero-float float-left">✦ <span>Made for educators</span></div><div class="hero-float float-right">✓ <span>Evidence-based AI</span></div></div></section>
@@ -88,6 +97,7 @@
     <p id="review-message" class="generation-message" role="status" aria-live="polite"></p>
     <div class="dialog-bottom"><button class="btn btn-outline" value="cancel">Close without saving</button><button class="btn btn-primary" id="save-review" value="save">Save reviewed draft</button></div>
   </form></dialog>
+  <button type="button" id="scroll-top" class="scroll-top" aria-label="Scroll to top" hidden>↑</button>
 
   <div id="toast" role="status" aria-live="polite" class="toast" hidden></div><script type="module" src="./src/app.js"></script>
 </body>

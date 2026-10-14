@@ -1,6 +1,7 @@
 import {STUDIO_CONFIG} from './config.js';
 import {students,domains,teacherAssignments,evidenceFor,mockPortfolio,validatePortfolio,period} from './data.js';
 import {providerLabels,providerModels,generateRemotePortfolio} from './providers.js';
+import {initPwa} from './pwa.js';
 
 const state={page:'overview',studentId:'ST-001',teacher:'jordan',provider:'gateway',apiKey:'',model:'',extra:[],drafts:new Map(),busy:false};
 const byId=id=>document.getElementById(id);
@@ -12,8 +13,10 @@ const draft=()=>state.drafts.get(state.studentId);
 const shortDate=d=>new Date(`${d}T00:00:00`).toLocaleDateString('en-SG',{day:'numeric',month:'short',year:'numeric'});
 const firstName=s=>s.name.split(' ')[0];
 let toastTimer;
+const motionPreference=window.matchMedia('(prefers-reduced-motion: reduce)');
+const scrollBehavior=()=>motionPreference.matches?'auto':'smooth';
 function toast(message){const box=byId('toast');box.textContent=message;box.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>box.hidden=true,4700)}
-function setPage(page){if(page==='settings'){openProvider();return}state.page=page;document.querySelectorAll('.nav-item').forEach(b=>{const active=b.dataset.page===page;b.classList.toggle('active',active);if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});byId('breadcrumb-current').textContent=({overview:'Overview',students:'Students',portfolio:'AI Portfolio',observations:'Evidence library'})[page];const target=page==='portfolio'?'portfolio-pane':page==='observations'?'evidence-list':page==='students'?'student-list':null;if(target)byId(target).scrollIntoView({behavior:'smooth',block:'start'});else window.scrollTo({top:0,behavior:'smooth'})}
+function setPage(page){if(page==='settings'){openProvider();return}state.page=page;document.querySelectorAll('.nav-item').forEach(b=>{const active=b.dataset.page===page;b.classList.toggle('active',active);if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});byId('breadcrumb-current').textContent=({overview:'Overview',students:'Students',portfolio:'AI Portfolio',observations:'Evidence library'})[page];const target=page==='portfolio'?'portfolio-pane':page==='observations'?'evidence-list':page==='students'?'student-list':null;if(target)byId(target).scrollIntoView({behavior:scrollBehavior(),block:'start'});else window.scrollTo({top:0,behavior:scrollBehavior()})}
 function avatar(student,extra=''){const span=el('span',`student-avatar ${student.color} ${extra}`,student.initials);return span}
 function brandLogo(){const image=el('img','brand-logo');image.src=STUDIO_CONFIG.logoUrl;image.alt='';return image}
 function renderStudents(){const container=byId('student-list');container.replaceChildren();const visible=students.filter(s=>allowed().includes(s.id));byId('metric-students').childNodes[0].textContent=String(visible.length).padStart(2,'0')+' ';
@@ -37,7 +40,7 @@ function renderPortfolio(){const s=selected(),current=draft();byId('chosen-name'
  for(const domain of domains)paper.append(textBlock(domain,current.data.domains[domain]));
  paper.append(textBlock('Recommended next steps',current.data.nextSteps));
  const source=el('div','paper-sources');source.append(el('strong','','Evidence references: '));
- for(const id of current.data.evidenceIds){const link=el('button','source-link',id);link.type='button';link.addEventListener('click',()=>{const row=byId(`evidence-${id}`);row.scrollIntoView({behavior:'smooth',block:'center'});row.focus({preventScroll:true})});source.append(link,document.createTextNode(' '))}
+ for(const id of current.data.evidenceIds){const link=el('button','source-link',id);link.type='button';link.addEventListener('click',()=>{const row=byId(`evidence-${id}`);row.scrollIntoView({behavior:scrollBehavior(),block:'center'});row.focus({preventScroll:true})});source.append(link,document.createTextNode(' '))}
  paper.append(source);
  paper.append(el('div','folio-review',current.approved?`Educator reviewed locally · ${current.reviewedBy} · ${new Date(current.reviewedAt).toLocaleString('en-SG')}`:'Unreviewed draft — educator verification required'));
  paper.append(el('div','folio-disclaimer','Fictional student • Educational demonstration only • Local review is not authenticated approval'));target.append(paper);
@@ -76,7 +79,7 @@ function saveReview(){
  renderPortfolio();toast(current.approved?'Reviewed draft saved locally.':'Draft edits saved. Still requires educator approval.');return true;
 }
 function makeGenerationMessage(msg,error=false){const box=byId('generation-message');box.textContent=msg;box.className=`generation-message ${error?'error':''}`}
-function updateGenerateButton(){byId('generate-button').textContent=state.busy?'Generating portfolio…':state.provider==='mock'?'✦ Generate simulated draft →':'✦ Generate with AI →'}
+function updateGenerateButton(){const offline=state.provider!=='mock'&&!navigator.onLine;byId('generate-button').disabled=state.busy||offline;byId('generate-button').textContent=state.busy?'Generating portfolio…':offline?'Cloud generation unavailable offline':state.provider==='mock'?'✦ Generate simulated draft →':'✦ Generate with AI →'}
 function setBusy(busy){
  state.busy=busy;
  for(const id of ['generate-button','teacher-select','header-settings','change-provider','add-observation'])byId(id).disabled=busy;
@@ -84,14 +87,14 @@ function setBusy(busy){
  byId('review-button').disabled=busy||!draft();byId('print-button').disabled=busy||!draft();byId('portfolio-pane').setAttribute('aria-busy',String(busy));updateGenerateButton();
 }
 async function generate(){
- if(state.busy)return;setBusy(true);makeGenerationMessage('Preparing fictional observations and evidence for the selected student…');
+ if(state.busy)return;if(state.provider!=='mock'&&!navigator.onLine){makeGenerationMessage('Cloud generation is unavailable offline. No request was sent and no simulated output was substituted. Choose Offline Mock explicitly in provider settings.',true);return}setBusy(true);makeGenerationMessage('Preparing fictional observations and evidence for the selected student…');
  const s=selected(),records=evidence(),chosen=state.provider;
  try{
   let result;if(chosen==='mock'){await new Promise(r=>setTimeout(r,450));result=mockPortfolio(s,records)}else result=await generateRemotePortfolio({provider:chosen,key:state.apiKey,model:state.model,student:s,evidence:records});
   const data=validatePortfolio(result,records);data.generationMode=chosen==='mock'?'mock':'ai';
   state.drafts.set(s.id,{data,original:structuredClone(data),approved:false,generatedAt:new Date().toISOString()});
   renderPortfolio();makeGenerationMessage(chosen==='mock'?'Offline example generated. This is simulated output, not an AI response.':'AI response received. Verify every claim, citation and student identity before approval.');
-  toast('Draft ready for educator review.');byId('portfolio-pane').scrollIntoView({behavior:'smooth',block:'center'});
+  toast('Draft ready for educator review.');byId('portfolio-pane').scrollIntoView({behavior:scrollBehavior(),block:'center'});
  }catch(err){makeGenerationMessage(`Generation failed: ${err.message} No new draft was created; any previous draft is unchanged. Select Offline Mock in settings to explore without an API.`,true);toast('AI call failed; no simulated result was substituted.')}
  finally{setBusy(false)}
 }
@@ -115,4 +118,30 @@ function applyBranding(){
  byId('metric-edit-target').replaceChildren(document.createTextNode(`<${STUDIO_CONFIG.metrics.hypotheticalEditingTargetPercent}% `),el('small','','edits (unproven)'));
  document.title=`${STUDIO_CONFIG.productName} — Student Growth, Simplified`;
 }
-applyBranding();bind();renderStudents();renderEvidence();renderPortfolio();
+function initShell(){
+ const colorPreference=window.matchMedia('(prefers-color-scheme: dark)');
+ const updateTheme=()=>{
+  const dark=colorPreference.matches;
+  document.querySelector('meta[name="theme-color"]').content=dark?'#10272f':'#f8f8f4';
+  document.querySelector('link[rel="manifest"]').href=dark?'./manifest-dark.webmanifest':'./manifest.webmanifest';
+  document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]').content=dark?'black':'default';
+ };
+ colorPreference.addEventListener('change',updateTheme);updateTheme();
+ // A CSSOM custom property keeps dialog sheets within the keyboard's visual viewport.
+ if(window.visualViewport){
+  const updateViewport=()=>{
+   document.documentElement.style.setProperty('--visual-viewport-height',`${window.visualViewport.height}px`);
+   if(document.activeElement?.closest('dialog[open]'))document.activeElement.scrollIntoView({block:'nearest',behavior:'auto'});
+  };
+  window.visualViewport.addEventListener('resize',updateViewport,{passive:true});updateViewport();
+ }
+ const scrollTop=byId('scroll-top');
+ const updateScrollTop=()=>{scrollTop.hidden=window.scrollY<Math.max(400,window.innerHeight*.75)};
+ window.addEventListener('scroll',updateScrollTop,{passive:true});
+ scrollTop.addEventListener('click',()=>{window.scrollTo({top:0,behavior:scrollBehavior()});byId('hero-generate').focus({preventScroll:true})});
+ updateScrollTop();
+ window.addEventListener('online',updateGenerateButton);
+ window.addEventListener('offline',()=>{updateGenerateButton();if(state.provider!=='mock'&&!state.busy)makeGenerationMessage('You are offline. Cloud generation is disabled; choose Offline Mock explicitly to explore simulated output. Existing drafts remain in this session.')});
+}
+applyBranding();bind();renderStudents();renderEvidence();renderPortfolio();updateGenerateButton();initShell();
+initPwa({isBusy:()=>state.busy});
