@@ -95,10 +95,12 @@ const numberWords = new Set((
 ).split(" "));
 const sentenceStarters = new Set(("a an the he she they his her their this that these those it its in with learning no there during as evidence rating").split(" "));
 const latinWords = text => text.match(/[a-z]+/gi) ?? [];
+// Ignore these non-numeric compounds before scanning Chinese numeral claims.
+const nonNumericChineseCompounds = /不一定|一起|一些|一直|一定|一般|一样|一下|一边|一旦|一再|一同|统一|同一|万一|十分|百般|千万|万物/g;
 const numberTokens = text => [
   ...(text.match(/\p{Decimal_Number}+(?:[.,]\p{Decimal_Number}+)*/gu) ?? []),
   ...latinWords(text).map(word => word.toLowerCase()).filter(word => numberWords.has(word)),
-  ...(text.match(/[零〇一二三四五六七八九十百千万亿两]+/g) ?? [])
+  ...(text.replace(nonNumericChineseCompounds, " ").match(/[零〇一二三四五六七八九十百千万亿两]+/g) ?? [])
 ];
 
 export function checkGrounding(domainInput, text) {

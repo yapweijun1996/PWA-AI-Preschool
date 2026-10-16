@@ -82,6 +82,26 @@ test('grounding accepts faithful English and Simplified Chinese and blocks inven
   assert.equal(checkGrounding({ ...chinese, photoCount: 0 }, '照片显示学习进展。').ok, false);
 });
 
+test('Chinese grounding ignores non-numeric compounds but requires evidence for numeral claims', () => {
+  const input = { id: 'chinese', rating: 2, firstName: 'Cleo', comment: '能说出物品名称，需要老师提示。' };
+  for (const text of [
+    'Cleo和同伴一起说出物品名称，需要老师提示。',
+    'Cleo能说出一些物品名称。',
+    ...['一直', '一定', '一般', '一样', '一下', '一边', '一旦', '一再', '一同',
+      '统一', '同一', '万一', '十分', '百般', '千万', '不一定', '万物'].map(word => `Cleo${word}需要提示。`)
+  ]) assert.deepEqual(checkGrounding(input, text), { ok: true, reasons: [] }, text);
+
+  for (const claim of ['三个物品名称', '第一次独立说出名称', '一个物品名称', '两次说出名称', '十次说出名称']) {
+    const text = `Cleo说出${claim}。`;
+    assert.deepEqual(checkGrounding(input, text), {
+      ok: false, reasons: ['unsupported number or number word']
+    }, text);
+    assert.deepEqual(checkGrounding({ ...input, comment: claim }, text), { ok: true, reasons: [] }, text);
+  }
+  // A non-numeric compound in evidence must not license a separate numeric claim.
+  assert.equal(checkGrounding({ ...input, comment: '一起说出名称。' }, 'Cleo说出一个名称。').ok, false);
+});
+
 test('grounding rejects gendered words without rejecting neutral word substrings', () => {
   const reason = 'gendered pronoun or word not supported by the record';
   const input = { ...childInput().domains.english, firstName: 'Avery' };
