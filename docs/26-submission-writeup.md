@@ -38,7 +38,7 @@ Proposed priorities, not shipped features:
 
 ### What to try (3 minutes)
 
-Suggested walkthrough, not measured duration: open `https://<owner>.github.io/<repo>/class.html` after deployment verification, or run locally:
+Suggested walkthrough, not measured duration: open https://yapweijun1996.github.io/PWA-AI-Preschool/class.html, or run locally:
 
 ```bash
 npm run build
@@ -105,23 +105,34 @@ Public demo-session Node harness used the project's own `buildNarrativePrompt ->
 | Check | Recorded result |
 |---|---|
 | Session | `POST /demo/session`: HTTP 201; keys `token`, `token_type`, `expires_in` (900), `expires_at`, `model` (`demo-auto`); no credential value reproduced |
-| CORS | Allowed the configured GitHub Pages origin; did not allow `http://localhost:4175`. Browser Gateway drafting could not be tested before deployment |
+| CORS | Allowed the configured GitHub Pages origin; did not allow `http://localhost:4175`. Browser Gateway drafting was therefore tested on the deployed origin; see Deployment check |
 | Latency | About 2-5 seconds per child, four domains per request |
 | Final sample | 8 children x 4 domains: 30 of 32 accepted; 2 visible retryable conservative rejections (capitalised-word and number-word); 0 gendered pronouns in accepted drafts |
 
-The initial run exposed false rejection of Chinese drafts repeating picture-card evidence, invented gender, English rating words in Chinese, and whole-response loss after a domain rejection. The evidence records fixes in `e5e7ae0`/`a7bf0ff` and subsequent prompt/Chinese refinements. The final run is a single non-deterministic sample, not a quality benchmark or deployed-browser proof.
+The initial run exposed false rejection of Chinese drafts repeating picture-card evidence, invented gender, English rating words in Chinese, and whole-response loss after a domain rejection. The evidence records fixes in `e5e7ae0`/`a7bf0ff` and subsequent prompt/Chinese refinements. The final harness run is a single non-deterministic sample, not a quality benchmark. Separate deployed-browser evidence is recorded under Deployment check.
 
 ### Not tested
 
-- Real-browser service-worker offline reload: registration failed in the built-in browser, including the original page; Node-level worker tests passed.
-- Browser Gateway drafting from the deployed GitHub Pages origin.
+- Service-worker registration and cache population were verified on the deployed origin; a real offline reload with the network disabled is still not tested.
 - Real phone/tablet hardware, screen readers, Safari/Firefox, Windows/Linux CJK fonts and print-to-PDF on other operating systems.
 - Live OpenAI/Gemini calls with real disposable test keys.
 - Teacher time saved, edit rate or draft quality; the school's hypothetical hours-per-portfolio baseline is unverified.
 
 ### Deployment check
 
-Pending: to be filled after the GitHub Pages deployment is verified.
+Supplied deployment measurements collected 2026-10-16/17; no deployment or browser checks were rerun for this documentation update.
+
+| Check | Recorded result |
+|---|---|
+| Commit | `e617229` pushed to `main` |
+| GitHub Actions | Run [38925528814](https://github.com/yapweijun1996/PWA-AI-Preschool/actions/runs/38925528814), workflow “Static checks and Pages deployment”: “Check, test, and build” = success; “Deploy GitHub Pages” = success |
+| Live demo | https://yapweijun1996.github.io/PWA-AI-Preschool/class.html returned HTTP 200; `index.html`, `src/class-app.js`, `sw.js` and `build-info.json` also returned HTTP 200 |
+| Repository | https://github.com/yapweijun1996/PWA-AI-Preschool |
+| Deployed build | `build-info.json` buildId `e617229a4613-afcb039a23b3a3f2`; source snapshot id suffix `afcb039a23b3a3f2` matches the local build |
+| Deployed-origin Gateway | Built-in browser at origin `https://yapweijun1996.github.io`, fictional child `C-01`, semester `2026-S2`, provider “GPT Demo Gateway (public demo session)”: pressed “Draft all four”; connection status became “ok”; all four domains showed “AI DRAFT (GPT Demo Gateway (public demo session)) - teacher must review”; 0 mock labels; 0 rejected domains |
+| Service worker and cache | Registered with scope `https://yapweijun1996.github.io/PWA-AI-Preschool/`, activated and controlling the page; cache contained 26 entries including `class.html`, `src/class-app.js` and `src/report-view.js`. A true offline reload with the network disabled was not performed |
+
+The deployed-origin Gateway result is a single non-deterministic sample, not a benchmark. Cosmetic observation: a generated sentence boundary before a CJK first name lacked a space.
 
 ## Known limitations
 
@@ -130,7 +141,7 @@ Pending: to be filled after the GitHub Pages deployment is verified.
 - Browser Print/Save as PDF depends on local fonts and content length. The macOS sample is not cross-platform font or pagination proof.
 - `localStorage` is per-browser/origin, quota-limited, not secure or shared storage, and not a backup. Clearing browser data loses records; no cross-device sync exists.
 - No real login, authenticated approval or tenant isolation exists. Local “reviewed” state is not finalisation.
-- Offline reload, deployed-origin Gateway drafting and other untested surfaces remain outside measured acceptance.
+- A real offline reload with the network disabled and the other surfaces listed under Not tested remain outside measured acceptance. Deployed-origin Gateway drafting, service-worker registration and cache population were verified as recorded above.
 - Production SQL, finalisation, retention, private hosting and provider contracts are designs only. No compliance or measured efficiency benefit is claimed.
 
 ## Appendix: detailed design
