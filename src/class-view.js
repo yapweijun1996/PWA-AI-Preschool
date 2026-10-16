@@ -3,6 +3,21 @@ import { RATINGS, classProgress, computeStatus, domainState, emptyRecord } from 
 const semesters = new Set(["2026-S1", "2026-S2"]);
 const filters = new Set(["all", "needs-work", "ready-for-draft", "drafted", "reviewed"]);
 
+export const STATUS_LABELS = Object.freeze({
+  "not-started": "Not started",
+  "in-progress": "In progress",
+  "ready-for-draft": "Ready to draft",
+  drafted: "Drafted",
+  reviewed: "Reviewed"
+});
+export const FILTER_LABELS = Object.freeze({
+  all: "All",
+  "needs-work": "Needs work",
+  "ready-for-draft": STATUS_LABELS["ready-for-draft"],
+  drafted: STATUS_LABELS.drafted,
+  reviewed: STATUS_LABELS.reviewed
+});
+
 export function filterChildren(children, records, semester, { query = "", filter = "all" } = {}) {
   const search = query.trim().toLocaleLowerCase();
   if (!filters.has(filter)) return [];

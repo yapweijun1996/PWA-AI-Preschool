@@ -182,6 +182,25 @@ main {
   box-shadow: 0 10px 38px #1933370a
 }
 
+.card {
+  position: relative
+}
+
+.card a::after {
+  content: "";
+  position: absolute;
+  inset: 0
+}
+
+.card:focus-within {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px
+}
+
+.indicator-short {
+  display: none
+}
+
 .card h2 {
   margin: 10px 0
 }
@@ -347,6 +366,81 @@ footer {
 
 [hidden] {
   display: none!important
+}
+
+@media(max-width:600px) {
+  .grid {
+    gap: 8px
+  }
+
+  .card {
+    padding: 10px;
+    min-height: 44px
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0
+  }
+
+  .card .avatar {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    font-size: .65rem
+  }
+
+  .card h2 {
+    margin: 0;
+    font-size: .95rem;
+    overflow-wrap: anywhere;
+    flex: 1;
+    min-width: 0
+  }
+
+  .card .chip {
+    margin: 0;
+    font-size: .7rem;
+    flex-shrink: 0
+  }
+
+  .card .indicators {
+    display: grid;
+    grid-template-columns: repeat(4,minmax(0,1fr));
+    gap: 4px;
+    margin: 8px 0 0;
+    font-size: .65rem
+  }
+
+  .card .indicators li {
+    padding: 0;
+    min-width: 0
+  }
+
+  .indicator-short {
+    display: inline
+  }
+
+  .indicator-full,.card .dot,.indicator-comparison {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap
+  }
+
+  .card a {
+    font-size: 0;
+    min-height: 0
+  }
+
+  .card a::after {
+    min-height: 44px
+  }
 }
 
 @media(min-width:650px) {

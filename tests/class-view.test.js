@@ -3,6 +3,29 @@ import assert from "node:assert/strict";
 import {readFile, readdir} from "node:fs/promises";
 import {DOMAINS, emptyRecord, classProgress} from "../src/portfolio-model.js";
 import {filterChildren, domainDot, classSummary, routeParse, routeBuild} from "../src/class-view.js";
+import { STATUS_LABELS, FILTER_LABELS } from "../src/class-view.js";
+
+test("status and filter labels cover the complete public vocabulary", () => {
+  assert.deepEqual(STATUS_LABELS, {
+    "not-started": "Not started",
+    "in-progress": "In progress",
+    "ready-for-draft": "Ready to draft",
+    drafted: "Drafted",
+    reviewed: "Reviewed"
+  });
+  assert.deepEqual(FILTER_LABELS, {
+    all: "All",
+    "needs-work": "Needs work",
+    "ready-for-draft": "Ready to draft",
+    drafted: "Drafted",
+    reviewed: "Reviewed"
+  });
+  for (const labels of [STATUS_LABELS, FILTER_LABELS]) {
+    for (const [id, label] of Object.entries(labels)) {
+      assert.notEqual(label, id);
+    }
+  }
+});
 
 const semester = "2026-S2";
 const children = [

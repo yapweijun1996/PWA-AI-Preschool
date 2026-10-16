@@ -94,6 +94,40 @@ test('semester two has three ready, five partial, and twelve empty records', () 
   }
 });
 
+test('semester progress is mostly steady with bounded gains and isolated dips', () => {
+  for (const seed of ['portfolio-phase-1', 'repeatable', 'different']) {
+    const records = seedRecords(seed);
+    let pairs = 0;
+    let steady = 0;
+    let largeGains = 0;
+    for (const child of CHILDREN) {
+      const previous = records.find(record =>
+        record.childId === child.id && record.semester === '2026-S1');
+      const current = records.find(record =>
+        record.childId === child.id && record.semester === '2026-S2');
+      let decreases = 0;
+      let childLargeGains = 0;
+      for (const { id } of DOMAINS) {
+        const before = previous.domains[id].rating;
+        const after = current.domains[id].rating;
+        if (before === null || after === null) continue;
+        const change = after - before;
+        assert.ok(change >= -1 && change <= 2);
+        assert.ok(after >= 1 && after <= 4);
+        if (change < 0) decreases++;
+        if (change === 2) childLargeGains++;
+        if (change === 0 || change === 1) steady++;
+        pairs++;
+      }
+      assert.ok(decreases <= 1);
+      assert.ok(childLargeGains <= 1);
+      largeGains += childLargeGains;
+    }
+    assert.ok(steady > pairs / 2);
+    assert.equal(largeGains, 2);
+  }
+});
+
 test('placeholder photos are deterministic, small, self-contained escaped SVG images', () => {
   const label = '<script>"A&B\'s"</script>';
   const uri = placeholderPhoto('same', label);

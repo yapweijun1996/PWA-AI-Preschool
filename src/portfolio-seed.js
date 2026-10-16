@@ -92,8 +92,20 @@ export function seedRecords(seed = 'portfolio-phase-1') {
       const filledCount = full ? DOMAINS.length : partial ? 1 + childIndex % 3 : 0;
       for (const [domainIndex, domain] of DOMAINS.entries()) {
         if (domainIndex >= filledCount) continue;
-        const observation = comments[domain.id][Math.floor(random() * comments[domain.id].length)];
-        record.domains[domain.id].rating = 1 + Math.floor(random() * 4);
+        const previous = semester === '2026-S2'
+          ? records[childIndex].domains[domain.id].rating : null;
+        // Occasional gains of two and one possible dip; otherwise steady progress.
+        const change = childIndex % 5 === 0 && domainIndex === 0 ? 2
+          : childIndex % 4 === 3 && domainIndex === 1 ? -1
+          : Math.floor(random() * 2);
+        const baseline = 1 + Math.floor(random() * 4);
+        const rating = previous === null
+          ? childIndex % 5 === 0 && domainIndex === 0
+            ? Math.min(2, baseline) : baseline
+          : Math.max(1, Math.min(4, previous + change));
+        const observation = comments[domain.id][rating === 1 ? 3
+          : rating === 2 ? 0 : rating === 3 ? 1 : 2];
+        record.domains[domain.id].rating = rating;
         record.domains[domain.id].comment = observation;
         if (childIndex % 4 === 0 && domainIndex === 0) {
           const photoCount = childIndex % 8 === 0 ? 2 : 1;

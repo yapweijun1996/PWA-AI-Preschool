@@ -6,7 +6,10 @@ import { CHILDREN, seedRecords, placeholderPhoto } from './portfolio-seed.js';
 import { createStore } from './portfolio-store.js';
 import { mockNarrative, validateNarrativeText } from './narrative.js';
 import { fileToDataUri } from './photo.js';
-import { filterChildren, domainDot, classSummary, routeParse, routeBuild } from './class-view.js';
+import {
+  filterChildren, domainDot, classSummary, routeParse, routeBuild,
+  STATUS_LABELS, FILTER_LABELS
+} from './class-view.js';
 
 const label = value => RATINGS.find(r => r.value === value)?.label ?? 'Not rated';
 
@@ -157,7 +160,7 @@ export function startClassApp({ generateNarrative = mockNarrative } = {}) {
       panel = el('section', undefined, 'summary');
     panel.append(el('h2', `${summary.statuses.reviewed} / ${CHILDREN.length} reviewed`));
     for (const [status, count] of Object.entries(summary.statuses))
-      panel.append(el('span', `${status}: ${count}`, 'chip'));
+      panel.append(el('span', `${STATUS_LABELS[status]}: ${count}`, 'chip'));
     const progress = el('progress');
     progress.max = CHILDREN.length;
     progress.value = summary.statuses.reviewed;
@@ -167,7 +170,7 @@ export function startClassApp({ generateNarrative = mockNarrative } = {}) {
     main.append(panel);
     const chips = el('div', undefined, 'chips');
     for (const value of ['all', 'needs-work', 'ready-for-draft', 'drafted', 'reviewed']) {
-      const chip = button(value, () => {
+      const chip = button(FILTER_LABELS[value], () => {
         filter = value;
         render(false);
       });
@@ -216,19 +219,34 @@ export function startClassApp({ generateNarrative = mockNarrative } = {}) {
       grid.replaceChildren();
       for (const child of filterChildren(CHILDREN, records, semester, { query, filter })) {
         const record = get(child.id, semester), card = el('article', undefined, 'card');
-        card.append(el('span', child.initials, 'avatar'), el('h2', child.name),
-          el('span', computeStatus(record), 'chip'));
+        const header = el('div', undefined, 'card-header');
+        header.append(el('span', child.initials, 'avatar'), el('h2', child.name),
+          el('span', STATUS_LABELS[computeStatus(record)], 'chip'));
+        card.append(header);
         const list = el('ul', undefined, 'indicators'),
           comparisons = progressComparison(get(child.id, '2026-S1'), record);
-        for (const { id, label: domainLabel } of DOMAINS) {
+        const shortLabels = ['EN', 'ZH', 'MA', 'SE'];
+        for (const [index, { id, label: domainLabel }] of DOMAINS.entries()) {
           const dot = domainDot(record.domains[id]), item = el('li');
           item.dataset.state = dot.state;
-          item.append(el('span', '', 'dot'),
-            el('span', `${domainLabel}: ${dot.ratingLabel} · ${dot.state}`));
+          const detail = `${domainLabel}: ${dot.ratingLabel} · ${dot.state}`;
+          let comparison = '';
           if (semester === '2026-S2') {
             const change = comparisons.find(c => c.domain === id).change;
-            item.append(el('span', change === null ? ' · No comparison' : ` · ${change>0?'↑':change<0?'↓':'→'} ${change>0?'+':''}${change}`));
+            comparison = change === null ? ' · No comparison'
+              : ` · ${change > 0 ? '↑' : change < 0 ? '↓' : '→'} ${change > 0 ? '+' : ''}${change}`;
           }
+          item.setAttribute('aria-label', detail + comparison);
+          const stateLabel = dot.state === 'ready' ? 'Ready'
+            : dot.state === 'partial' ? 'Partial' : 'Empty';
+          const compactComparison = comparison.replace(' · No comparison', ' · —');
+          item.append(el('span', '', 'dot'),
+            el('span', detail, 'indicator-full'),
+            el('span',
+              `${shortLabels[index]} ${stateLabel} ${record.domains[id].rating ?? '—'}`,
+              'indicator-short'),
+            el('span', compactComparison, 'indicator-short'),
+            el('span', comparison, 'indicator-comparison'));
           list.append(item);
         }
         card.append(list,
