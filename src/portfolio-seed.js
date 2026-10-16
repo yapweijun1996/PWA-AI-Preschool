@@ -140,12 +140,13 @@ export function seedRecords(seed = 'portfolio-phase-1') {
           });
         }
       }
-      // Every child has Chinese evidence, including otherwise unstarted S2 records.
+      // Add Chinese observations only where the domain already has a rating.
       const chinese = record.domains.chinese;
       if (semester === '2026-S1') chinese.rating = 1 + childIndex % 4;
-      else chinese.rating ??= records[childIndex].domains.chinese.rating;
-      const pool = comments.chinese[chinese.rating - 1];
-      chinese.comment = pool[Math.floor(childIndex / 4) % pool.length];
+      if (chinese.rating !== null) {
+        const pool = comments.chinese[chinese.rating - 1];
+        chinese.comment = pool[Math.floor(childIndex / 4) % pool.length];
+      }
       if (semester === '2026-S1' && childIndex < 5) {
         const input = narrativeInputFor(child, record);
         for (const { id } of DOMAINS) {

@@ -1,12 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { CLASS, CHILDREN, placeholderPhoto, seedRecords } from '../src/portfolio-seed.js';
-import { DOMAINS, RATINGS, validateRecord } from '../src/portfolio-model.js';
+import { DOMAINS, RATINGS, recordProgress, validateRecord } from '../src/portfolio-model.js';
 
 function stateCounts(records, semester) {
   const counts = {};
   for (const record of records.filter(item => item.semester === semester)) {
-    counts[record.status] = (counts[record.status] || 0) + 1;
+    const { status } = recordProgress(record);
+    counts[status] = (counts[status] || 0) + 1;
   }
   return counts;
 }
@@ -50,11 +51,13 @@ test('all Chinese seed observations are varied, bounded Simplified Chinese', () 
   const traditional = /[學習認語說讀寫數與為這個們會來時體發現觀錄證據評穩華簡單親師進從於畫圖樂歡獨讓點動實練舉]/u;
   for (const record of seedRecords()) {
     const { rating, comment } = record.domains.chinese;
-    assert.match(comment, /\p{Script=Han}/u);
-    assert.doesNotMatch(comment, traditional);
-    assert.ok(Array.from(comment).length >= 15);
-    assert.ok(Array.from(comment).length <= 60);
-    byRating.get(rating).add(comment);
+    if (comment) {
+      assert.match(comment, /\p{Script=Han}/u);
+      assert.doesNotMatch(comment, traditional);
+      assert.ok(Array.from(comment).length >= 15);
+      assert.ok(Array.from(comment).length <= 60);
+      byRating.get(rating).add(comment);
+    }
     for (const { id } of DOMAINS.filter(domain => domain.id !== 'chinese')) {
       assert.doesNotMatch(record.domains[id].comment, /\p{Script=Han}/u);
     }
@@ -101,16 +104,23 @@ test('semester one is complete with five fully mock-drafted children and a photo
   assert.ok(photoDomains > 0 && photoDomains < records.length);
 });
 
-test('semester two has three ready and seventeen partial records with Chinese evidence', () => {
+test('semester two has three ready, five partial and twelve completely unstarted records', () => {
   const records = seedRecords().filter(record => record.semester === '2026-S2');
   assert.deepEqual(stateCounts(records, '2026-S2'), {
     'ready-for-draft': 3,
-    'in-progress': 17
+    'in-progress': 5,
+    'not-started': 12
   });
+  const partial = records.filter(record => recordProgress(record).status === 'in-progress');
+  assert.ok(partial.filter(record => record.domains.chinese.comment !== '').length >= 2);
+  for (const record of partial) {
+    const { readyCount } = recordProgress(record);
+    assert.ok(readyCount > 0 && readyCount < DOMAINS.length);
+  }
   for (const record of records) {
     assert.ok(Object.values(record.narratives).every(value => value === null));
-    if (Number(record.childId.slice(2)) >= 9) {
-      for (const { id } of DOMAINS.filter(domain => domain.id !== 'chinese')) {
+    if (recordProgress(record).status === 'not-started') {
+      for (const { id } of DOMAINS) {
         const entry = record.domains[id];
         assert.equal(entry.rating, null);
         assert.equal(entry.comment, '');
