@@ -65,7 +65,6 @@ test('narrative parser accepts JSON fences and enforces exact keys, types and ra
 test('grounding accepts faithful English and Simplified Chinese and blocks invented numbers, names and photos', () => {
   const input = { ...childInput().domains.english, firstName: 'Avery' };
   assert.deepEqual(checkGrounding(input, faithful().english), { ok: true, reasons: [] });
-  assert.equal(checkGrounding(input, 'She shares ideas with a peer. Her learning is developing.').ok, true);
   for (const text of ['Avery counted 17 blocks.', 'Avery counted two blocks.', 'Avery counted 二 blocks.',
     'Avery counted １７ blocks.', 'Avery finished twentieth.', 'Zara shares ideas.', 'Avery played in London.',
     'The photos show progress.', 'The picture shows progress.', 'An image shows progress.'])
@@ -81,6 +80,35 @@ test('grounding accepts faithful English and Simplified Chinese and blocks inven
   assert.equal(checkGrounding(chinese, '華文學習正在發展中。').ok, false);
   assert.equal(checkGrounding(chinese, 'Learning is developing.').ok, false);
   assert.equal(checkGrounding({ ...chinese, photoCount: 0 }, '照片显示学习进展。').ok, false);
+});
+
+test('grounding rejects gendered words without rejecting neutral word substrings', () => {
+  const reason = 'gendered pronoun or word not supported by the record';
+  const input = { ...childInput().domains.english, firstName: 'Avery' };
+  for (const text of [
+    'He then shares an idea...', '她在表达需要时仍然需要老师提示',
+    'Her English learning is extending',
+    ...['he', 'she', 'him', 'her', 'his', 'hers', 'himself', 'herself', 'boy', 'girl',
+      '他', '她', '男孩', '女孩'].map(word => `Avery ${word.toUpperCase()}.`)
+  ]) {
+    const result = checkGrounding({ ...input, comment: text }, text);
+    assert.equal(result.ok, false, text);
+    assert.ok(result.reasons.includes(reason), text);
+  }
+  for (const text of [
+    'Avery uses new vocabulary together with another child',
+    'Avery explores the other corner where there are blocks.'
+  ]) assert.deepEqual(checkGrounding(input, text), { ok: true, reasons: [] });
+  assert.deepEqual(checkGrounding(childInput().domains.chinese,
+    '在表达需要时仍然需要老师提示。'), { ok: true, reasons: [] });
+});
+
+test('prompt forbids gendered words and neutral they and supplies neutral alternatives', () => {
+  const prompt = buildNarrativePrompt(childInput());
+  assert.match(prompt, /Never use gendered pronouns or gendered words/);
+  assert.match(prompt, /he, she, him, her, his, hers, himself, herself, boy, girl; 他, 她, 男孩, 女孩/);
+  assert.match(prompt, /Neutral they is not allowed/);
+  assert.match(prompt, /first name, 'the child', omit the subject, or restructure/);
 });
 
 test('picture teaching aids and fully Chinese rating labels are grounded', () => {

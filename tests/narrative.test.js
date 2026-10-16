@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {DOMAINS,RATINGS,emptyRecord,narrativeInputFor} from "../src/portfolio-model.js";
 import {mockNarrative,buildNarrativePrompt,validateNarrativeText} from "../src/narrative.js";
+import {CHILDREN,seedRecords} from "../src/portfolio-seed.js";
 
 const input=(rating=2,extra={})=>({label:"English",rating,ratingLabel:RATINGS[rating-1]?.label,comment:"  Shared a story exactly as recorded.\nTeacher's own words.  ",...extra});
 const noEvidence="No evidence recorded yet - teacher to add a rating and comment.";
@@ -27,6 +28,39 @@ test("Chinese has four distinct Chinese rating templates and preserves comments"
     assert.ok(result.text.endsWith(comment)); return result.text;
   });
   assert.equal(new Set(texts).size,4);
+});
+
+test("mock templates stay neutral for every seed child, domain and semester",()=>{
+  const forbidden=/\b(?:he|she|him|her|his|hers|himself|herself|boy|girl)\b|[他她]|男孩|女孩/i;
+  const records=seedRecords();
+  assert.equal(CHILDREN.length,20);
+  for(const child of CHILDREN){
+    for(const semester of ["2026-S1","2026-S2"]){
+      const record=structuredClone(records.find(item=>item.childId===child.id&&item.semester===semester));
+      const previous=semester==="2026-S2"
+        ? records.find(item=>item.childId===child.id&&item.semester==="2026-S1") : null;
+      for(const {id} of DOMAINS){
+        // Supply neutral evidence even for unstarted domains to exercise every template.
+        record.domains[id].rating??=2;
+        record.domains[id].comment=id==="chinese"?"愿意分享想法。":"Shares ideas with a peer.";
+      }
+      const source=narrativeInputFor(child,record,previous);
+      for(const {id} of DOMAINS){
+        const result=mockNarrative(source.domains[id]);
+        assert.doesNotMatch(result.text,forbidden,`${child.id} ${semester} ${id}`);
+        assert.ok(result.text.includes(record.domains[id].comment));
+      }
+    }
+  }
+});
+
+test("mock narratives preserve gendered teacher comments verbatim",()=>{
+  for(const [label,comment] of [
+    ["English","  She shares her ideas. He listens.\n"],
+    ["Chinese","  她分享想法。他认真听。\n"]
+  ]){
+    assert.ok(mockNarrative(input(2,{label,comment})).text.endsWith(comment));
+  }
 });
 
 test("missing or partial evidence gets the exact teacher action message",()=>{
