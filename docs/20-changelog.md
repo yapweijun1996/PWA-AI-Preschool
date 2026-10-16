@@ -1,5 +1,24 @@
 # 20 — Documentation and Project Changelog
 
+## Class portfolio printable reports — 2026-10-16
+
+- Added child Print / PDF and overview Print class report routes, with explicit Print / Save as PDF activation; reports do not invoke providers.
+- Added validated, deterministic report projection, four labelled rating segments, source-labelled narratives, photo captions, Semester 1-to-2 progress and printed INCOMPLETE warnings.
+- Added A4 portrait print styling, page breaks between children, Simplified Chinese language markers and a local system-font stack. Long comments, narratives or photo collections may require extra pages; content is not truncated to force a single sheet.
+- Supplied verification evidence records passing syntax checks, 129 passing tests and build; headless Chrome child PDF: 2 A4 pages with embedded PingFang SC, and class PDF: 40 pages for 20 children. Chinese name/comment/narrative rendering and suppressed print focus outlines were checked. Other operating systems and CJK fonts remain untested; see [the submission evidence](26-submission-writeup.md).
+
+## Class portfolio AI drafting — 2026-10-16
+
+- Added reusable raw-text Gateway/OpenAI/Gemini transport while retaining the original portfolio validation path and public Demo Session flow.
+- Added first-name-only, four-domain narrative prompts, strict JSON parsing, conservative grounding guards and Simplified Chinese/no-evidence constraints.
+- Wired overview/editor provider controls, memory-only disposable keys, connection feedback, offline blocking, sequential bulk drafting and teacher-review provenance. Grounded domains are accepted independently; rejected domains retain existing text and show retry/manual-edit guidance. Malformed responses and request failures change no narratives and never substitute mock output.
+- Preserved AI provider/model metadata through local record validation and teacher edits; restricted class CSP connections to the existing three provider origins.
+- Added transport/controller and grounding coverage, including gendered-pronoun rejection, exact-first-name prompting, localized Chinese ratings and non-numeric Chinese compound handling. Supplied browser QA covers mock/review, disposable-key non-persistence and sanitized fake-key failure. The live Gateway Node-harness sample accepted 30 of 32 domains with 2 visible retryable rejections and 0 gendered pronouns in accepted drafts; this is not a quality benchmark or deployed-browser proof. Live OpenAI/Gemini test-key calls remain untested.
+
+## Submission documentation — 2026-10-16
+
+- Reworked the submission write-up into the team's requested tech stack, semester storage, hosting/security and future-feature answers, with retained SQL/design appendix and measured evidence replacing the placeholder. Updated README provider, Simplified Chinese seed, partial acceptance and print-report status; restored seed evidence distinguishes empty not-started records from in-progress records. Production proposals remain NOT IMPLEMENTED. Deployment verification remains pending. Documentation-only revision: no commands, tests, browser QA, Gateway calls, commit or deployment performed; results are attributed to supplied evidence.
+
 ## v0.3.0 — PWA completion — 2026-10-14
 
 - Applied the owner's KB-MCP `pwa:product-standard` v1.0.0 within the fictional-only static scope.

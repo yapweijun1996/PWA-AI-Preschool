@@ -27,6 +27,7 @@ This is a company-agnostic **AI Preschool Studio** reference package. Files are 
 23. [Optional course e-commerce module](23-course-commerce.md)
 24. [Verification and delivery report](24-verification-report.md)
 25. [PWA product standard and acceptance](25-pwa-standard.md)
+26. [Submission write-up and production proposal](26-submission-writeup.md)
 
 Supplementary machine-readable artefacts: [`../spec/portfolio.schema.json`](../spec/portfolio.schema.json), [`../spec/future-api.openapi.yaml`](../spec/future-api.openapi.yaml), [`../schema/future-postgres.sql`](../schema/future-postgres.sql), [`../examples/portfolio.sample.json`](../examples/portfolio.sample.json).
 

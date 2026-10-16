@@ -8,6 +8,9 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 const output = path.join(root, 'dist');
 const assets = [
   'index.html', 'styles.css', 'favicon.svg',
+  'class.html', 'class.css', 'src/class-app.js', 'src/class-view.js',
+  'src/report-model.js', 'src/report-view.js',
+  'src/narrative.js', 'src/photo.js', 'src/portfolio-model.js', 'src/portfolio-seed.js', 'src/portfolio-store.js',
   'src/app.js', 'src/config.js', 'src/data.js', 'src/providers.js', 'src/pwa.js',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png',
 ];
@@ -29,7 +32,7 @@ await rm(output, { recursive: true, force: true });
 for (const asset of assets) {
   const destination = path.join(output, asset);
   await mkdir(path.dirname(destination), { recursive: true });
-  if (asset === 'index.html') {
+  if (asset.endsWith('.html')) {
     const html = await readFile(path.join(root, asset), 'utf8');
     if (!html.includes('__BUILD_ID__')) throw new Error('HTML is missing its build identity.');
     await writeFile(destination, html.replaceAll('__BUILD_ID__', buildId));
