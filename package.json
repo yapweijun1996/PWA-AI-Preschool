@@ -6,7 +6,7 @@
   "description": "White-label browser-first AI preschool portfolio concept demo (synthetic data only)",
   "scripts": {
     "test": "node --test tests/*.test.js",
-    "check": "node --check src/app.js && node --check src/config.js && node --check src/data.js && node --check src/providers.js && node --check src/pwa.js && node --check sw.js && node --check scripts/build.mjs",
+    "check": "node --check src/app.js && node --check src/config.js && node --check src/data.js && node --check src/providers.js && node --check src/pwa.js && node --check sw.js && node --check scripts/build.mjs && node --check src/portfolio-model.js && node --check src/portfolio-seed.js && node --check src/portfolio-store.js",
     "build": "node scripts/build.mjs",
     "start": "npm run build && python3 -m http.server 4173 --directory dist"
   }
