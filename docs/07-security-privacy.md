@@ -21,10 +21,11 @@
 
 ## Static PWA security boundary
 
-- The HTML CSP restricts scripts, styles, fonts, workers and manifests to this origin; connections are limited to this origin and the configured default Gateway/OpenAI/Gemini hosts. HTTPS images allow authorized public branding. Objects are disabled and base/form destinations remain same-origin. A custom Gateway origin requires updating the CSP in `index.html` as well as public configuration.
+- The HTML CSP restricts scripts, styles, fonts, workers and manifests to this origin; connections are limited to this origin and the configured default Gateway/OpenAI/Gemini hosts. HTTPS images allow authorized public branding in the original demo; class images remain same-origin/data only. Objects are disabled and base/form destinations remain same-origin. A custom Gateway origin requires updating the CSP in both `index.html` and `class.html` as well as public configuration.
 - The worker admits only exact, same-origin, query-free GET routes in its generated static allowlist. POST, other paths/origins, provider sessions, responses and credential-bearing URLs are not cached. Cache names include registration scope and release identity; cleanup touches only this app's obsolete releases.
-- Drafts, extra observations, approvals and BYOK keys never enter Cache Storage, localStorage or sessionStorage. Reload and an accepted update reset them. Static bundled fictional examples remain public and cached.
+- Original-demo drafts, extra observations and approvals stay memory-only. Class-page records, photos, narratives and provider/model provenance instead persist in browser `localStorage`, without authenticated ownership, encryption or backup. Disposable BYOK keys stay in page memory in both demos, never localStorage, sessionStorage, URLs or Cache Storage. Static bundled fictional examples remain public and cached.
 - HTTPS is provided by GitHub Pages; localhost is only a development secure-context exception. CSP and scoped caches do not provide staff authentication, tenant isolation, secure BYOK custody or protection from trusted same-origin scripts/extensions.
+- Class remote prompts allowlist first name, domain labels, current/previous ratings and comments; image bytes and photo metadata are excluded. Comments can still contain identifiers: fictional input only. Exact JSON, bounded strings and conservative grounding guards reject unsupported numbers/names/photo claims, Traditional-only characters and additions to no-evidence text. These heuristics do not verify every factual claim or guarantee language quality. Rejection never triggers mock generation; a teacher must explicitly select mock and review all drafts.
 
 
 ## Production access model

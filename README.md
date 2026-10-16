@@ -21,6 +21,28 @@ npm run build
 
 Open **AI provider settings**, select **Offline Mock Demo** for a walkthrough without any live external provider, or try GPT Demo Gateway. Wait for **Ready · offline shell available** before disconnecting and reloading. Cloud generation is disabled offline; Mock is always an explicit choice. Drafts, added observations, approvals and keys remain memory-only and reset on reload. To test OpenAI/Gemini BYOK, only use a disposable restricted key and fictional data; browsers may reject cross-origin provider requests. Page memory is **not equivalent to secure client-side key custody**.
 
+## Class portfolio prototype
+
+Open [`class.html`](class.html) for the separate class workflow with 20 fictional children, S1/S2 rating comparison, browser-local autosave, teacher editing and review. Offline mock is the default and explicitly labelled as not AI. The overview and editor also offer GPT Demo Gateway sessions and disposable OpenAI/Gemini test keys. Remote prompts use structured first name, ratings, comments and available previous ratings; no photos, image bytes or photo metadata are sent. Keys stay in memory; records and AI provider/model provenance persist in this browser's `localStorage`, which is neither secure storage nor a backup. All data must remain fictional.
+
+Prompts require strict domain JSON, no invented facts or gendered pronouns, exact first-name spelling and Simplified Chinese for the Chinese domain. Grounding accepts domains independently and preserves existing text for rejected domains, with visible retry/manual-edit guidance. Malformed responses and provider failures change no narratives and never silently fall back to mock. Sequential bulk drafting counts fully accepted children, reports domains needing attention and stops on request errors. Heuristics can reject faithful text or miss unsupported claims; teacher review is mandatory.
+
+Populated Chinese seed domains use rating-aligned Simplified Chinese observations, and pre-drafted S1 Chinese narratives use the offline mock generator. Measured S1 state: 15 ready-for-draft and 5 drafted. S2: 3 ready-for-draft, 5 in-progress and 12 fully empty not-started records.
+
+Child Print / PDF and overview Print class report render source-labelled A4 HTML, missing-input warnings, photos/captions and semester ratings. Browser Print / Save as PDF uses a Simplified Chinese system font stack and `lang="zh-Hans"` markers. The measured headless Chrome child PDF had 2 pages with embedded PingFang SC; the class PDF had 40 pages for 20 children. Other content and platforms may paginate differently; Windows/Linux CJK font coverage is untested.
+
+```bash
+npm run check
+npm test
+npm run build
+python3 -m http.server 4175 --directory dist
+# Open http://localhost:4175/class.html
+```
+
+Supplied evidence records passing syntax checks, 129 passing tests, the static build, responsive browser mock/review and failure-path QA, and a live Gateway Node-harness sample with 30 of 32 domains accepted. This is not a quality benchmark. Deployed-browser Gateway drafting, real-browser offline reload and live OpenAI/Gemini test-key calls remain untested. See the [submission write-up, evidence and detailed production proposal](docs/26-submission-writeup.md).
+
+**NOT IMPLEMENTED:** real login/roles/tenant isolation, application server, database, private object storage, server-side PDF, finalisation lock, vector RAG, audit log, production AI hosting, classroom tracking and inter-school transfer.
+
 ## Features in the current build
 
 | Feature | Actual status |
