@@ -17,7 +17,9 @@ const names = [
 export const CHILDREN = Object.freeze(names.map((name, index) => Object.freeze({
   id: `C-${String(index + 1).padStart(2, '0')}`,
   name,
-  initials: index < 6 ? ['LYN', 'CXH', 'HYA', 'WYQ', 'LMC', 'ZKX'][index] : name.split(/\s+/).map(part => part[0]).join('')
+  initials: index < 6
+    ? ['LYN', 'CXH', 'HYA', 'WYQ', 'LMC', 'ZKX'][index]
+    : name.split(/\s+/).map(part => part[0]).join('')
 })));
 
 function hashSeed(seed) {
