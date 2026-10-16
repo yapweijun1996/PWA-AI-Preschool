@@ -4,6 +4,7 @@ const SCOPE = self.registration.scope;
 const CACHE_PREFIX = `ai-preschool-studio:${encodeURIComponent(SCOPE)}:`;
 const CACHE_NAME = `${CACHE_PREFIX}${BUILD_ID}`;
 const INDEX_URL = new URL('./index.html', SCOPE).href;
+const CLASS_URL = new URL('./class.html', SCOPE).href;
 const ROOT_URL = new URL('./', SCOPE).href;
 const STATIC_URLS = new Set(PRECACHE.map(path => new URL(path, SCOPE).href));
 
@@ -53,7 +54,8 @@ self.addEventListener('fetch', event => {
   const url = new URL(request.url);
   if (request.method !== 'GET' || url.origin !== new URL(SCOPE).origin || url.search || !STATIC_URLS.has(url.href)) return;
   // The shell and every asset come from this worker's release, never a newer network release.
-  const key = request.mode === 'navigate' && (url.href === ROOT_URL || url.href === INDEX_URL) ? INDEX_URL : url.href;
+  const key = request.mode === 'navigate' && url.href === CLASS_URL ? CLASS_URL
+    : request.mode === 'navigate' && (url.href === ROOT_URL || url.href === INDEX_URL) ? INDEX_URL : url.href;
   event.respondWith((async () => {
     const cache = await caches.open(CACHE_NAME);
     return await cache.match(key) || new Response('Offline release unavailable. Reconnect and reload to repair the app cache.', {

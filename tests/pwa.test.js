@@ -5,7 +5,7 @@ import vm from 'node:vm';
 import {initPwa} from '../src/pwa.js';
 
 const workerSource = await readFile(new URL('../sw.js', import.meta.url), 'utf8');
-const paths = ['./', './index.html', './styles.css', './src/app.js', './src/pwa.js', './manifest.webmanifest', './icons/icon-192.png'];
+const paths = ['./', './index.html', './class.html', './styles.css', './src/app.js', './src/pwa.js', './manifest.webmanifest', './icons/icon-192.png'];
 const scope = 'https://example.test/studio/';
 const cacheName = (base, version) => `ai-preschool-studio:${encodeURIComponent(base)}:${version}`;
 
@@ -67,6 +67,8 @@ test('install caches a complete release with no implicit activation; navigation 
   const index = await runtime.event('fetch', {request: {url: `${scope}index.html`, method: 'GET', mode: 'navigate'}});
   assert.equal(await root.text(), 'release:release-one:/studio/index.html');
   assert.equal(await index.text(), 'release:release-one:/studio/index.html');
+  const classPage = await runtime.event('fetch', {request: {url: `${scope}class.html`, method: 'GET', mode: 'navigate'}});
+  assert.equal(await classPage.text(), 'release:release-one:/studio/class.html');
   const asset = await runtime.event('fetch', {request: new Request(`${scope}src/app.js`)});
   assert.equal(await asset.text(), 'release:release-one:/studio/src/app.js');
   assert.equal(runtime.requests.length, paths.length, 'cached fetches never ask the mutable network');
