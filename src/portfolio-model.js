@@ -94,8 +94,16 @@ export function validateRecord(record) {
       typeof narrative.text === "string" && narrative.text.length <= 2000 &&
       ["ai", "mock", "teacher"].includes(narrative.source) && typeof narrative.edited === "boolean"),
       `${id}: narrative must be null or have text (at most 2000 characters), source ai|mock|teacher and boolean edited`);
+    if (narrative?.provider !== undefined)
+      requireValue(["gateway", "openai", "gemini"].includes(narrative.provider),
+        `${id}: narrative provider must be gateway, openai or gemini`);
+    if (narrative?.model !== undefined)
+      requireValue(typeof narrative.model === "string" && narrative.model.length > 0 &&
+        narrative.model.length <= 101, `${id}: narrative model must be a nonempty string of at most 101 characters`);
     result.narratives[id] = narrative === null ? null : {
-      text: narrative.text, source: narrative.source, edited: narrative.edited
+      text: narrative.text, source: narrative.source, edited: narrative.edited,
+      ...(narrative.provider !== undefined ? { provider: narrative.provider } : {}),
+      ...(narrative.model !== undefined ? { model: narrative.model } : {})
     };
   }
   if (record.reviewed !== undefined) result.reviewed = record.reviewed;

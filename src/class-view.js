@@ -18,6 +18,20 @@ export const FILTER_LABELS = Object.freeze({
   reviewed: STATUS_LABELS.reviewed
 });
 
+export const PROVIDER_LABELS = Object.freeze({
+  mock: "Offline mock (not AI)",
+  gateway: "GPT Demo Gateway (public demo session)",
+  openai: "OpenAI (test key)",
+  gemini: "Gemini (test key)"
+});
+
+export function narrativeChip(narrative) {
+  if (!narrative) return "No narrative";
+  if (narrative.edited || narrative.source === "teacher") return "EDITED BY TEACHER";
+  if (narrative.source === "mock") return "MOCK DRAFT (offline, not AI)";
+  return `AI DRAFT (${PROVIDER_LABELS[narrative.provider] ?? "provider not recorded"}) - teacher must review`;
+}
+
 export function filterChildren(children, records, semester, { query = "", filter = "all" } = {}) {
   const search = query.trim().toLocaleLowerCase();
   if (!filters.has(filter)) return [];

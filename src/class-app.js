@@ -4,11 +4,13 @@ import {
 } from './portfolio-model.js';
 import { CHILDREN, seedRecords, placeholderPhoto } from './portfolio-seed.js';
 import { createStore } from './portfolio-store.js';
-import { mockNarrative, validateNarrativeText } from './narrative.js';
+import {
+  mockNarrative, validateNarrativeText, generateNarrativesWithProvider, NarrativeDraftError
+} from './narrative.js';
 import { fileToDataUri } from './photo.js';
 import {
   filterChildren, domainDot, classSummary, routeParse, routeBuild,
-  STATUS_LABELS, FILTER_LABELS
+  STATUS_LABELS, FILTER_LABELS, PROVIDER_LABELS, narrativeChip
 } from './class-view.js';
 
 const label = value => RATINGS.find(r => r.value === value)?.label ?? 'Not rated';
@@ -34,7 +36,9 @@ function link(text, href) {
 }
 
 // Generation is injected; provider errors are reported, never replaced with mock output.
-export function startClassApp({ generateNarrative = mockNarrative } = {}) {
+export function startClassApp({
+  generateNarrative = mockNarrative, generateAI = generateNarrativesWithProvider
+} = {}) {
   const main = document.getElementById('main'), live = document.getElementById('status'),
     saveStatus = document.getElementById('save-status');
   let storage = null;
@@ -44,6 +48,8 @@ export function startClassApp({ generateNarrative = mockNarrative } = {}) {
   const store = createStore(storage);
   let records = store.load(), semester = '2026-S2', query = '', filter = 'all',
     timer = null, dirty = false, route, epoch = 0;
+  // Disposable credentials and provider selection never enter the record store.
+  let provider = 'mock', key = '', connection = 'not tested', busy = false;
   const stale = new Set();
   let initialError = store.lastError;
 
@@ -51,6 +57,105 @@ export function startClassApp({ generateNarrative = mockNarrative } = {}) {
     live.textContent = text;
   }
 
+
+  function connectionStatus(text) {
+    connection = text;
+    const status = document.getElementById('connection-status');
+    if (status) status.textContent = connection;
+  }
+
+  function unavailable() {
+    return provider !== 'mock' && navigator.onLine === false;
+  }
+
+  function updateAvailability() {
+    for (const control of main.querySelectorAll('[data-draft]'))
+      control.disabled = busy || unavailable() || control.dataset.empty === 'true';
+    const offline = document.getElementById('provider-offline');
+    if (offline) offline.hidden = !unavailable();
+    if (busy) {
+      for (const control of main.querySelectorAll('button, input, select, textarea'))
+        control.disabled = true;
+    }
+  }
+
+  function draftButton(text, action) {
+    const node = button(text, async () => {
+      if (busy) return;
+      if (unavailable()) {
+        announce('Offline: select Offline mock or reconnect before remote drafting.');
+        return;
+      }
+      busy = true;
+      connectionStatus('drafting');
+      updateAvailability();
+      try {
+        await action();
+        connectionStatus('ok');
+      } catch (error) {
+        const message = error instanceof NarrativeDraftError ? error.message
+          : 'Drafting failed. Retry explicitly or select Offline mock. Existing narratives were kept.';
+        connectionStatus(`failed: ${message}`);
+        announce(message);
+      } finally {
+        busy = false;
+        render(false);
+      }
+    });
+    node.dataset.draft = 'true';
+    return node;
+  }
+
+  function providerControls() {
+    const panel = el('section', undefined, 'provider-panel'),
+      tools = el('div', undefined, 'toolbar'),
+      providerLabel = el('label', 'Narrative provider'), select = el('select');
+    for (const [value, text] of Object.entries(PROVIDER_LABELS)) {
+      const option = el('option', text);
+      option.value = value;
+      select.append(option);
+    }
+    select.value = provider;
+    select.addEventListener('change', () => {
+      provider = select.value;
+      key = '';
+      connectionStatus('not tested');
+      render(false);
+    });
+    providerLabel.append(select);
+    tools.append(providerLabel);
+    if (provider === 'openai' || provider === 'gemini') {
+      const keyLabel = el('label', 'Disposable test API key'), field = el('input');
+      field.type = 'password';
+      field.autocomplete = 'off';
+      field.spellcheck = false;
+      field.value = key;
+      field.setAttribute('aria-describedby', 'key-warning');
+      field.addEventListener('input', () => {
+        key = field.value;
+        connectionStatus('not tested');
+      });
+      keyLabel.append(field);
+      tools.append(keyLabel);
+      const warning = el('p',
+        'Use a disposable test key only. Not stored. Not suitable for production.', 'provider-warning');
+      warning.id = 'key-warning';
+      panel.append(warning);
+    }
+    const status = el('p', connection, 'connection-status');
+    status.id = 'connection-status';
+    status.setAttribute('aria-live', 'polite');
+    status.setAttribute('aria-atomic', 'true');
+    const offline = el('p',
+      'Offline: select Offline mock or reconnect before remote drafting.', 'provider-warning');
+    offline.id = 'provider-offline';
+    offline.hidden = !unavailable();
+    panel.prepend(tools, el('p',
+      "Sends only the child's first name, ratings and comments to the selected provider. Photos are never sent.",
+      'hint'));
+    panel.append(status, offline);
+    main.append(panel);
+  }
   function persist() {
     clearTimeout(timer);
     if (!dirty) return;
@@ -116,12 +221,19 @@ export function startClassApp({ generateNarrative = mockNarrative } = {}) {
     const inputs = narrativeInputFor(child, record,
       record.semester.endsWith('S2') ? get(child.id, '2026-S1') : null);
     // Stage all requested results before changing any domain on provider failure.
-    const drafts = await Promise.all(ids.map(async id => {
-      const result = await generateNarrative(inputs.domains[id], {
-        previousRating: inputs.domains[id].previousRating
-      });
-      return [id, { ...result, text: validateNarrativeText(result.text) }];
-    }));
+    let drafts;
+    if (provider === 'mock') {
+      drafts = [];
+      for (const id of ids) {
+        const result = await generateNarrative(inputs.domains[id], {
+          previousRating: inputs.domains[id].previousRating
+        });
+        drafts.push([id, { ...result, text: validateNarrativeText(result.text) }]);
+      }
+    } else {
+      const results = await generateAI({ provider, key, childInput: inputs });
+      drafts = ids.map(id => [id, { ...results[id], text: validateNarrativeText(results[id].text) }]);
+    }
     const candidate = {
       ...record, narratives: { ...record.narratives, ...Object.fromEntries(drafts) }
     };
@@ -136,6 +248,7 @@ export function startClassApp({ generateNarrative = mockNarrative } = {}) {
 
   function overview() {
     main.append(el('h1', 'Class portfolios'));
+    providerControls();
     const tools = el('div', undefined, 'toolbar');
     const semesterLabel = el('label', 'Semester'), select = el('select');
     for (const sem of ['2026-S1', '2026-S2']) {
@@ -185,22 +298,22 @@ export function startClassApp({ generateNarrative = mockNarrative } = {}) {
       else announce('Class complete');
     }, true));
     const ready = CHILDREN.filter(c => computeStatus(get(c.id, semester)) === 'ready-for-draft');
-    const batch = button(`Draft narratives for all ready children (${ready.length})`, guard(async () => {
-      batch.disabled = true;
+    const batch = draftButton(`Draft narratives for all ready children (${ready.length})`, async () => {
       let count = 0;
-      try {
-        for (const child of ready) {
-          await draft(child, current(child.id, semester), DOMAINS.map(d => d.id));
-          count++;
+      const batchSemester = semester;
+      for (const child of ready) {
+        connectionStatus(`drafting: ${count + 1} of ${ready.length}`);
+        try {
+          await draft(child, current(child.id, batchSemester), DOMAINS.map(d => d.id));
+        } catch (error) {
+          const message = error instanceof NarrativeDraftError ? error.message : 'Drafting failed.';
+          throw new NarrativeDraftError(`Stopped at ${count + 1} of ${ready.length}; ${count} children drafted. ${message}`);
         }
-        render(false);
-        announce(`Drafted narratives for ${count} children.`);
-      } catch (error) {
-        render(false);
-        throw new Error(`Drafted ${count} children. ${error.message}`);
+        count++;
       }
-    }));
-    batch.disabled = !ready.length;
+      announce(`Drafted narratives for ${count} children.`);
+    });
+    batch.dataset.empty = String(!ready.length);
     actions.append(batch, button('Reset sample data', () => {
       if (window.confirm('Replace all browser portfolios with fictional sample data?')) {
         records = seedRecords();
@@ -266,16 +379,16 @@ export function startClassApp({ generateNarrative = mockNarrative } = {}) {
   function editor(child) {
     const record = current(child.id, semester), heading = el('h1', child.name);
     main.append(heading, el('p', `${CHILDREN.indexOf(child)+1} / ${CHILDREN.length} · ${semester}`));
+    providerControls();
     const nav = el('div', undefined, 'toolbar');
     nav.append(
       button('Previous', () => go(adjacentChildId(CHILDREN, child.id, 'previous'))),
       button('Next', () => go(adjacentChildId(CHILDREN, child.id, 'next'))),
       button('Back to class', () => go(null)),
-      button('Draft all four', guard(async () => {
+      draftButton('Draft all four', async () => {
         await draft(child, record, DOMAINS.map(d => d.id));
-        render(false);
         announce('Four narratives drafted.');
-      })));
+      }));
     main.append(nav,
       el('p', 'Keyboard: Alt+ArrowRight / Alt+ArrowLeft moves to the next / previous child.', 'hint'));
     const review = button('Mark reviewed and go to next child', () => {
@@ -447,16 +560,14 @@ export function startClassApp({ generateNarrative = mockNarrative } = {}) {
       const baseline = narrative.value;
 
       function sourceLabel() {
-        const n = record.narratives[id];
-        source.textContent = !n ? 'No narrative'
-          : n.edited || n.source === 'teacher' ? 'EDITED BY TEACHER'
-          : n.source === 'mock' ? 'MOCK DRAFT (offline, not AI)' : 'AI DRAFT';
+        source.textContent = narrativeChip(record.narratives[id]);
       }
 
       sourceLabel();
       narrative.addEventListener('input', () => {
         const old = record.narratives[id];
         record.narratives[id] = {
+          ...old,
           text: narrative.value, source: old?.source ?? 'teacher',
           edited: old?.edited === true || narrative.value !== baseline
         };
@@ -464,11 +575,10 @@ export function startClassApp({ generateNarrative = mockNarrative } = {}) {
         sourceLabel();
         updateReview();
       });
-      section.append(button('Draft narrative', guard(async () => {
+      section.append(draftButton('Draft narrative', async () => {
         await draft(child, record, [id]);
-        render(false);
         announce(`${domainLabel} narrative drafted.`);
-      })), source, hint, narrativeLabel, narrative);
+      }), source, hint, narrativeLabel, narrative);
       main.append(section);
     }
     updateReview();
@@ -491,6 +601,7 @@ export function startClassApp({ generateNarrative = mockNarrative } = {}) {
         overview();
       }
     } else overview();
+    updateAvailability();
     if (focus) {
       const heading = main.querySelector('h1');
       heading.tabIndex = -1;
@@ -500,8 +611,10 @@ export function startClassApp({ generateNarrative = mockNarrative } = {}) {
 
   window.addEventListener('hashchange', () => render());
   window.addEventListener('pagehide', persist);
+  for (const event of ['online', 'offline'])
+    window.addEventListener(event, updateAvailability);
   document.addEventListener('keydown', event => {
-    if (!event.altKey || route.page !== 'child' ||
+    if (busy || !event.altKey || route.page !== 'child' ||
       !['ArrowRight', 'ArrowLeft'].includes(event.key)) return;
     event.preventDefault();
     go(adjacentChildId(CHILDREN, route.childId, event.key === 'ArrowRight' ? 'next' : 'previous'));

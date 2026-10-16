@@ -45,26 +45,27 @@ test("rating changes include exact labels in either direction only when both exi
   assert.ok(!mockNarrative(input(2,{previousRating:1}),{previousRating:null}).text.includes("Rating moved"));
 });
 
-test("prompt allowlists four domains and excludes identity and all photo metadata",()=>{
+test("prompt sends only first name and allowed domain evidence, never surname or photo metadata",()=>{
   const record=emptyRecord("SECRET-ID","2026-S2");
   for(const {id} of DOMAINS) record.domains[id]={rating:2,comment:"Recorded evidence.",photos:[{id:"PHOTO-ID",alt:"PHOTO-ALT",src:"data:image/png,PHOTO-PIXELS"}]};
   const childInput=narrativeInputFor({id:"SECRET-ID",name:"SECRET-FIRST SECRET-LAST"},record,null);
   childInput.name="SECRET-NAME"; childInput.domains.extra={comment:"SECRET-EXTRA"};
   childInput.domains.english.photos=record.domains.english.photos;
   const original=JSON.stringify(childInput), prompt=buildNarrativePrompt(childInput);
-  for(const secret of ["SECRET-ID","SECRET-FIRST","SECRET-LAST","SECRET-NAME","SECRET-EXTRA","PHOTO-ID","PHOTO-ALT","PHOTO-PIXELS","photoCount","data:image/"]) assert.ok(!prompt.includes(secret),secret);
+  for(const secret of ["SECRET-ID","SECRET-LAST","SECRET-NAME","SECRET-EXTRA","PHOTO-ID","PHOTO-ALT","PHOTO-PIXELS","photoCount","data:image/"]) assert.ok(!prompt.includes(secret),secret);
   const evidence=JSON.parse(prompt.split("Evidence:\n")[1]);
-  assert.deepEqual(Object.keys(evidence),DOMAINS.map(domain=>domain.id));
-  assert.equal(evidence.english.comment,"Recorded evidence."); assert.equal(evidence.english.ratingLabel,"Developing");
-  assert.match(prompt,/Do not invent/); assert.match(prompt,/warm, neutral/); assert.match(prompt,/short paragraphs/); assert.match(prompt,/exactly these four keys/);
+  assert.equal(evidence.firstName,"SECRET-FIRST");
+  assert.deepEqual(Object.keys(evidence.domains),DOMAINS.map(domain=>domain.id));
+  assert.equal(evidence.domains.english.comment,"Recorded evidence.");
+  assert.equal(evidence.domains.english.ratingLabel,"Developing");
   assert.equal(JSON.stringify(childInput),original);
 });
 
 test("prompt preserves no-evidence and previous rating without inventing missing input",()=>{
   const prompt=buildNarrativePrompt({domains:{english:{rating:3,comment:"Observed.",previousRating:2},chinese:{noEvidence:true}}});
-  const evidence=JSON.parse(prompt.split("Evidence:\n")[1]);
+  const evidence=JSON.parse(prompt.split("Evidence:\n")[1]).domains;
   assert.equal(evidence.english.previousRating,2); assert.equal(evidence.chinese.noEvidence,true);
-  assert.equal(evidence.mathematics.rating,null); assert.equal(evidence.mathematics.comment,""); assert.ok(prompt.includes(noEvidence));
+  assert.equal(evidence.mathematics.ratingLabel,null); assert.equal(evidence.mathematics.comment,""); assert.ok(prompt.includes(noEvidence));
 });
 
 test("narrative validation trims and accepts precisely the inclusive length limit",()=>{
