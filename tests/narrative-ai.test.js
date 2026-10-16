@@ -83,6 +83,22 @@ test('grounding accepts faithful English and Simplified Chinese and blocks inven
   assert.equal(checkGrounding({ ...chinese, photoCount: 0 }, '照片显示学习进展。').ok, false);
 });
 
+test('picture teaching aids and fully Chinese rating labels are grounded', () => {
+  const input = { label: 'Chinese', rating: 2, photoCount: 0, firstName: '悦宁' };
+  for (const [comment, text] of [
+    ['Names familiar objects in Mandarin with picture support ...',
+      '悦宁能在图片支持下说出熟悉物品的中文名称，也喜欢在文字游戏中轮流参与。'],
+    ['...matches spoken words to picture cards', '...与图片卡片配对。']
+  ]) assert.deepEqual(checkGrounding({ ...input, comment }, text), { ok: true, reasons: [] });
+  assert.equal(checkGrounding({ ...input, comment: 'Names familiar objects.' }, '照片显示悦宁的进步。').ok, false);
+  assert.equal(checkGrounding({ ...input, firstName: '星禾' }, '星禾在中文学习中处于Developing阶段。').ok, false);
+  assert.equal(checkGrounding({ ...input, firstName: '星禾' }, '星禾在中文学习中处于发展中阶段。').ok, true);
+  const evidence = JSON.parse(buildNarrativePrompt(childInput()).split('Evidence:\n')[1]).domains;
+  assert.equal(evidence.chinese.ratingLabelZh, '发展中');
+  assert.equal(evidence.chinese.previousRatingLabelZh, null);
+  assert.equal(Object.hasOwn(evidence.english, 'ratingLabelZh'), false);
+});
+
 test('no-evidence domains permit only their single language-specific sentence', () => {
   for (const [label, text] of [['English', noEvidence], ['Chinese', noEvidenceChineseText]]) {
     const input = { label, noEvidence: true };
@@ -97,25 +113,27 @@ test('generation grounds every domain before returning provenance, including no-
   const input = childInput(), before = structuredClone(input);
   const result = await generateNarrativesWithProvider({ provider: 'openai', key, childInput: input,
     requestText: async () => JSON.stringify(faithful()) });
-  assert.deepEqual(result.english, { text: faithful().english, source: 'ai', edited: false,
+  assert.deepEqual(result.accepted.english, { text: faithful().english, source: 'ai', edited: false,
     provider: 'openai', model: providerModels.openai });
   assert.deepEqual(input, before);
   input.domains.chinese.noEvidence = true;
   const noChinese = { ...faithful(), chinese: noEvidenceChineseText };
   const gateway = await generateNarrativesWithProvider({ provider: 'gateway', childInput: input,
     requestText: async () => JSON.stringify(noChinese) });
-  assert.equal(gateway.chinese.text, noEvidenceChineseText);
-  assert.equal(gateway.chinese.model, STUDIO_CONFIG.demoGateway.modelId);
-  await assert.rejects(generateNarrativesWithProvider({ provider: 'gemini', key, childInput: childInput(),
-    requestText: async () => JSON.stringify({ ...faithful(), 'social-emotional': 'Zara wins 99 prizes.' }) }), /Draft rejected/);
+  assert.equal(gateway.accepted.chinese.text, noEvidenceChineseText);
+  assert.equal(gateway.accepted.chinese.model, STUDIO_CONFIG.demoGateway.modelId);
+  const partial = await generateNarrativesWithProvider({ provider: 'gemini', key, childInput: childInput(),
+    requestText: async () => JSON.stringify({ ...faithful(), 'social-emotional': 'Zara wins 99 prizes.' }) });
+  assert.equal(partial.accepted['social-emotional'], undefined);
+  assert.deepEqual(Object.keys(partial.accepted), ['english', 'chinese', 'mathematics']);
+  assert.ok(partial.rejected['social-emotional'].reasons.includes('unsupported number or number word'));
 });
 
 test('request exceptions, raw responses and key echoes cannot escape as errors or narrative output', async () => {
   for (const requestText of [
     async () => { throw new Error(`${key} PRIVATE_PROVIDER_BODY`); },
     async () => `${key} PRIVATE_PROVIDER_BODY`,
-    async () => JSON.stringify({ ...faithful(), english: key }),
-    async () => JSON.stringify({ ...faithful(), english: 'PRIVATE_PROVIDER_BODY' })
+    async () => JSON.stringify({ ...faithful(), english: key })
   ]) await assert.rejects(generateNarrativesWithProvider({ provider: 'openai', key, childInput: childInput(), requestText }), safeError);
   await assert.rejects(generateNarrativesWithProvider({ provider: 'openai', childInput: childInput() }), /disposable test key/);
 });
@@ -270,6 +288,36 @@ test('bulk drafting is sequential, reports progress, and stops at the first erro
   assert.deepEqual(saved[1], validateRecord(readyRecord('C-02')));
   assert.deepEqual(saved[2], validateRecord(readyRecord('C-03')));
   assert.match(ui.status.textContent, /Stopped at 2 of 3; 1 children drafted/);
+  assert.equal(ui.mockCalls(), 0);
+});
+
+test('partial drafting preserves rejected narratives and displays retry guidance without mock fallback', async t => {
+  const record = readyRecord();
+  record.narratives.chinese = { text: '老师保留的评语。', source: 'teacher', edited: true };
+  const ui = await controller(t, { records: [record],
+    generateAI: options => generateNarrativesWithProvider({ ...options, requestText: async () =>
+      JSON.stringify({ ...faithful(), chinese: '星禾在中文学习中处于Developing阶段。' }) }) });
+  await ui.selectProvider('gateway');
+  await ui.findButton('Draft all four').emit('click');
+  const saved = createStore(ui.storage).load()[0];
+  assert.deepEqual(saved.narratives.chinese, record.narratives.chinese);
+  assert.equal(saved.narratives.english.source, 'ai');
+  assert.match(ui.status.textContent, /Chinese draft rejected:.*press Draft narrative to retry or write it yourself/);
+  assert.ok(ui.main.querySelectorAll('p').some(node => /Chinese draft rejected:/.test(node.textContent)));
+  assert.equal(ui.mockCalls(), 0);
+});
+
+test('bulk partial acceptance counts only fully accepted children and continues', async t => {
+  const ui = await controller(t, { hash: '#/', records: ['C-01', 'C-02'].map(id => readyRecord(id)),
+    generateAI: options => generateNarrativesWithProvider({ ...options, requestText: async () =>
+      JSON.stringify({ ...faithful(), chinese: '中文学习处于Developing阶段。' }) }) });
+  await ui.selectProvider('gateway');
+  await ui.findButton('Draft narratives for all ready children').emit('click');
+  assert.equal(ui.status.textContent, '0 of 2 children fully drafted; 2 domains need attention.');
+  for (const record of createStore(ui.storage).load()) {
+    assert.equal(record.narratives.chinese, null);
+    assert.equal(record.narratives.mathematics.source, 'ai');
+  }
   assert.equal(ui.mockCalls(), 0);
 });
 

@@ -53,6 +53,9 @@ export function startClassApp({
   // Disposable credentials and provider selection never enter the record store.
   let provider = 'mock', key = '', connection = 'not tested', busy = false;
   const stale = new Set();
+  const draftRejections = new Map();
+  const rejectionMessage = (id, reasons) =>
+    `${DOMAINS.find(domain => domain.id === id).label} draft rejected: ${reasons.join('; ')} - press Draft narrative to retry or write it yourself`;
   let initialError = store.lastError;
 
   function announce(text) {
@@ -223,7 +226,7 @@ export function startClassApp({
     const inputs = narrativeInputFor(child, record,
       record.semester.endsWith('S2') ? get(child.id, '2026-S1') : null);
     // Stage all requested results before changing any domain on provider failure.
-    let drafts;
+    let drafts, rejected = {};
     if (provider === 'mock') {
       drafts = [];
       for (const id of ids) {
@@ -234,7 +237,9 @@ export function startClassApp({
       }
     } else {
       const results = await generateAI({ provider, key, childInput: inputs });
-      drafts = ids.map(id => [id, { ...results[id], text: validateNarrativeText(results[id].text) }]);
+      rejected = Object.fromEntries(ids.filter(id => results.rejected[id]).map(id => [id, results.rejected[id]]));
+      drafts = ids.filter(id => results.accepted[id]).map(id =>
+        [id, { ...results.accepted[id], text: validateNarrativeText(results.accepted[id].text) }]);
     }
     const candidate = {
       ...record, narratives: { ...record.narratives, ...Object.fromEntries(drafts) }
@@ -244,8 +249,16 @@ export function startClassApp({
       record.narratives[id] = value;
       stale.delete(`${child.id}:${record.semester}:${id}`);
     }
-    change(record);
-    persist();
+    for (const id of ids) {
+      const key = `${child.id}:${record.semester}:${id}`;
+      if (rejected[id]) draftRejections.set(key, rejectionMessage(id, rejected[id].reasons));
+      else draftRejections.delete(key);
+    }
+    if (drafts.length) {
+      change(record);
+      persist();
+    }
+    return rejected;
   }
 
   function overview() {
@@ -305,19 +318,22 @@ export function startClassApp({
     }, true));
     const ready = CHILDREN.filter(c => computeStatus(get(c.id, semester)) === 'ready-for-draft');
     const batch = draftButton(`Draft narratives for all ready children (${ready.length})`, async () => {
-      let count = 0;
+      let count = 0, attempted = 0, attention = 0;
       const batchSemester = semester;
       for (const child of ready) {
-        connectionStatus(`drafting: ${count + 1} of ${ready.length}`);
+        connectionStatus(`drafting: ${attempted + 1} of ${ready.length}`);
         try {
-          await draft(child, current(child.id, batchSemester), DOMAINS.map(d => d.id));
+          const rejected = await draft(child, current(child.id, batchSemester), DOMAINS.map(d => d.id));
+          const rejectedCount = Object.keys(rejected).length;
+          attention += rejectedCount;
+          if (!rejectedCount) count++;
         } catch (error) {
           const message = error instanceof NarrativeDraftError ? error.message : 'Drafting failed.';
-          throw new NarrativeDraftError(`Stopped at ${count + 1} of ${ready.length}; ${count} children drafted. ${message}`);
+          throw new NarrativeDraftError(`Stopped at ${attempted + 1} of ${ready.length}; ${count} children drafted; ${attention} domains need attention. ${message}`);
         }
-        count++;
+        attempted++;
       }
-      announce(`Drafted narratives for ${count} children.`);
+      announce(`${count} of ${ready.length} children fully drafted; ${attention} domains need attention.`);
     });
     batch.dataset.empty = String(!ready.length);
     actions.append(batch, button('Reset sample data', () => {
@@ -396,8 +412,10 @@ export function startClassApp({
       button('Next', () => go(adjacentChildId(CHILDREN, child.id, 'next'))),
       button('Back to class', () => go(null)),
       draftButton('Draft all four', async () => {
-        await draft(child, record, DOMAINS.map(d => d.id));
-        announce('Four narratives drafted.');
+        const rejected = await draft(child, record, DOMAINS.map(d => d.id));
+        announce(Object.keys(rejected).length
+          ? Object.entries(rejected).map(([id, value]) => rejectionMessage(id, value.reasons)).join('. ')
+          : 'Four narratives drafted.');
       }));
     main.append(nav,
       el('p', 'Keyboard: Alt+ArrowRight / Alt+ArrowLeft moves to the next / previous child.', 'hint'));
@@ -422,6 +440,9 @@ export function startClassApp({
       const key = `${child.id}:${semester}:${id}`;
       const hint = el('p', 'Narrative may be out of date', 'stale');
       hint.hidden = !stale.has(key);
+      const rejection = el('p', draftRejections.get(key) ?? '', 'provider-warning');
+      rejection.setAttribute('role', 'status');
+      section.append(rejection);
       const comparison = el('p', undefined, 'comparison');
 
       function updateComparison() {
@@ -586,8 +607,8 @@ export function startClassApp({
         updateReview();
       });
       section.append(draftButton('Draft narrative', async () => {
-        await draft(child, record, [id]);
-        announce(`${domainLabel} narrative drafted.`);
+        const rejected = await draft(child, record, [id]);
+        announce(rejected[id] ? rejectionMessage(id, rejected[id].reasons) : `${domainLabel} narrative drafted.`);
       }), source, hint, narrativeLabel, narrative);
       main.append(section);
     }
