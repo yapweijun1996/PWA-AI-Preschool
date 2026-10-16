@@ -131,6 +131,24 @@ test('prompt forbids gendered words and neutral they and supplies neutral altern
   assert.match(prompt, /first name, 'the child', omit the subject, or restructure/);
 });
 
+test('prompt preserves first-name scripts, rating words and comment quantities', () => {
+  const prompt = buildNarrativePrompt({ ...childInput(), firstName: '星禾' });
+  for (const rule of [
+    /first name EXACTLY as supplied in the input/,
+    /same characters and spelling, same script/,
+    /Never translate, transliterate, romanise, abbreviate or mix it with another script/,
+    /Chinese characters stay in Chinese characters even inside English sentences/,
+    /Latin letters stay in Latin letters even inside Chinese sentences/,
+    /For English domains, keep each rating word consistent with the supplied ratingLabel/,
+    /copy numbers and counting phrases such as 'once' or 'each' as written/,
+    /rather than rewording them into new number expressions/,
+    /Never use gendered pronouns or gendered words/,
+    /Neutral they is not allowed/,
+    /Never invent activities, names, dates, numbers, places, photos, diagnoses or comparisons/
+  ]) assert.match(prompt, rule);
+  assert.equal(JSON.parse(prompt.split('Evidence:\n')[1]).firstName, '星禾');
+});
+
 test('picture teaching aids and fully Chinese rating labels are grounded', () => {
   const input = { label: 'Chinese', rating: 2, photoCount: 0, firstName: '悦宁' };
   for (const [comment, text] of [
