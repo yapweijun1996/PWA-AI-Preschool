@@ -1,4 +1,7 @@
-import { DOMAINS, emptyRecord, validateRecord } from './portfolio-model.js';
+import {
+  DOMAINS, emptyRecord, narrativeInputFor, validateRecord
+} from './portfolio-model.js';
+import { mockNarrative } from './narrative.js';
 
 export const CLASS = Object.freeze({
   id: 'class-a',
@@ -62,10 +65,30 @@ const comments = {
     'Needs a gentle prompt to answer story questions, then shares an idea with the small group.'
   ],
   chinese: [
-    'Joins familiar Mandarin songs and matches several spoken words to picture cards.',
-    'Uses short Mandarin greetings independently and repeats new words during story time.',
-    'Names familiar objects in Mandarin with picture support and enjoys taking a turn in word games.',
-    'Listens attentively to a Mandarin story and responds to simple instructions with a little prompting.'
+    [
+      '需要老师示范和提示，才能跟着说出图片中的物品名称。',
+      '在老师陪伴下尝试用华文问好，仍需要逐句提示。',
+      '听故事时需要老师指着图片，才能回答简单的问题。',
+      '参加儿歌活动时需要老师带领，才愿意跟着说词语。'
+    ],
+    [
+      '能自己用华文向同伴问好，表达需要时仍需老师提示。',
+      '能说出熟悉物品的名称，描述用途时还需要图片提示。',
+      '能独自跟唱熟悉的儿歌，遇到新的词语时需要示范。',
+      '能听懂熟悉的华文指令，回答故事问题时偶尔需要提示。'
+    ],
+    [
+      '能独立用华文说出自己的需要，并清楚回应同伴的提问。',
+      '能独立说出图片中的物品名称，并用短句描述其用途。',
+      '听完熟悉的故事后，能独立用华文说出主要情节。',
+      '能独立听懂华文活动指令，并用完整短句分享自己的想法。'
+    ],
+    [
+      '能用华文描述故事情节，还主动提出不同的故事结尾。',
+      '能用完整短句描述物品，还主动比较它们的相同和不同。',
+      '能熟练朗读熟悉的儿歌，还尝试替换词语编出新的句子。',
+      '能清楚用华文分享想法，还主动追问同伴并说明自己的理由。'
+    ]
   ],
   mathematics: [
     'Counts a small collection with one-to-one correspondence and checks the total by counting again.',
@@ -103,8 +126,9 @@ export function seedRecords(seed = 'portfolio-phase-1') {
           ? childIndex % 5 === 0 && domainIndex === 0
             ? Math.min(2, baseline) : baseline
           : Math.max(1, Math.min(4, previous + change));
-        const observation = comments[domain.id][rating === 1 ? 3
-          : rating === 2 ? 0 : rating === 3 ? 1 : 2];
+        const observation = domain.id === 'chinese' ? ''
+          : comments[domain.id][rating === 1 ? 3
+            : rating === 2 ? 0 : rating === 3 ? 1 : 2];
         record.domains[domain.id].rating = rating;
         record.domains[domain.id].comment = observation;
         if (childIndex % 4 === 0 && domainIndex === 0) {
@@ -115,12 +139,17 @@ export function seedRecords(seed = 'portfolio-phase-1') {
             return { id, alt, src: placeholderPhoto(id, alt) };
           });
         }
-        if (semester === '2026-S1' && childIndex < 5) {
-          record.narratives[domain.id] = {
-            text: `Mock draft — fictional sample only. ${observation} Next, offer another supported opportunity to practice this skill in a small group.`,
-            source: 'mock',
-            edited: false
-          };
+      }
+      // Every child has Chinese evidence, including otherwise unstarted S2 records.
+      const chinese = record.domains.chinese;
+      if (semester === '2026-S1') chinese.rating = 1 + childIndex % 4;
+      else chinese.rating ??= records[childIndex].domains.chinese.rating;
+      const pool = comments.chinese[chinese.rating - 1];
+      chinese.comment = pool[Math.floor(childIndex / 4) % pool.length];
+      if (semester === '2026-S1' && childIndex < 5) {
+        const input = narrativeInputFor(child, record);
+        for (const { id } of DOMAINS) {
+          record.narratives[id] = mockNarrative(input.domains[id]);
         }
       }
       records.push(validateRecord(record));

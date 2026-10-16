@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DOMAINS, emptyRecord } from '../src/portfolio-model.js';
 import { buildReport, REPORT_DISCLAIMER } from '../src/report-model.js';
+import { CHILDREN, seedRecords } from '../src/portfolio-seed.js';
 
 const child = { id: 'fictional', name: '林小雨' };
 function complete(semester) {
@@ -35,6 +36,17 @@ test('S1 report preserves Chinese names, photo descriptions and injected metadat
   assert.deepEqual(chinese.photos, [{ src: 'data:image/png;base64,AA==', alt: 'Fictional Chinese learning card' }]);
   assert.ok(report.domains.every(row => row.previous === null && row.changeText === ''));
   assert.equal(JSON.stringify(record), before);
+});
+
+test('the seeded C-01 S1 report preserves its Chinese domain narrative', () => {
+  const record = seedRecords().find(item =>
+    item.childId === 'C-01' && item.semester === '2026-S1');
+  const report = buildReport({ child: CHILDREN[0], record });
+  const chinese = report.domains.find(row => row.id === 'chinese');
+  assert.equal(chinese.label, 'Chinese');
+  assert.equal(chinese.narrative.text, record.narratives.chinese.text);
+  assert.match(chinese.narrative.text, /\p{Script=Han}/u);
+  assert.equal(report.status.complete, true);
 });
 
 test('S2 reports distinguish positive, unchanged, negative and absent previous ratings', () => {

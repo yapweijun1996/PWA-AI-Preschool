@@ -45,6 +45,23 @@ test('all forty seed records are normalized and cover both semesters for every c
   for (const record of records) assert.deepEqual(validateRecord(record), record);
 });
 
+test('all Chinese seed observations are varied, bounded Simplified Chinese', () => {
+  const byRating = new Map([1, 2, 3, 4].map(rating => [rating, new Set()]));
+  const traditional = /[學習認語說讀寫數與為這個們會來時體發現觀錄證據評穩華簡單親師進從於畫圖樂歡獨讓點動實練舉]/u;
+  for (const record of seedRecords()) {
+    const { rating, comment } = record.domains.chinese;
+    assert.match(comment, /\p{Script=Han}/u);
+    assert.doesNotMatch(comment, traditional);
+    assert.ok(Array.from(comment).length >= 15);
+    assert.ok(Array.from(comment).length <= 60);
+    byRating.get(rating).add(comment);
+    for (const { id } of DOMAINS.filter(domain => domain.id !== 'chinese')) {
+      assert.doesNotMatch(record.domains[id].comment, /\p{Script=Han}/u);
+    }
+  }
+  for (const comments of byRating.values()) assert.ok(comments.size >= 4);
+});
+
 test('semester one is complete with five fully mock-drafted children and a photo subset', () => {
   const records = seedRecords().filter(record => record.semester === '2026-S1');
   assert.deepEqual(stateCounts(records, '2026-S1'), { drafted: 5, 'ready-for-draft': 15 });
@@ -65,7 +82,10 @@ test('semester one is complete with five fully mock-drafted children and a photo
       if (drafted.includes(record)) {
         assert.equal(record.narratives[domain.id].source, 'mock');
         assert.equal(record.narratives[domain.id].edited, false);
-        assert.match(record.narratives[domain.id].text, /Mock draft.*fictional sample/);
+        const text = record.narratives[domain.id].text;
+        assert.ok(text.includes(entry.comment));
+        if (domain.id === 'chinese') assert.match(text, /\p{Script=Han}/u);
+        else assert.doesNotMatch(text, /\p{Script=Han}/u);
       } else {
         assert.equal(record.narratives[domain.id], null);
       }
@@ -75,17 +95,17 @@ test('semester one is complete with five fully mock-drafted children and a photo
   assert.ok(photoDomains > 0 && photoDomains < records.length);
 });
 
-test('semester two has three ready, five partial, and twelve empty records', () => {
+test('semester two has three ready and seventeen partial records with Chinese evidence', () => {
   const records = seedRecords().filter(record => record.semester === '2026-S2');
   assert.deepEqual(stateCounts(records, '2026-S2'), {
     'ready-for-draft': 3,
-    'in-progress': 5,
-    'not-started': 12
+    'in-progress': 17
   });
   for (const record of records) {
     assert.ok(Object.values(record.narratives).every(value => value === null));
-    if (record.status === 'not-started') {
-      for (const entry of Object.values(record.domains)) {
+    if (Number(record.childId.slice(2)) >= 9) {
+      for (const { id } of DOMAINS.filter(domain => domain.id !== 'chinese')) {
+        const entry = record.domains[id];
         assert.equal(entry.rating, null);
         assert.equal(entry.comment, '');
         assert.deepEqual(entry.photos, []);

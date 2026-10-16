@@ -66,6 +66,11 @@ textarea:focus-visible,select:focus-visible {
   outline-offset: 3px
 }
 
+:is(h1,h2,h3,h4,h5,h6)[tabindex="-1"]:focus:not(:focus-visible) {
+  outline: none;
+  box-shadow: none
+}
+
 .skip {
   position: absolute;
   left: 10px;
@@ -553,6 +558,16 @@ footer {
 @page { size: A4; margin: 14mm }
 
 @media print {
+  *:focus,*:focus-visible {
+    outline: none!important;
+    box-shadow: none!important
+  }
+
+  .card:focus-within {
+    outline: none!important;
+    box-shadow: none!important
+  }
+
   body {
     background: white;
     color: black
