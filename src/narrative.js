@@ -7,31 +7,34 @@ export const noEvidenceChineseText = "尚未记录学习证据，请老师添加
 
 // Only locally authored messages may be presented as drafting errors.
 export class NarrativeDraftError extends Error {}
-const englishTemplates = [
-  "Learning in this domain is at an emerging stage.",
-  "Learning in this domain is developing.",
-  "Learning in this domain is at a secure stage.",
-  "Learning in this domain is at an extending stage."
-];
 const chineseTemplates = [
   "华文学习处于起步阶段。",
   "华文学习正在发展中。",
-  "华文学习处于稳固阶段。",
+  "华文学习已达到熟练阶段。",
   "华文学习处于拓展阶段。"
 ];
 const ratingLabel = rating => RATINGS.find(item => item.value === rating)?.label;
 
+const chineseRatingLabel = rating => [null, "起步", "发展中", "熟练", "拓展"][rating];
 export function mockNarrative(domainInput, { previousRating = domainInput?.previousRating } = {}) {
-  const { label, rating, comment, noEvidence } = domainInput ?? {};
+  const { id, label, rating, comment, noEvidence } = domainInput ?? {};
+  const chinese = id === "chinese" || label === "Chinese";
   const currentLabel = ratingLabel(rating);
   if (noEvidence || !currentLabel || typeof comment !== "string" || !comment.trim()) {
-    return { text: noEvidenceText, source: "mock", edited: false };
+    return { text: chinese ? noEvidenceChineseText : noEvidenceText, source: "mock", edited: false };
   }
-  const template = (label === "Chinese" ? chineseTemplates : englishTemplates)[rating - 1];
-  let text = `${currentLabel}. ${template} ${comment}`;
   const previousLabel = ratingLabel(previousRating);
-  if (previousLabel && previousRating !== rating)
-    text += ` Rating moved from ${previousLabel} to ${currentLabel} since Semester 1.`;
+  const changed = previousLabel && previousRating !== rating;
+  let text;
+  if (chinese) {
+    text = `${chineseTemplates[rating - 1]} ${comment}`;
+    if (changed)
+      text += ` 与上学期相比，评级由${chineseRatingLabel(previousRating)}变为${chineseRatingLabel(rating)}。`;
+  } else {
+    text = changed
+      ? `${comment} Rating moved from ${previousLabel} to ${currentLabel} since Semester 1.`
+      : `Rating: ${currentLabel}. ${comment}`;
+  }
   return { text, source: "mock", edited: false };
 }
 

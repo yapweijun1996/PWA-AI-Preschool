@@ -12,7 +12,9 @@ test("mock narratives use only a rating template and the verbatim comment",()=>{
     const source=input(value,{name:"SECRET",photos:[{src:"secret-pixels"}],photoCount:3});
     const result=mockNarrative(source);
     assert.equal(result.source,"mock"); assert.equal(result.edited,false);
-    assert.ok(result.text.startsWith(`${label}. `)); assert.ok(result.text.endsWith(source.comment));
+    assert.ok(result.text.startsWith(`Rating: ${label}. `)); assert.ok(result.text.endsWith(source.comment));
+    assert.equal(result.text.split(source.comment).length-1,1);
+    assert.equal(result.text.split(label).length-1,1);
     assert.ok(!result.text.includes("SECRET")); assert.ok(!result.text.includes("secret-pixels"));
     assert.ok(!result.text.includes("Rating moved"));
     return result.text;
@@ -20,14 +22,22 @@ test("mock narratives use only a rating template and the verbatim comment",()=>{
   assert.equal(new Set(texts).size,4);
 });
 
-test("Chinese has four distinct Chinese rating templates and preserves comments",()=>{
-  const texts=RATINGS.map(({value,label})=>{
-    const comment="能说出老师记录的词语。";
-    const result=mockNarrative(input(value,{label:"Chinese",comment}));
-    assert.ok(result.text.startsWith(`${label}. `)); assert.ok(/[\p{Script=Han}]/u.test(result.text.slice(label.length+2,-comment.length)));
-    assert.ok(result.text.endsWith(comment)); return result.text;
-  });
-  assert.equal(new Set(texts).size,4);
+test("Chinese mock ratings and comparisons use Simplified Chinese and preserve comments",()=>{
+  const labels=[null,"起步","发展中","熟练","拓展"];
+  for(const {value} of RATINGS){
+    for(const previousRating of [undefined,1,2,3,4]){
+      const comment="  能说出老师记录的词语。\n";
+      const result=mockNarrative(input(value,{label:"Chinese",comment,previousRating}));
+      assert.equal(result.source,"mock");
+      assert.doesNotMatch(result.text,/\p{Script=Latin}/u);
+      assert.match(result.text,/\p{Script=Han}/u);
+      assert.ok(result.text.includes(labels[value]));
+      assert.equal(result.text.split(comment).length-1,1);
+      if(previousRating && previousRating!==value)
+        assert.ok(result.text.endsWith(`与上学期相比，评级由${labels[previousRating]}变为${labels[value]}。`));
+      else assert.ok(result.text.endsWith(comment));
+    }
+  }
 });
 
 test("mock templates stay neutral for every seed child, domain and semester",()=>{
@@ -73,6 +83,10 @@ test("rating changes include exact labels in either direction only when both exi
   for(const [previous,current] of [[1,4],[4,1],[2,3],[3,2]]){
     const expected=`Rating moved from ${RATINGS[previous-1].label} to ${RATINGS[current-1].label} since Semester 1.`;
     assert.ok(mockNarrative(input(current),{previousRating:previous}).text.endsWith(expected));
+    const text=mockNarrative(input(current),{previousRating:previous}).text;
+    assert.equal(text.split(input(current).comment).length-1,1);
+    assert.equal(text.split(RATINGS[current-1].label).length-1,1);
+    assert.equal(text.split(RATINGS[previous-1].label).length-1,1);
     assert.ok(mockNarrative(input(current,{previousRating:previous})).text.endsWith(expected));
   }
   for(const previousRating of [null,undefined,0,5,1.5,2]) assert.ok(!mockNarrative(input(),{previousRating}).text.includes("Rating moved"));

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { CLASS, CHILDREN, placeholderPhoto, seedRecords } from '../src/portfolio-seed.js';
-import { DOMAINS, validateRecord } from '../src/portfolio-model.js';
+import { DOMAINS, RATINGS, validateRecord } from '../src/portfolio-model.js';
 
 function stateCounts(records, semester) {
   const counts = {};
@@ -83,9 +83,15 @@ test('semester one is complete with five fully mock-drafted children and a photo
         assert.equal(record.narratives[domain.id].source, 'mock');
         assert.equal(record.narratives[domain.id].edited, false);
         const text = record.narratives[domain.id].text;
-        assert.ok(text.includes(entry.comment));
-        if (domain.id === 'chinese') assert.match(text, /\p{Script=Han}/u);
-        else assert.doesNotMatch(text, /\p{Script=Han}/u);
+        assert.equal(text.split(entry.comment).length - 1, 1);
+        if (domain.id === 'chinese') {
+          assert.match(text, /\p{Script=Han}/u);
+          assert.doesNotMatch(text, /\p{Script=Latin}/u);
+          assert.ok(text.includes([null, '起步', '发展中', '熟练', '拓展'][entry.rating]));
+        } else {
+          assert.doesNotMatch(text, /\p{Script=Han}/u);
+          assert.equal(text.split(RATINGS[entry.rating - 1].label).length - 1, 1);
+        }
       } else {
         assert.equal(record.narratives[domain.id], null);
       }
