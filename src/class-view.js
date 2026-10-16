@@ -60,11 +60,13 @@ export function routeParse(hash, children) {
   const overview = { page: "overview" };
   if (typeof hash !== "string") return overview;
   if (hash === "" || hash === "#" || hash === "#/") return overview;
-  const match = /^#\/child\/([^/?#]+)(?:\?sem=(2026-S[12]))?$/.exec(hash);
+  const classPrint = /^#\/print-class(?:\?sem=(2026-S[12]))?$/.exec(hash);
+  if (classPrint) return { page: "print-class", semester: classPrint[1] ?? "2026-S2" };
+  const match = /^#\/(child|print)\/([^/?#]+)(?:\?sem=(2026-S[12]))?$/.exec(hash);
   if (!match) return overview;
   let childId;
   try {
-    childId = decodeURIComponent(match[1]);
+    childId = decodeURIComponent(match[2]);
   } catch {
     return overview;
   }
@@ -72,16 +74,17 @@ export function routeParse(hash, children) {
   if (children && !children.some(child => child.id === childId)) {
     return { page: "overview", message: "Child not found." };
   }
-  return { page: "child", childId, semester: match[2] ?? "2026-S2" };
+  return { page: match[1], childId, semester: match[3] ?? "2026-S2" };
 }
 
 export function routeBuild(route) {
-  if (route?.page !== "child" || typeof route.childId !== "string" || !route.childId.trim())
-    return "#/";
-  const semester = route.semester ?? "2026-S2";
+  const semester = route?.semester ?? "2026-S2";
   if (!semesters.has(semester)) return "#/";
+  if (route?.page === "print-class") return `#/print-class?sem=${semester}`;
+  if (!["child", "print"].includes(route?.page) || typeof route.childId !== "string" || !route.childId.trim())
+    return "#/";
   try {
-    return `#/child/${encodeURIComponent(route.childId)}?sem=${semester}`;
+    return `#/${route.page}/${encodeURIComponent(route.childId)}?sem=${semester}`;
   } catch {
     return "#/";
   }

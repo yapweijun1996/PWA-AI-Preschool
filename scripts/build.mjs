@@ -9,6 +9,7 @@ const output = path.join(root, 'dist');
 const assets = [
   'index.html', 'styles.css', 'favicon.svg',
   'class.html', 'class.css', 'src/class-app.js', 'src/class-view.js',
+  'src/report-model.js', 'src/report-view.js',
   'src/narrative.js', 'src/photo.js', 'src/portfolio-model.js', 'src/portfolio-seed.js', 'src/portfolio-store.js',
   'src/app.js', 'src/config.js', 'src/data.js', 'src/providers.js', 'src/pwa.js',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png',

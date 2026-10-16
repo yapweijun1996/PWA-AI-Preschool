@@ -117,7 +117,7 @@ test("invalid routes fail closed and unknown children provide an overview messag
 
 test("class UI sources avoid dynamic HTML, inline code and unsafe evaluation", async () => {
   const sourceDirectory = new URL("../src/", import.meta.url);
-  const names = (await readdir(sourceDirectory)).filter(name => /^class-.*\.js$/.test(name));
+  const names = (await readdir(sourceDirectory)).filter(name => /^(class-|report-).*\.js$/.test(name));
   assert.ok(names.includes("class-view.js"));
   const files = [new URL("../class.html", import.meta.url), new URL("../class.css", import.meta.url), ...names.map(name => new URL(name, sourceDirectory))];
   for (const file of files) {
@@ -128,4 +128,27 @@ test("class UI sources avoid dynamic HTML, inline code and unsafe evaluation", a
       assert.equal(script[2].trim(), "", file.pathname);
     }
   }
+});
+
+test("print routes roundtrip and reject malformed requests", () => {
+  for (const semester of ["2026-S1", "2026-S2"]) {
+    for (const route of [
+      {page:"print", childId:"林 小雨/a", semester},
+      {page:"print-class", semester}
+    ]) assert.deepEqual(routeParse(routeBuild(route)), route);
+  }
+  assert.deepEqual(routeParse("#/print/ready", children),
+    {page:"print", childId:"ready", semester:"2026-S2"});
+  assert.deepEqual(routeParse("#/print-class"), {page:"print-class", semester:"2026-S2"});
+  for (const hash of ["#/print/", "#/print/%ZZ", "#/print/%20", "#/print/ready?sem=2027-S1",
+    "#/print-class/ready", "#/print-class?sem=2026-S3", "#/print-class?sem=2026-S1&x=1"])
+    assert.deepEqual(routeParse(hash), {page:"overview"});
+  assert.equal(routeParse("#/print/missing", children).page, "overview");
+  assert.equal(routeBuild({page:"print", childId:""}), "#/");
+  assert.equal(routeBuild({page:"print-class", semester:"invalid"}), "#/");
+});
+
+test("static build ships both printable report modules", async () => {
+  const source = await readFile(new URL("../scripts/build.mjs", import.meta.url), "utf8");
+  for (const file of ["src/report-model.js", "src/report-view.js"]) assert.ok(source.includes(`'${file}'`));
 });

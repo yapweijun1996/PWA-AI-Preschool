@@ -12,6 +12,8 @@ import {
   filterChildren, domainDot, classSummary, routeParse, routeBuild,
   STATUS_LABELS, FILTER_LABELS, PROVIDER_LABELS, narrativeChip
 } from './class-view.js';
+import { buildReport } from './report-model.js';
+import { renderReport, renderReportControls } from './report-view.js';
 
 const label = value => RATINGS.find(r => r.value === value)?.label ?? 'Not rated';
 
@@ -263,6 +265,10 @@ export function startClassApp({
     });
     semesterLabel.append(select);
     tools.append(semesterLabel);
+    tools.append(button('Print class report', () => {
+      persist();
+      location.hash = routeBuild({ page: 'print-class', semester });
+    }));
     const searchLabel = el('label', 'Search children'), search = el('input');
     search.type = 'search';
     search.value = query;
@@ -382,6 +388,10 @@ export function startClassApp({
     providerControls();
     const nav = el('div', undefined, 'toolbar');
     nav.append(
+      button('Print / PDF', () => {
+        persist();
+        location.hash = routeBuild({ page: 'print', childId: child.id, semester });
+      }),
       button('Previous', () => go(adjacentChildId(CHILDREN, child.id, 'previous'))),
       button('Next', () => go(adjacentChildId(CHILDREN, child.id, 'next'))),
       button('Back to class', () => go(null)),
@@ -600,6 +610,19 @@ export function startClassApp({
         announce('Child not found.');
         overview();
       }
+    } else if (route.page === 'print' || route.page === 'print-class') {
+      semester = route.semester;
+      const children = route.page === 'print-class' ? CHILDREN : CHILDREN.filter(c => c.id === route.childId);
+      main.append(renderReportControls(route.page === 'print'
+        ? routeBuild({ page: 'child', childId: route.childId, semester }) : '#/'));
+      const reports = el('div', undefined, 'report-pages');
+      const generatedOn = new Date().toISOString().slice(0, 10);
+      for (const child of children) reports.append(renderReport(buildReport({
+        child, record: get(child.id, semester),
+        previousRecord: semester === '2026-S2' ? get(child.id, '2026-S1') : null,
+        generatedOn
+      })));
+      main.append(reports);
     } else overview();
     updateAvailability();
     if (focus) {
