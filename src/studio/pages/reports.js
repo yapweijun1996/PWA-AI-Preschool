@@ -1,4 +1,4 @@
-import { el, link, chip, emptyState } from '../ui.js';
+import { el, link, chip, emptyState, avatar } from '../ui.js';
 import { selectField } from '../page-controls.js';
 import { reportsModel } from '../models/reports-model.js';
 
@@ -52,6 +52,8 @@ export function render(ctx, route = {}) {
 
 function reportThumbnail(report) {
   const page = el('article', undefined, 'report-thumbnail');
+  page.append(avatar({ id: report.childId, name: report.childName,
+    initials: report.childInitials || '?' }));
   page.append(el('p', report.header.productName, 'report-thumbnail-brand'),
     el('h3', report.header.title), el('h4', report.childName),
     el('p', report.semesterLabel));

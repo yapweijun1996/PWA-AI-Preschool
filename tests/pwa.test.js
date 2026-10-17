@@ -5,7 +5,8 @@ import vm from 'node:vm';
 import {initPwa} from '../src/pwa.js';
 
 const workerSource = await readFile(new URL('../sw.js', import.meta.url), 'utf8');
-const paths = ['./', './index.html', './class.html', './studio.css', './src/studio/app.js', './src/pwa.js', './manifest.webmanifest', './icons/icon-192.png'];
+const paths = ['./', './index.html', './class.html', './studio.css', './src/studio/app.js', './src/pwa.js', './manifest.webmanifest', './icons/icon-192.png',
+  './assets/demo/avatar-01.webp', './assets/demo/scene-12.webp'];
 const scope = 'https://example.test/studio/';
 const cacheName = (base, version) => `ai-preschool-studio:${encodeURIComponent(base)}:${version}`;
 
@@ -76,6 +77,10 @@ test('install caches a complete release with no implicit activation; navigation 
   const asset = await runtime.event('fetch', {request: new Request(`${scope}src/studio/app.js`)});
   assert.equal(await asset.text(), 'release:release-one:/studio/src/studio/app.js');
   assert.equal(runtime.requests.length, paths.length, 'cached fetches never ask the mutable network');
+  for (const path of ['assets/demo/avatar-01.webp', 'assets/demo/scene-12.webp']) {
+    const image = await runtime.event('fetch', { request: new Request(scope + path) });
+    assert.equal(await image.text(), `release:release-one:/studio/${path}`);
+  }
 });
 
 test('reinstalling an intact immutable release never overwrites it with mutable network content', async () => {

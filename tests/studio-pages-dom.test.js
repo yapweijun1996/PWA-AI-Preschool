@@ -60,7 +60,7 @@ const control = (page, text) => page.querySelectorAll('button')
 test('directory search narrows profiles and clear filters restores the roster', async t => {
   const { page } = mount(t, students);
   const search = page.querySelector('input');
-  search.value = '李沐辰';
+  search.value = 'Ellis B.';
   await search.emit('input');
   assert.match(page.textContent, /Showing 1 of 20 students/);
   assert.equal(page.querySelectorAll('a')[0].href, '#/students/C-05');
@@ -98,7 +98,9 @@ test('profile exposes comparison, mock provenance and selected-semester report e
   assert.match(page.textContent, /No narratives reviewed yet/);
   const print = page.querySelectorAll('a').find(node => node.textContent === 'Print report');
   assert.equal(print.href, '#/reports?sem=2026-S2&child=C-05');
-  assert.equal(page.querySelectorAll('img')[0].alt, 'Fictional sample activity 1');
+  assert.equal(page.querySelectorAll('img')[0].src, 'assets/demo/avatar-05.webp');
+  assert.match(page.querySelectorAll('img')[0].alt, /AI-generated illustration, not a real child/);
+  assert.ok(page.querySelectorAll('img').some(image => image.src.startsWith('assets/demo/scene-')));
 });
 
 test('home counts refresh from edits and Continue uses the next unfinished child', async t => {
@@ -135,7 +137,7 @@ test('class cards retain domain comparisons, matching open routes and accurate f
   assert.match(page.textContent, /Showing 3 of 20 children/);
   assert.equal(control(page, 'Ready to draft 3').attributes['aria-pressed'], 'true');
   const search = page.querySelectorAll('input').find(node => node.type === 'search');
-  search.value = '林悦宁';
+  search.value = 'Aster V.';
   await search.emit('input');
   assert.equal(page.querySelectorAll('article').length, 1);
   assert.match(page.textContent, /Showing 1 of 20 children/);
@@ -151,7 +153,7 @@ test('count chips stay accurate after evidence edits and search clearing', async
   assert.ok(destinations.some(href => href.includes('/C-01?')));
   assert.ok(!destinations.some(href => href.includes('/C-02?')));
   const search = page.querySelectorAll('input').find(node => node.type === 'search');
-  search.value = '李沐辰';
+  search.value = 'Ellis B.';
   await search.emit('input');
   assert.equal(control(page, 'Needs work 1').attributes['aria-pressed'], 'true');
   assert.equal(page.querySelectorAll('article')[0].querySelector('a').href,

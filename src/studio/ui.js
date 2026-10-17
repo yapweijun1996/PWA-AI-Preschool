@@ -1,5 +1,46 @@
 import { RATINGS } from '../portfolio-model.js';
 import { STATUS_LABELS } from '../class-view.js';
+import { avatarSource, ILLUSTRATION_CAPTION, photoProvenance } from '../demo-media.js';
+
+export function avatar(child, className = 'avatar') {
+  const root = el('span', '', avatarClass(child.initials || '?', className));
+  const fallback = el('span', child.initials || '?', 'avatar-initials');
+  fallback.setAttribute('aria-hidden', 'true');
+  root.append(fallback);
+  const src = avatarSource(child.id);
+  if (src) {
+    const image = el('img');
+    image.src = src;
+    image.alt = `${child.name}: ${ILLUSTRATION_CAPTION}`;
+    image.width = image.height = 48;
+    image.loading = 'lazy';
+    image.decoding = 'async';
+    image.addEventListener('error', () => {
+      image.hidden = true;
+      root.setAttribute('aria-label', `${child.name} initials: ${child.initials || '?'}`);
+    });
+    root.append(image);
+  } else root.setAttribute('aria-label', `${child.name} initials: ${child.initials || '?'}`);
+  return root;
+}
+
+export function photoFigure(photo, className = 'photo') {
+  const figure = el('figure', undefined, className);
+  const image = el('img');
+  image.src = photo.src;
+  image.alt = photo.alt;
+  image.width = 720;
+  image.height = 480;
+  image.loading = 'lazy';
+  image.decoding = 'async';
+  const caption = el('figcaption');
+  caption.append(el('span', photo.alt, 'photo-description'),
+    el('span', photoProvenance(photo.src), 'photo-provenance'));
+  figure.dataset.provenance = photoProvenance(photo.src) === ILLUSTRATION_CAPTION
+    ? 'illustration' : photo.src.startsWith('data:image/svg+xml,') ? 'stored-demo' : 'browser-upload';
+  figure.append(image, caption);
+  return figure;
+}
 
 export function avatarClass(initials, className = 'avatar') {
   return Array.from(initials).length >= 3 ? `${className} avatar-compact` : className;

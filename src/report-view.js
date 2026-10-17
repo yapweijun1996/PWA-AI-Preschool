@@ -1,4 +1,6 @@
 import { RATINGS } from './portfolio-model.js';
+import { avatar, photoFigure } from './studio/ui.js';
+import { ILLUSTRATION_CAPTION } from './demo-media.js';
 
 function el(tag, text, className) {
   const node = document.createElement(tag);
@@ -16,7 +18,11 @@ export function renderReport(report) {
   const header = el('header');
   header.append(el('p', report.header.productName), el('h1', report.header.title));
   if (report.header.organizationName) header.append(el('p', report.header.organizationName));
-  article.append(header, language(el('h2', report.childName)), el('p', report.semesterLabel));
+  const identity = el('div', undefined, 'report-child-identity');
+  identity.append(avatar({ id: report.childId, name: report.childName,
+    initials: report.childInitials || '?' }), language(el('h2', report.childName)));
+  article.append(header, identity, el('p', ILLUSTRATION_CAPTION, 'demo-image-notice'),
+    el('p', report.semesterLabel));
   for (const [label, value] of [['Class', report.className], ['Teacher', report.teacherName], ['Generated on', report.generatedOn]])
     if (value) article.append(language(el('p', `${label}: ${value}`)));
   if (!report.status.complete) {
@@ -46,10 +52,8 @@ export function renderReport(report) {
     else section.append(el('p', 'Narrative not drafted.'));
     const photos = el('div', undefined, 'report-photos');
     for (const photo of row.photos) {
-      const figure = el('figure'), image = el('img');
-      image.src = photo.src;
-      image.alt = photo.alt;
-      figure.append(image, language(el('figcaption', photo.alt)));
+      const figure = photoFigure(photo);
+      language(figure.querySelector('figcaption'));
       photos.append(figure);
     }
     section.append(photos);

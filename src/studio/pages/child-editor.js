@@ -1,13 +1,14 @@
 import {
   DOMAINS, computeStatus, adjacentChildId, nextChildNeedingWork
 } from '../../portfolio-model.js';
-import { el, button, link, statusChip, progressBar, errorState, icon } from '../ui.js';
+import { el, button, link, statusChip, progressBar, errorState, icon, avatar } from '../ui.js';
 import { buildRoute } from '../router.js';
 import { editorModel } from '../editor-model.js';
 import { domainPanel } from '../domain-panel.js';
 import { narrativeControls } from '../narrative-controls.js';
 import { PROVIDER_LABELS } from '../../class-view.js';
 import { privacyDisclosure } from '../privacy-disclosure.js';
+import { normalizeChildName } from '../../child-name.js';
 
 export function render(ctx, route) {
   const child = ctx.children.find(child => child.id === route.childId);
@@ -54,7 +55,7 @@ function childHeader(ctx, child, record) {
   save.setAttribute('role', 'status');
   const progress = el('section', undefined, 'editor-progress');
   progress.setAttribute('aria-label', 'Portfolio completion');
-  const identity = childIdentity(child);
+  const identity = childIdentity(ctx, child);
   const move = direction => ctx.go(adjacentChildId(ctx.children, child.id, direction));
   const nav = childNavigation(ctx, child, move);
   const feedback = el('div', undefined, 'editor-feedback');
@@ -83,6 +84,7 @@ function childHeader(ctx, child, record) {
   const extras = el('div', undefined, 'editor-extras');
   return { root, progress, status, print, feedback, extras, dispose() {
     unsubscribe();
+    identity.dispose();
     document.removeEventListener('keydown', shortcut);
   } };
 }
@@ -106,13 +108,81 @@ function responsiveLayout(root, header, navigation, provider, tabs) {
   return () => compact.removeEventListener('change', arrange);
 }
 
-function childIdentity(child) {
+function childIdentity(ctx, child) {
   const identity = el('div', undefined, 'editor-identity');
-  const avatar = el('span', child.initials, 'avatar editor-avatar');
-  avatar.setAttribute('aria-hidden', 'true');
-  const name = el('div');
-  name.append(el('h1', child.name), el('p', `${child.id} · Class A (Sample)`));
-  identity.append(avatar, name);
+  const picture = el('div', undefined, 'editor-avatar-holder');
+  const name = el('div', undefined, 'editor-name');
+  const heading = el('h1', child.name);
+  const disclosure = el('details', undefined, 'editor-name-disclosure');
+  disclosure.open = false;
+  disclosure.append(el('summary', 'Edit child name'));
+  const form = el('form', undefined, 'editor-name-form');
+  form.noValidate = true;
+  const label = el('label', 'Child name');
+  const input = el('input');
+  input.type = 'text';
+  input.id = `child-name-${child.id}`;
+  input.value = child.name;
+  input.required = true;
+  input.autocomplete = 'off';
+  input.setAttribute('aria-describedby', `${input.id}-hint ${input.id}-feedback`);
+  label.htmlFor = input.id;
+  label.append(input);
+  const hint = el('p', 'Fictional names only. 1–60 characters; duplicate names are allowed.', 'hint');
+  hint.id = `${input.id}-hint`;
+  const feedback = el('p', '', 'editor-name-feedback');
+  feedback.id = `${input.id}-feedback`;
+  feedback.setAttribute('role', 'status');
+  const save = button('Save name', () => {});
+  save.type = 'submit';
+  const clearError = () => {
+    input.setCustomValidity('');
+    input.setAttribute('aria-invalid', 'false');
+    feedback.textContent = '';
+  };
+  input.addEventListener('input', clearError);
+  input.addEventListener('keydown', event => {
+    if (event.key !== 'Escape') return;
+    event.preventDefault();
+    input.value = child.name;
+    clearError();
+  });
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    try {
+      const value = normalizeChildName(input.value);
+      const result = ctx.renameChild(child.id, value);
+      input.value = result.name;
+      input.setCustomValidity('');
+      input.setAttribute('aria-invalid', 'false');
+      feedback.textContent = result.duplicate
+        ? 'Another child has this name. Name updated as a separate child; use the child ID to distinguish records.'
+        : 'Child name updated. Existing narrative text is unchanged; review names before sharing.';
+    } catch (error) {
+      input.setCustomValidity(error.message);
+      input.setAttribute('aria-invalid', 'true');
+      feedback.textContent = error.message;
+      input.reportValidity();
+    }
+  });
+  let displayed = null;
+  const refresh = () => {
+    if (displayed !== child.name) {
+      heading.textContent = child.name;
+      picture.replaceChildren(avatar(child, 'avatar editor-avatar'));
+      input.value = child.name;
+      displayed = child.name;
+    }
+    input.disabled = ctx.busy;
+    save.disabled = ctx.busy;
+  };
+  const unsubscribe = ctx.subscribe(refresh);
+  identity.dispose = unsubscribe;
+  form.append(label, save, hint, feedback);
+  disclosure.append(form);
+  name.append(heading, el('p', `${child.id} · Class A (Sample)`), disclosure);
+  identity.append(picture, name);
+  refresh();
   return identity;
 }
 

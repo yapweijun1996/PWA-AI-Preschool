@@ -1,5 +1,5 @@
 import { profileModel, groupProfileEvidence } from '../models/profile-model.js';
-import { el, link, ratingChip, statusChip, emptyState, errorState } from '../ui.js';
+import { el, link, ratingChip, statusChip, emptyState, errorState, avatar, photoFigure } from '../ui.js';
 import { buildRoute } from '../router.js';
 import { CLASS } from '../../portfolio-seed.js';
 
@@ -13,13 +13,12 @@ export function render(ctx, route) {
   }
   const heading = el('header', undefined, 'page-header profile-header');
   const identity = el('div', undefined, 'profile-identity');
-  const avatar = el('span', child.initials, 'avatar profile-avatar');
-  avatar.setAttribute('aria-hidden', 'true');
+  const portrait = avatar(child, 'avatar profile-avatar');
   const title = el('div');
   title.append(el('h1', child.name),
     el('p', `${child.id} · ${CLASS.name} · Fictional student`));
   const portfolioStatus = el('span', undefined, 'profile-current-status');
-  identity.append(avatar, title, portfolioStatus);
+  identity.append(portrait, title, portfolioStatus);
   const actions = el('div', undefined, 'toolbar profile-actions');
   const openEditor = link('Open editor', buildRoute('child-editor', {
     childId: child.id, semester: ctx.semester
@@ -90,10 +89,7 @@ function timeline(semesters) {
       for (const item of entry.items) {
         if (item.type === 'comment') row.append(el('p', item.text, 'evidence-text'));
         else {
-          const image = el('img');
-          image.src = item.src;
-          image.alt = item.text;
-          row.append(image);
+          row.append(photoFigure({ src: item.src, alt: item.text }));
         }
       }
       row.append(link('Open in editor', buildRoute('child-editor', {

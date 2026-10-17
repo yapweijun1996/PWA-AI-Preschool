@@ -27,6 +27,10 @@ export function render(ctx) {
   cards.append(panel('Fictional demo data', [
       'Use fictional records only. Do not enter real child, family or staff information.'
     ]),
+    panel('Pictures', [
+      'All sample pictures are AI-generated cartoons, not real children. No real child data is included anywhere in this demo.',
+      'Use fictional uploads only. Uploaded pictures remain in this browser and are labelled separately.'
+    ]),
     panel('Stored only in this browser', [
       'Class records use this browser’s localStorage. They are not shared or backed up.',
       'Clearing browser data removes saved records. Test keys and rejection reasons stay in '
@@ -68,7 +72,7 @@ export function render(ctx) {
 function panel(title, paragraphs, className = 'card') {
   const root = el('section', undefined, `${className} about-card`);
   const symbols = {
-    'Fictional demo data': 'warning', 'Stored only in this browser': 'folders',
+    'Pictures': 'info', 'Fictional demo data': 'warning', 'Stored only in this browser': 'folders',
     'NOT IMPLEMENTED': 'info', 'Known limitations': 'file',
     'Keyboard shortcuts': 'settings', 'Submission write-up': 'arrow'
   };

@@ -6,7 +6,7 @@ import {
   compactPortfolio, listComparison
 } from '../../class-view.js';
 import { el, button, link, statusChip, ratingChip, progressBar, emptyState,
-  rejectedState, icon } from '../ui.js';
+  rejectedState, icon, avatar } from '../ui.js';
 import { buildRoute } from '../router.js';
 import { providerCard } from '../provider-card.js';
 import { draftReadyChildren } from '../bulk-draft.js';
@@ -24,11 +24,10 @@ function childCard(ctx, child) {
   const record = ctx.get(child.id);
   const card = el('article', undefined, 'card class-child-card');
   const header = el('div', undefined, 'class-child-heading');
-  const avatar = el('span', child.initials, 'avatar');
-  avatar.setAttribute('aria-hidden', 'true');
+  const portrait = avatar(child);
   const identity = el('div', undefined, 'class-child-identity');
   identity.append(el('h2', child.name), statusChip(computeStatus(record)));
-  header.append(avatar, identity);
+  header.append(portrait, identity);
   const chevron = icon('chevron');
   chevron.setAttribute('class', 'icon list-chevron');
   header.append(chevron);

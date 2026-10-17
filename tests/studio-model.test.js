@@ -26,14 +26,13 @@ test('provider chip keeps full disclosure and only emphasizes failed or ok state
   }
 });
 
-test('three-letter Latin initials stay compact, including Chinese sample names', () => {
-  for (const initials of ['CXH', 'WYQ', 'LYN']) {
+test('derived English initials stay compact and longer custom initials use the compact class', () => {
+  for (const initials of ['ABC', 'DEF', 'GHI']) {
     assert.equal(avatarClass(initials), 'avatar avatar-compact');
   }
   const child = CHILDREN.find(item => item.id === 'C-01');
-  assert.equal(child.initials, 'LYN');
-  assert.equal(avatarClass(child.initials, 'avatar editor-avatar'),
-    'avatar editor-avatar avatar-compact');
+  assert.equal(child.initials, 'AV');
+  assert.equal(avatarClass(child.initials, 'avatar editor-avatar'), 'avatar editor-avatar');
   assert.equal(avatarClass('AB'), 'avatar');
   assert.equal(avatarClass('A'), 'avatar');
 });
@@ -51,7 +50,7 @@ test('seed overview derives all twenty states and semester-isolated search', () 
     'not-started': 12, 'in-progress': 5, 'ready-for-draft': 3, drafted: 0, reviewed: 0
   });
   assert.deepEqual(model.ready.map(child => child.id), ['C-01', 'C-02', 'C-03']);
-  assert.deepEqual(classesModel(ctx, { query: '李沐辰' }).children.map(child => child.id), ['C-05']);
+  assert.deepEqual(classesModel(ctx, { query: 'Ellis B.' }).children.map(child => child.id), ['C-05']);
   assert.equal(classesModel(ctx, { filter: 'reviewed' }).children.length, 0);
   ctx.semester = '2026-S1';
   assert.notDeepEqual(classesModel(ctx).summary.statuses, model.summary.statuses);
@@ -126,7 +125,7 @@ test('print routes select one child or all twenty without inventing absent evide
   const ctx = createContext({ storage: storage() });
   const [report] = printModel(ctx,
     { name: 'print', childId: 'C-05', semester: '2026-S2' }, '2026-10-17');
-  assert.equal(report.childName, '李沐辰');
+  assert.equal(report.childName, 'Ellis B.');
   assert.equal(report.semesterLabel, 'Semester 2, 2026 (Jul-Dec)');
   assert.ok(report.status.warnings.includes('Mathematics: rating not recorded'));
   assert.equal(report.domains.find(row => row.id === 'mathematics').ratingValue, null);

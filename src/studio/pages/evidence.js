@@ -7,7 +7,7 @@ export function render(ctx) {
   const root = el('section', undefined, 'evidence-page');
   const heading = el('header', undefined, 'page-header');
   heading.append(el('h1', 'Evidence library'),
-    el('p', 'Browse fictional comments and placeholder photos.'));
+    el('p', 'Browse fictional comments and sample activity illustrations.'));
   const filters = { childId: '', domain: '', semester: ctx.semester, type: 'all', query: '' };
   const tools = el('div', undefined, 'toolbar evidence-toolbar');
   const listing = el('section', undefined, 'card evidence-listing');
@@ -55,7 +55,7 @@ function libraryCards(items) {
   for (const item of items) {
     const card = evidenceCard(item);
     card.className += ' library-evidence-card';
-    const type = el('span', item.type === 'photo' ? 'Placeholder photo' : 'Teacher comment',
+    const type = el('span', item.type === 'photo' ? 'Activity image' : 'Teacher comment',
       'evidence-type');
     card.replaceChildren(type, ...card.children);
     cards.append(card);

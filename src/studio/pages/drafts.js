@@ -1,7 +1,7 @@
 import { PROVIDER_LABELS } from '../../class-view.js';
 import { draftsModel } from '../models/drafts-model.js';
 import { draftReadyChildren } from '../bulk-draft.js';
-import { el, button, link, chip, progressBar, emptyState, rejectedState } from '../ui.js';
+import { el, button, link, chip, progressBar, emptyState, rejectedState, avatar } from '../ui.js';
 import { privacyDisclosure } from '../privacy-disclosure.js';
 
 export function render(ctx) {
@@ -61,9 +61,7 @@ function reviewQueue(root, queue) {
   for (const item of queue) {
     const row = el('article', undefined, 'work-row');
     const identity = el('div', undefined, 'draft-identity');
-    const avatar = el('span', item.child.initials, 'avatar');
-    avatar.setAttribute('aria-hidden', 'true');
-    identity.append(avatar, el('h3', item.child.name));
+    identity.append(avatar(item.child), el('h3', item.child.name));
     const sources = el('div', undefined, 'draft-sources');
     for (const narrative of item.narratives) {
       const source = chip(narrative.source);

@@ -39,7 +39,7 @@ export function buildReport({ child, record, previousRecord, className = '', tea
     header: { productName: STUDIO_CONFIG.productName,
       ...(STUDIO_CONFIG.organizationName.trim() ? { organizationName: STUDIO_CONFIG.organizationName } : {}),
       title: STUDIO_CONFIG.portfolioTitle },
-    childName: child.name, className, teacherName, generatedOn,
+    childId: child.id, childInitials: child.initials, childName: child.name, className, teacherName, generatedOn,
     semesterLabel: `Semester ${half}, ${year} (${half === 2 ? 'Jul-Dec' : 'Jan-Jun'})`,
     domains, status: { complete: warnings.length === 0, warnings }, disclaimer: REPORT_DISCLAIMER
   };

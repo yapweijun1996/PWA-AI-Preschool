@@ -2,6 +2,8 @@ import {
   DOMAINS, emptyRecord, narrativeInputFor, validateRecord
 } from './portfolio-model.js';
 import { mockNarrative } from './narrative.js';
+import { childInitials } from './child-name.js';
+import { samplePhoto } from './demo-media.js';
 
 export const CLASS = Object.freeze({
   id: 'class-a',
@@ -10,7 +12,7 @@ export const CLASS = Object.freeze({
 });
 
 const names = [
-  '林悦宁', '陈星禾', '黄以安', '吴语晴', '李沐辰', '周可欣',
+  'Aster V.', 'Beck R.', 'Casey L.', 'Devon P.', 'Ellis B.', 'Frankie M.',
   'Avery W.', 'Briar P.', 'Cleo T.', 'Dorian M.', 'Elowen B.', 'Finnley R.',
   'Greer L.', 'Hollis N.', 'Indie S.', 'Juniper K.', 'Kit V.', 'Larkin D.',
   'Marlowe J.', 'Nova F.'
@@ -20,9 +22,7 @@ const names = [
 export const CHILDREN = Object.freeze(names.map((name, index) => Object.freeze({
   id: `C-${String(index + 1).padStart(2, '0')}`,
   name,
-  initials: index < 6
-    ? ['LYN', 'CXH', 'HYA', 'WYQ', 'LMC', 'ZKX'][index]
-    : name.split(/\s+/).map(part => part[0]).join('')
+  initials: childInitials(name)
 })));
 
 function hashSeed(seed) {
@@ -41,21 +41,6 @@ function randomSource(seed) {
   };
 }
 
-function escapeXml(text) {
-  return text.replace(/[&<>"']/g, character => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;'
-  })[character]);
-}
-
-export function placeholderPhoto(seed, label) {
-  const random = randomSource(seed);
-  const hue = Math.floor(random() * 360);
-  const circleX = 35 + Math.floor(random() * 80);
-  // Bound the visible label so even multibyte text remains a tiny inline image.
-  const caption = escapeXml(Array.from(String(label)).slice(0, 48).join(''));
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="240" height="160" viewBox="0 0 240 160"><rect width="240" height="160" rx="12" fill="hsl(${hue},45%,90%)"/><circle cx="${circleX}" cy="55" r="23" fill="hsl(${hue},45%,60%)"/><path d="M120 100l32-50 40 50z" fill="hsl(${(hue + 70) % 360},45%,65%)"/><text x="12" y="140" font-size="12" fill="#243444">${caption}</text></svg>`;
-  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
-}
 
 const comments = {
   english: [
@@ -135,8 +120,7 @@ export function seedRecords(seed = 'portfolio-phase-1') {
           const photoCount = childIndex % 8 === 0 ? 2 : 1;
           record.domains[domain.id].photos = Array.from({ length: photoCount }, (_, index) => {
             const id = `${child.id}-${semester}-${domain.id}-${index + 1}`;
-            const alt = `Fictional sample activity ${index + 1}`;
-            return { id, alt, src: placeholderPhoto(id, alt) };
+            return { id, ...samplePhoto(id) };
           });
         }
       }

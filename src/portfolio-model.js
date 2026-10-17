@@ -85,8 +85,9 @@ export function validateRecord(record) {
         `${id}: photo id is required`);
       requireValue(typeof photo.alt === "string" && photo.alt.trim() !== "",
         `${id}: photo alt text is required`);
-      requireValue(typeof photo.src === "string" && photo.src.startsWith("data:image/"),
-        `${id}: photo src must be a data:image/ URI`);
+      requireValue(typeof photo.src === "string" && (photo.src.startsWith("data:image/") ||
+        /^assets\/demo\/scene-(?:0[1-9]|1[0-2])\.webp$/.test(photo.src)),
+        `${id}: photo src must be a data:image/ URI or bundled demo scene`);
       return { id: photo.id, alt: photo.alt, src: photo.src };
     });
     result.domains[id] = { rating: entry.rating, comment: entry.comment, photos };
@@ -191,10 +192,11 @@ export function progressComparison(prevRecord, currentRecord) {
 }
 
 export function narrativeInputFor(child, record, previousRecord) {
-  // Seed Chinese names use a single-character surname; never pass that surname.
-  const name = child.name.trim(),
+  // Preserve the existing given-name convention without splitting Unicode code points.
+  const name = child.name.normalize('NFC').trim(), characters = Array.from(name),
     firstName = /\s/.test(name) ? name.split(/\s+/)[0]
-      : /^[\p{Script=Han}]+$/u.test(name) ? name.slice(1) : name;
+      : /^[\p{Script=Han}]+$/u.test(name) && characters.length > 1
+        ? characters.slice(1).join('') : name;
   return {
     firstName, semester: record.semester,
     domains: Object.fromEntries(DOMAINS.map(({ id, label }) => {

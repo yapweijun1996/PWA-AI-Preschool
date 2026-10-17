@@ -1,5 +1,5 @@
 import { studentsModel } from '../models/students-model.js';
-import { el, button, link, statusChip, ratingChip, emptyState, icon } from '../ui.js';
+import { el, button, link, statusChip, ratingChip, emptyState, icon, avatar } from '../ui.js';
 import {
   selectField, searchField, filterChips, domainKey, updateFilterChips
 } from '../page-controls.js';
@@ -73,9 +73,7 @@ function studentRow(row) {
   const tr = el('tr', undefined, 'student-row');
   const name = el('th', undefined, 'student-name');
   name.scope = 'row';
-  const avatar = el('span', row.child.initials, 'avatar');
-  avatar.setAttribute('aria-hidden', 'true');
-  name.append(avatar, el('span', row.child.name));
+  name.append(avatar(row.child), el('span', row.child.name));
   const ratings = el('td', undefined, 'student-ratings');
   ratings.dataset.label = 'Latest ratings';
   if (row.compact) {

@@ -96,6 +96,7 @@ test('studio supplies all local identity variants and masks offline input before
   t.after(() => ctx.persist());
   const child = { ...ctx.children[6], aliases: ['Avi Fictional'],
     guardian: { name: 'Fictional Carer' }, teacherName: 'Fictional Educator' };
+  ctx.renameChild('C-02', '陈星禾');
   ctx.children = ctx.children.map((member, index) => index === 6 ? child : member);
   const record = ctx.current(child.id);
   record.domains.english = { ...record.domains.english, rating: 2,

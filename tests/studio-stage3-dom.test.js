@@ -132,6 +132,10 @@ test('settings probe on click, apply memory-only keys and clear disposed fields'
 test('about contains the full nonimplemented scope and honest storage limits', t => {
   const { page } = mount(t, about);
   for (const item of NOT_IMPLEMENTED) assert.ok(page.textContent.includes(item));
+  assert.ok(page.querySelectorAll('h2').some(node => node.textContent === 'Pictures'));
+  assert.match(page.textContent, /AI-generated cartoons, not real children/);
+  assert.match(page.textContent, /No real child data is included anywhere/);
+  assert.match(page.textContent, /Uploaded pictures remain in this browser/);
   assert.match(page.textContent, /Stored only in this browser/);
   assert.match(page.textContent, /not shared or backed up/);
   assert.match(page.textContent, /Alt \+ ArrowLeft/);

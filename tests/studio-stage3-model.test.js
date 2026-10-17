@@ -90,7 +90,7 @@ test('report completeness follows child, semester and class without invented evi
   assert.deepEqual(prior.warnings, []);
   const all = reportsModel(ctx, { type: 'class', semester: '2026-S2' });
   assert.equal(all.reports.length, 20);
-  assert.ok(all.warnings.includes('李沐辰: Chinese: narrative not drafted'));
+  assert.ok(all.warnings.includes('Ellis B.: Chinese: narrative not drafted'));
   assert.equal(all.href, '#/print-class?sem=2026-S2');
   assert.deepEqual(reportsModel(ctx, { childId: 'missing' }).reports, []);
   ctx.records = [];

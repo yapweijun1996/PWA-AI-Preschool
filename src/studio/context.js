@@ -1,20 +1,25 @@
 import { CHILDREN, CLASS, seedRecords } from '../portfolio-seed.js';
 import { createStore } from '../portfolio-store.js';
 import {
-  emptyRecord, computeStatus, narrativeInputFor, validateRecord
+  DOMAINS, emptyRecord, computeStatus, narrativeInputFor, validateRecord
 } from '../portfolio-model.js';
 import {
   mockNarrative, generateNarrativesWithProvider, validateNarrativeText, NarrativeDraftError
 } from '../narrative.js';
 import { createPrivacyMask } from '../privacy-mask.js';
 import { STUDIO_CONFIG } from '../config.js';
+import { childInitials, normalizeChildName } from '../child-name.js';
 
 export function createContext({ storage = null, generateNarrative = mockNarrative,
   generateAI = generateNarrativesWithProvider, isOffline = () => false } = {}) {
   const store = createStore(storage);
   const listeners = new Set();
   const ctx = {
-    store, records: store.load(), children: CHILDREN, semester: '2026-S2',
+    store, records: store.load(),
+    children: CHILDREN.map(child => {
+      const name = store.childNames[child.id] ?? child.name;
+      return { ...child, name, initials: childInitials(name) };
+    }), semester: '2026-S2',
     provider: { id: 'mock', key: '', status: 'not tested' },
     rejections: new Map(), stale: new Set(), busy: false, message: '', saveStatus: '', isOffline,
     batch: null, draftError: '', retryDraft: null, route: '', failures: [],
@@ -77,10 +82,33 @@ function persistence(ctx) {
     persist() {
       clearTimeout(timer);
       if (!dirty) return;
-      const result = ctx.store.save(ctx.records);
+      const names = Object.fromEntries(ctx.children.map(child => [child.id, child.name]));
+      const result = ctx.store.save(ctx.records, names);
       dirty = !result.ok;
       ctx.saveStatus = result.ok ? 'Saved in this browser' : 'Not saved: storage unavailable';
       ctx.notify();
+    },
+    renameChild(id, value) {
+      if (ctx.busy) throw new Error('Wait for drafting to finish before changing the child name.');
+      const child = ctx.children.find(member => member.id === id);
+      if (!child) throw new Error('Child not found.');
+      const name = normalizeChildName(value);
+      if (name !== child.name) {
+        child.name = name;
+        child.initials = childInitials(name);
+        for (const record of ctx.records.filter(record => record.childId === id)) {
+          for (const { id: domainId } of DOMAINS) {
+            if (record.narratives[domainId])
+              ctx.stale.add(`${id}:${record.semester}:${domainId}`);
+          }
+          ctx.change(record);
+        }
+        dirty = true;
+        ctx.persist();
+      }
+      const duplicate = ctx.children.some(member => member.id !== id &&
+        member.name.toLocaleLowerCase('en') === name.toLocaleLowerCase('en'));
+      return { name, duplicate };
     },
     change(record) {
       record.reviewed = false;
@@ -99,6 +127,7 @@ function persistence(ctx) {
     },
     reset() {
       ctx.records = seedRecords();
+      ctx.children = CHILDREN.map(child => ({ ...child }));
       ctx.stale.clear();
       ctx.rejections.clear();
       ctx.batch = null;

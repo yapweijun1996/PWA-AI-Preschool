@@ -62,7 +62,7 @@ test('needing-work tasks name only canonical domains and identify missing eviden
 });
 
 test('roster filters actual semester status, names and the seeded class', () => {
-  const rows = studentsModel(CHILDREN, records, '2026-S2', { query: '李沐辰' });
+  const rows = studentsModel(CHILDREN, records, '2026-S2', { query: 'Ellis B.' });
   assert.equal(rows.length, 1);
   assert.equal(rows[0].child.id, 'C-05');
   assert.equal(rows[0].status, 'in-progress');
@@ -76,7 +76,7 @@ test('roster filters actual semester status, names and the seeded class', () => 
   assert.equal(studentsModel(CHILDREN, [], '2026-S2')[0].status, 'not-started');
   const untouched = studentsModel(CHILDREN, [], '2026-S2');
   assert.equal(untouched[0].compact, true);
-  const partial = studentsModel(CHILDREN, records, '2026-S2', { query: '李沐辰' });
+  const partial = studentsModel(CHILDREN, records, '2026-S2', { query: 'Ellis B.' });
   assert.equal(partial[0].compact, false);
 });
 
@@ -88,7 +88,8 @@ test('evidence combines child, domain, semester, type and multilingual text filt
   assert.equal(evidenceModel(CHILDREN, records,
     { ...filters, domain: 'chinese', type: 'comment', query: '华文问好' }).length, 1);
   assert.equal(evidenceModel(CHILDREN, records,
-    { ...filters, domain: 'english', type: 'photo', query: 'SAMPLE ACTIVITY 1' }).length, 1);
+    { ...filters, domain: 'english', type: 'photo',
+      query: items.find(item => item.type === 'photo').text.toUpperCase() }).length, 1);
   assert.equal(evidenceModel(CHILDREN, records,
     { ...filters, domain: 'chinese', type: 'photo' }).length, 0);
   assert.equal(evidenceModel(CHILDREN, records,

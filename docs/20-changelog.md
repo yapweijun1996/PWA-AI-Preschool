@@ -1,5 +1,17 @@
 # 20 — Documentation and Project Changelog
 
+## Free-form names and watermarked demo pictures — 2026-10-17
+
+- All 20 fictional seed identities now default to English names, retaining C-01–C-20, ratings, comments and semester progress.
+- Added a collapsed, accessible child-name editor with NFC normalisation, trimming, 1–60 Unicode code-point validation, control rejection, duplicate warnings and browser-store persistence. Initials preserve complete graphemes. Current names propagate through identity surfaces, search and masked drafting; existing prose is retained and narratives require review again after renaming.
+- Wired the 20 watermarked avatar WebPs and 12 deterministic scene WebPs into lists, profiles, editors, drafts and reports. Images lazy-load with dimensions; avatar failures reveal initials. Evidence captions distinguish AI illustrations, browser uploads and historical stored demo SVGs.
+- Added the demo-only photo-picker warning, browser-storage notice and About Pictures statement. Allowed image-only `blob:` URLs in CSP because the existing upload decoder uses temporary object URLs; script/style policies remain self-only.
+- Expanded generated service-worker precaching to 91 routes, including all 32 WebPs (1,061,816 bytes). No provider images or personal records are introduced.
+- Verification: `npm run check && npm test && npm run build` passed with 229/229 tests. Actual local Chromium QA exercised Unicode rename, Enter save, duplicates, reload, multilingual search, print identity, scene loading, avatar fallback and a synthetic icon upload/save/reload with its browser-upload marker. Offline class reload displayed all 20 cached avatars.
+- Final UI audits passed: `npm run ui:audit -- --quick` reported 0/60 failed combinations (`artifacts/ui-audit/2026-10-17T10-50-38-282Z/summary.md`); `npm run ui:audit` reported 0/150 (`artifacts/ui-audit/2026-10-17T10-51-57-019Z/summary.md`). These are heuristic layout checks, not physical-device or screen-reader acceptance.
+- Browser QA caught and corrected the editor’s inherited 64px header cap and a redundant global picture notice that pushed first-screen content down at 320px. Expanded name editing uses natural, non-sticky mobile flow; the closed control remains compact.
+- Live Gateway/OpenAI/Gemini, physical-device behavior and physical print output were not tested.
+
 ## Request-local privacy masking — 2026-10-17
 
 - Added browser-only request masking before narrative-provider calls and the Offline mock path, with local selected-child restoration, residual-identifier rejection and visible failure rather than silent mock fallback.

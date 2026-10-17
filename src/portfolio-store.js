@@ -1,4 +1,5 @@
 import { validateRecord } from './portfolio-model.js';
+import { normalizeChildName } from './child-name.js';
 
 const DEFAULT_KEY = 'ai-preschool-portfolios-v2';
 const copyRecords = records => records.map(record => validateRecord(record));
@@ -15,6 +16,15 @@ function validateRecords(records) {
   return normalized;
 }
 
+function validateChildNames(names = {}) {
+  if (!names || typeof names !== 'object' || Array.isArray(names))
+    throw new Error('Child names must be an object.');
+  return Object.fromEntries(Object.entries(names).map(([id, name]) => {
+    if (!/^C-(?:0[1-9]|1[0-9]|20)$/.test(id)) throw new Error('Unknown child name identity.');
+    return [id, normalizeChildName(name)];
+  }));
+}
+
 function parseEnvelope(text) {
   const envelope = JSON.parse(text);
   if (!envelope || typeof envelope !== 'object' || Array.isArray(envelope))
@@ -22,7 +32,8 @@ function parseEnvelope(text) {
   if (envelope.version !== 2) throw new Error('Unsupported portfolio storage version.');
   if (typeof envelope.savedAt !== 'string' || !Number.isFinite(Date.parse(envelope.savedAt)))
     throw new Error('Invalid portfolio savedAt timestamp.');
-  return { version: 2, savedAt: envelope.savedAt, records: validateRecords(envelope.records) };
+  return { version: 2, savedAt: envelope.savedAt, records: validateRecords(envelope.records),
+    childNames: validateChildNames(envelope.childNames) };
 }
 
 // Construction loads immediately; load() explicitly reloads storage and returns a
@@ -31,7 +42,7 @@ function parseEnvelope(text) {
 // reset() persists an empty v2 envelope. Import replaces, rather than merges,
 // records, rejects duplicate identities, and stamps a fresh local savedAt.
 export function createStore(storage, key = DEFAULT_KEY) {
-  let records = [], savedAt = new Date().toISOString(), lastError = null;
+  let records = [], childNames = {}, savedAt = new Date().toISOString(), lastError = null;
 
   function fail(error) {
     lastError = errorMessage(error);
@@ -45,30 +56,36 @@ export function createStore(storage, key = DEFAULT_KEY) {
       const text = storage.getItem(key);
       if (text === null) {
         records = [];
+        childNames = {};
         savedAt = new Date().toISOString();
       } else {
         const envelope = parseEnvelope(text);
         records = envelope.records;
+        childNames = envelope.childNames;
         savedAt = envelope.savedAt;
       }
       lastError = null;
     } catch (error) {
       records = [];
+      childNames = {};
       savedAt = new Date().toISOString();
       fail(error);
     }
     return copyRecords(records);
   }
 
-  function save(nextRecords) {
+  function save(nextRecords, nextChildNames = childNames) {
     try {
       const next = validateRecords(nextRecords);
+      const names = validateChildNames(nextChildNames);
       const timestamp = new Date().toISOString();
-      const serialized = JSON.stringify({ version: 2, savedAt: timestamp, records: next });
+      const serialized = JSON.stringify({ version: 2, savedAt: timestamp, records: next,
+        childNames: names });
       if (!storage || typeof storage.setItem !== 'function')
         throw new Error('Portfolio storage is unavailable.');
       storage.setItem(key, serialized);
       records = next;
+      childNames = names;
       savedAt = timestamp;
       lastError = null;
       return { ok: true };
@@ -97,12 +114,13 @@ export function createStore(storage, key = DEFAULT_KEY) {
   }
 
   function exportJson() {
-    return JSON.stringify({ version: 2, savedAt, records }, null, 2);
+    return JSON.stringify({ version: 2, savedAt, records, childNames }, null, 2);
   }
 
   function importJson(text) {
     try {
-      return save(parseEnvelope(text).records);
+      const envelope = parseEnvelope(text);
+      return save(envelope.records, envelope.childNames);
     } catch (error) {
       return fail(error);
     }
@@ -110,7 +128,8 @@ export function createStore(storage, key = DEFAULT_KEY) {
 
   load();
   return {
-    load, save, upsert, get, reset: () => save([]), exportJson, importJson,
+    load, save, upsert, get, reset: () => save([], {}), exportJson, importJson,
+    get childNames() { return { ...childNames }; },
     get lastError() {
       return lastError
     }

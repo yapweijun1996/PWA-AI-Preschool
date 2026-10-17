@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CLASS, CHILDREN, placeholderPhoto, seedRecords } from '../src/portfolio-seed.js';
+import { CLASS, CHILDREN, seedRecords } from '../src/portfolio-seed.js';
+import { samplePhoto } from '../src/demo-media.js';
 import { DOMAINS, RATINGS, recordProgress, validateRecord } from '../src/portfolio-model.js';
 
 function stateCounts(records, semester) {
@@ -12,13 +13,13 @@ function stateCounts(records, semester) {
   return counts;
 }
 
-test('the sample class has twenty unique fictional identities and six Chinese names', () => {
+test('the sample class has twenty unique English fictional identities', () => {
   assert.deepEqual(CLASS, { id: 'class-a', name: 'Class A (Sample)', teacher: 'Sample Teacher' });
   assert.equal(CHILDREN.length, 20);
   assert.deepEqual(CHILDREN.map(child => child.id), Array.from({ length: 20 }, (_, index) => `C-${String(index + 1).padStart(2, '0')}`));
   assert.equal(new Set(CHILDREN.map(child => child.id)).size, 20);
   assert.equal(new Set(CHILDREN.map(child => child.name)).size, 20);
-  assert.equal(CHILDREN.filter(child => /\p{Script=Han}/u.test(child.name)).length, 6);
+  assert.ok(CHILDREN.every(child => /^[A-Za-z]+ [A-Z]\.$/.test(child.name)));
   assert.ok(CHILDREN.every(child => typeof child.initials === 'string' && /^[A-Z]+$/.test(child.initials)));
 });
 
@@ -164,27 +165,16 @@ test('semester progress is mostly steady with bounded gains and isolated dips', 
   }
 });
 
-test('placeholder photos are deterministic, small, self-contained escaped SVG images', () => {
-  const label = '<script>"A&B\'s"</script>';
-  const uri = placeholderPhoto('same', label);
-  assert.equal(uri, placeholderPhoto('same', label));
-  assert.notEqual(uri, placeholderPhoto('other', label));
-  assert.match(uri, /^data:image\/svg\+xml,/);
-  assert.ok(Buffer.byteLength(uri, 'utf8') < 2048);
-  const svg = decodeURIComponent(uri.slice(uri.indexOf(',') + 1));
-  assert.ok(svg.includes('&lt;script&gt;&quot;A&amp;B&apos;s&quot;&lt;/script&gt;'));
-  assert.ok(!svg.includes('<script>'));
-  assert.doesNotMatch(svg, /(?:href=|<image|<foreignObject|<script|url\()/i);
-  assert.match(svg, /<rect/);
-  assert.match(svg, /<circle/);
-  assert.match(svg, /<path/);
-  assert.ok(Buffer.byteLength(placeholderPhoto('long', '😀<&"'.repeat(1000)), 'utf8') < 2048);
+test('sample photos use deterministic bundled scenes with meaningful descriptions', () => {
+  assert.deepEqual(samplePhoto('same'), samplePhoto('same'));
+  const scenes = new Set(Array.from({ length: 200 }, (_, index) => samplePhoto(index).src));
+  assert.equal(scenes.size, 12);
   for (const record of seedRecords()) {
     for (const entry of Object.values(record.domains)) {
       for (const photo of entry.photos) {
-        assert.match(photo.src, /^data:image\/svg\+xml,/);
-        assert.ok(Buffer.byteLength(photo.src, 'utf8') < 2048);
-        assert.ok(photo.id && photo.alt);
+        assert.match(photo.src, /^assets\/demo\/scene-(?:0[1-9]|1[0-2])\.webp$/);
+        assert.ok(photo.id && photo.alt.length > 20);
+        assert.deepEqual({ src: photo.src, alt: photo.alt }, samplePhoto(photo.id));
       }
     }
   }

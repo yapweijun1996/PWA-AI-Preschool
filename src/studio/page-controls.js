@@ -1,4 +1,4 @@
-import { el, button, link } from './ui.js';
+import { el, button, link, photoFigure } from './ui.js';
 import { buildRoute } from './router.js';
 
 export function selectField(label, options, value, change) {
@@ -60,12 +60,7 @@ export function evidenceCard(item) {
   const card = el('article', undefined, 'card');
   card.append(el('h3', `${item.childName} · ${item.semester}`), el('p', item.domainLabel));
   if (item.type === 'photo') {
-    const figure = el('figure', undefined, 'photo');
-    const image = el('img');
-    image.src = item.src;
-    image.alt = item.text;
-    figure.append(image, el('figcaption', item.text));
-    card.append(figure);
+    card.append(photoFigure({ src: item.src, alt: item.text }));
   } else card.append(el('p', item.text, 'evidence-text'));
   const action = editorLink('Open in editor', item);
   action.setAttribute('aria-label', `Open ${item.childName} ${item.domainLabel} in editor`);

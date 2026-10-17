@@ -1,6 +1,6 @@
-import { placeholderPhoto } from '../portfolio-seed.js';
+import { samplePhoto } from '../demo-media.js';
 import { fileToDataUri } from '../photo.js';
-import { el, button } from './ui.js';
+import { el, button, photoFigure } from './ui.js';
 
 export function photoControls(ctx, record, id) {
   const root = el('section', undefined, 'editor-photo-controls');
@@ -53,8 +53,8 @@ function uploadControls(ctx, record, id, state, add) {
   file.type = 'file';
   file.accept = 'image/*';
   label.append(file);
-  const sample = button('Add sample placeholder photo', () => add(
-    placeholderPhoto(`${record.childId}-${id}-${Date.now()}`, 'Fictional sample placeholder')));
+  const sample = button('Add sample illustration', () => add(
+    samplePhoto(`${record.childId}-${id}-${record.domains[id].photos.length}`).src));
   const update = () => {
     file.disabled = sample.disabled = ctx.busy || state.pending
       || record.domains[id].photos.length >= 6;
@@ -70,21 +70,22 @@ function uploadControls(ctx, record, id, state, add) {
     }
   });
   const localImage = el('details', undefined, 'editor-local-image');
-  localImage.append(el('summary', 'Choose a local fictional image'), label);
+  const notice = el('p', "Demo only: do not upload real children's photos", 'upload-demo-notice');
+  const storage = el('p', 'Images are stored only in this browser, not on a server. Clearing browser data removes them.',
+    'upload-storage-notice');
+  localImage.append(el('summary', 'Choose a local fictional image'), notice, storage, label);
   root.append(sample, localImage);
   return { root, update };
 }
 
 function pendingPhoto(src, save, cancel) {
-  const root = el('figure', undefined, 'photo editor-photo-pending');
-  const image = el('img');
-  image.src = src;
-  image.alt = 'Unsaved image preview';
+  const root = photoFigure({ src, alt: 'Unsaved fictional image preview' },
+    'photo editor-photo-pending');
   const altLabel = el('label', 'Required alt text before saving');
   const alt = el('input');
   alt.required = true;
   altLabel.append(alt);
-  root.append(image, altLabel, button('Save photo', () => {
+  root.append(altLabel, button('Save photo', () => {
     if (!alt.value.trim()) {
       alt.setCustomValidity('Alt text is required.');
       alt.reportValidity();
@@ -97,11 +98,9 @@ function pendingPhoto(src, save, cancel) {
 }
 
 function savedPhoto(photo, remove, changed) {
-  const figure = el('figure', undefined, 'photo editor-photo');
-  const image = el('img');
-  image.src = photo.src;
-  image.alt = photo.alt;
-  const caption = el('figcaption', photo.alt);
+  const figure = photoFigure(photo, 'photo editor-photo');
+  const image = figure.querySelector('img');
+  const caption = figure.querySelector('figcaption').querySelector('span');
   const details = el('details', undefined, 'editor-photo-details');
   details.append(el('summary', 'Edit photo'));
   const label = el('label', 'Photo alt text');
@@ -122,6 +121,6 @@ function savedPhoto(photo, remove, changed) {
     changed();
   });
   details.append(label, button('Remove photo', remove));
-  figure.append(image, caption, details);
+  figure.append(details);
   return figure;
 }

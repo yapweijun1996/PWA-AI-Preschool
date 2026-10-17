@@ -26,8 +26,13 @@ const assets = [
   'src/studio/pages/print.js', 'src/studio/pages/ai-settings.js', 'src/studio/pages/about.js',
   'src/report-model.js', 'src/report-view.js',
   'src/narrative.js', 'src/photo.js', 'src/portfolio-model.js', 'src/portfolio-seed.js', 'src/portfolio-store.js',
+  'src/demo-media.js', 'src/child-name.js',
   'src/config.js', 'src/providers.js', 'src/pwa.js',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png',
+  ...Array.from({ length: 20 }, (_, index) =>
+    `assets/demo/avatar-${String(index + 1).padStart(2, '0')}.webp`),
+  ...Array.from({ length: 12 }, (_, index) =>
+    `assets/demo/scene-${String(index + 1).padStart(2, '0')}.webp`),
 ];
 const inputs = [...assets, 'sw.js'];
 const hash = createHash('sha256');

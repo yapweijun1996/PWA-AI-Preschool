@@ -90,6 +90,7 @@ function topbar(ctx) {
   host.id = 'pwa-controls-host';
   pwa.append(el('summary', 'Offline and installation details'), host);
   root.append(el('strong', 'AI Preschool Studio', 'mobile-brand'), breadcrumb, label, chips);
+  let currentRoute = null;
   ctx.subscribe(() => {
     const model = providerChipModel(ctx.provider);
     provider.setAttribute('aria-label', model.full);
@@ -107,8 +108,10 @@ function topbar(ctx) {
     pwaChip.replaceChildren(pwaStatus);
     semester.value = ctx.semester;
     semester.disabled = ctx.busy;
+    if (currentRoute) update(currentRoute);
   });
   const update = route => {
+    currentRoute = route;
     const parent = NAV_ITEMS.find(item => item.name === parentModule(route.name));
     const child = ctx.children.find(child => child.id === route.childId);
     breadcrumb.replaceChildren(icon('home'), el('span', 'Home'));

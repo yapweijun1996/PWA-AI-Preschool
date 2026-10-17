@@ -105,10 +105,10 @@ test('editor switches a single domain panel and saves evidence without losing fo
   assert.equal(ctx.destination, 'C-06');
 });
 
-test('placeholder photo requires alt text and explicit saving before entering the record', async t => {
+test('sample illustration requires alt text and explicit saving before entering the record', async t => {
   const { ctx, page, find } = setup(t);
   const before = ctx.get('C-05').domains.english.photos.length;
-  await find('Add sample placeholder photo').emit('click');
+  await find('Add sample illustration').emit('click');
   await find('Save photo').emit('click');
   assert.equal(ctx.get('C-05').domains.english.photos.length, before);
   const alt = page.querySelectorAll('input').find(node => node.validationMessage);
@@ -187,19 +187,19 @@ test('editor keeps one compact child header and reactive provider settings acces
 });
 
 test('domain columns retain accessible comparison, photo editing and narrative provenance', async t => {
-  const { page, find } = setup(t);
+  const { ctx, page, find } = setup(t);
   const comparison = page.querySelectorAll('section')
     .find(node => node.className === 'editor-comparison');
   assert.match(comparison.attributes['aria-label'],
     /Semester 1: Emerging → Semester 2: Developing \(\+1\)/);
+  const originalAlt = ctx.get('C-05').domains.english.photos[0].alt;
   assert.equal(page.querySelectorAll('figcaption')[0].textContent,
-    'Fictional sample activity 1');
-  const alt = page.querySelectorAll('input').find(node => node.value ===
-    'Fictional sample activity 1');
+    originalAlt + 'AI-generated illustration, not a real child');
+  const alt = page.querySelectorAll('input').find(node => node.value === originalAlt);
   alt.value = 'Fictional updated activity';
   await alt.emit('change');
   assert.equal(page.querySelectorAll('figcaption')[0].textContent,
-    'Fictional updated activity');
+    'Fictional updated activityAI-generated illustration, not a real child');
   const source = page.querySelectorAll('p')
     .find(node => node.className === 'chip narrative-source');
   assert.equal(source.textContent, 'No narrative');
@@ -237,6 +237,67 @@ test('editor binds masked disclosure to its child and refreshes comments without
   comment.value = `${child.name} shares ideas with Avery W.`;
   await comment.emit('input');
   assert.equal(preview.textContent, buildNarrativePrompt(ctx.narrativeInput(child, record)));
-  assert.doesNotMatch(preview.textContent, /李沐辰|Avery|C-05/);
+  assert.doesNotMatch(preview.textContent, /Ellis|Avery|C-05/);
   assert.equal(page.querySelectorAll('select').length, 0);
+});
+
+test('sticky header provides a labelled free-form name editor with keyboard save and cancellation', async t => {
+  const { page, ctx, doc } = setup(t);
+  const input = page.querySelectorAll('input').find(node => node.id === 'child-name-C-05');
+  const form = page.querySelectorAll('form').find(node => node.className === 'editor-name-form');
+  const label = page.querySelectorAll('label').find(node => node.htmlFor === input.id);
+  const feedback = page.querySelectorAll('p').find(node => node.id === `${input.id}-feedback`);
+  const disclosure = page.querySelectorAll('details')
+    .find(node => node.className === 'editor-name-disclosure');
+  assert.equal(disclosure.open, false);
+  assert.equal(disclosure.querySelector('summary').textContent, 'Edit child name');
+  assert.ok(disclosure.querySelectorAll('form').includes(form));
+  disclosure.open = true;
+  assert.match(label.textContent, /Child name/);
+  assert.equal(input.type, 'text');
+  assert.match(input.attributes['aria-describedby'], /child-name-C-05-feedback/);
+  assert.equal(feedback.attributes.role, 'status');
+  input.focus();
+  input.value = '  E\u0301lodie Vale  ';
+  await input.emit('input');
+  await form.emit('submit');
+  assert.equal(input.value, 'Élodie Vale');
+  assert.equal(page.querySelector('h1').textContent, 'Élodie Vale');
+  assert.equal(doc.activeElement, input);
+  assert.equal(ctx.children[4].name, 'Élodie Vale');
+  assert.equal(page.querySelectorAll('img')[0].alt.startsWith('Élodie Vale:'), true);
+  assert.match(feedback.textContent, /review names/);
+  input.value = 'Unsaved edit';
+  await input.emit('keydown', { key: 'Escape' });
+  assert.equal(input.value, 'Élodie Vale');
+  assert.equal(ctx.children[4].name, 'Élodie Vale');
+  ctx.semester = '2026-S1';
+  ctx.notify();
+  assert.equal(page.querySelector('h1').textContent, 'Élodie Vale');
+});
+
+test('name validation rejects controls and long names, permits duplicates and locks during drafting', async t => {
+  const { page, ctx } = setup(t);
+  const input = page.querySelectorAll('input').find(node => node.id === 'child-name-C-05');
+  const form = page.querySelectorAll('form').find(node => node.className === 'editor-name-form');
+  const feedback = page.querySelectorAll('p').find(node => node.id === `${input.id}-feedback`);
+  page.querySelectorAll('details').find(node => node.className === 'editor-name-disclosure').open = true;
+  for (const value of [' ', 'A'.repeat(61), 'A\u0000B']) {
+    input.value = value;
+    await form.emit('submit');
+    assert.equal(input.attributes['aria-invalid'], 'true');
+    assert.ok(input.validationMessage);
+    assert.equal(ctx.children[4].name, 'Ellis B.');
+  }
+  input.value = ctx.children[0].name;
+  await input.emit('input');
+  assert.equal(input.attributes['aria-invalid'], 'false');
+  await form.emit('submit');
+  assert.match(feedback.textContent, /Another child has this name/);
+  assert.equal(ctx.children[4].id, 'C-05');
+  assert.equal(ctx.children[4].name, ctx.children[0].name);
+  ctx.busy = true;
+  ctx.notify();
+  assert.equal(input.disabled, true);
+  assert.equal(page.querySelectorAll('button').find(node => node.textContent === 'Save name').disabled, true);
 });
