@@ -16,6 +16,7 @@ Current product: **AI Preschool Studio** at the [live root](https://yapweijun199
 - [PWA acceptance contract](25-pwa-standard.md)
 - [Submission write-up, recorded evidence and production proposal](26-submission-writeup.md)
 - [Development UI audit harness](27-ui-audit.md)
+- [Browser privacy masking and legal-source limitations](28-privacy-masking.md)
 
 The [design SSOT](../design/README.md) owns routes/menu, 12 page specs, 24 WebP wireframes and shared tokens. Specs define copy/behavior, images visual intent and tokens enforceable values.
 

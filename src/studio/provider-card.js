@@ -1,5 +1,6 @@
 import { PROVIDER_LABELS } from '../class-view.js';
 import { el, link, offlineState } from './ui.js';
+import { privacyDisclosure } from './privacy-disclosure.js';
 
 export function providerCard(ctx) {
   const panel = el('section', undefined, 'provider-panel');
@@ -18,15 +19,15 @@ export function providerCard(ctx) {
     ctx.provider.key = '';
     ctx.provider.status = 'not tested';
     key.input.value = '';
+    if (ctx.provider.id !== 'mock') disclosure.querySelector('details').open = true;
     ctx.notify();
   });
   const status = el('p');
   status.setAttribute('role', 'status');
   const offline = offlineState();
-  const disclosure = el('details', undefined, 'provider-disclosure');
-  disclosure.append(el('summary', 'What is sent?'), el('p',
-    "Sends only the child's first name, ratings and comments to the selected provider. "
-    + 'Photos are never sent.'), status, link('Provider settings', '#/settings/ai'));
+  const disclosure = privacyDisclosure(ctx, { noticeInDetails: true });
+  disclosure.querySelector('details').append(status, link('Provider settings', '#/settings/ai'));
+  disclosure.querySelector('details').open = ctx.provider.id !== 'mock';
   panel.append(label, key.root, disclosure, offline);
   const refresh = () => {
     select.disabled = key.input.disabled = ctx.busy;
@@ -34,7 +35,7 @@ export function providerCard(ctx) {
     status.textContent = ctx.provider.status;
     offline.hidden = ctx.provider.id === 'mock' || !ctx.isOffline();
   };
-  panel.dispose = () => { unsubscribe(); key.input.value = ''; };
+  panel.dispose = () => { unsubscribe(); disclosure.dispose(); key.input.value = ''; };
   const unsubscribe = ctx.subscribe(refresh);
   refresh();
   return panel;

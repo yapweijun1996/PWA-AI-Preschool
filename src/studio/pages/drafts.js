@@ -2,6 +2,7 @@ import { PROVIDER_LABELS } from '../../class-view.js';
 import { draftsModel } from '../models/drafts-model.js';
 import { draftReadyChildren } from '../bulk-draft.js';
 import { el, button, link, chip, progressBar, emptyState, rejectedState } from '../ui.js';
+import { privacyDisclosure } from '../privacy-disclosure.js';
 
 export function render(ctx) {
   const root = el('section', undefined, 'drafts-page');
@@ -10,10 +11,10 @@ export function render(ctx) {
     el('p', 'Draft, review, and retry narratives for the class.'));
   const provider = el('section', undefined, 'provider-panel drafts-provider');
   const status = el('div', undefined, 'drafts-provider-status');
+  const disclosure = privacyDisclosure(ctx);
   provider.append(el('h2', 'Narrative provider'), status,
     link('Provider settings', '#/settings/ai'),
-    el('p', "Sends only the child's first name, ratings and comments. Photos are never sent.",
-      'provider-disclosure'));
+    disclosure);
   const batch = el('section', undefined, 'card draft-batch');
   const progress = el('div', undefined, 'draft-batch-progress');
   const run = button('', () =>
@@ -49,7 +50,8 @@ export function render(ctx) {
       + 'this history.', 'hint'),
     el('p', 'Review each narrative against teacher evidence. Local review is not authenticated '
       + 'approval or report release.', 'notice'));
-  root.dispose = ctx.subscribe(refresh);
+  const unsubscribe = ctx.subscribe(refresh);
+  root.dispose = () => { unsubscribe(); disclosure.dispose(); };
   refresh();
   return root;
 }

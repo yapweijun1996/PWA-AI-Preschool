@@ -1,10 +1,12 @@
 import {STUDIO_CONFIG} from './config.js';
+import {maskProviderText} from './privacy-mask.js';
 /**
  * Public demo transport. Never embeds credentials. BYOK secrets exist in page memory only.
  * Browser BYOK is for disposable sandbox/test keys and fictional data ONLY.
  */
 const GATEWAY=STUDIO_CONFIG.demoGateway.origin;
 export const providerModels={openai:'gpt-5-mini',gemini:'gemini-2.5-flash'};
+export const connectionProbePrompt='Connection probe only. Return only this JSON: {"ok":true}.';
 const deadline=30000;
 function httpError(status){
  const messages={
@@ -82,6 +84,8 @@ function getGeminiText(data){
  return text;
 }
 export async function requestProviderText({provider,key,model,prompt,fetchImpl=globalThis.fetch}){
+ // A final pattern scan also protects callers without a child-record context.
+ const safePrompt=maskProviderText(prompt);
  let raw;
  switch(provider){
   case 'gateway': {
@@ -89,19 +93,19 @@ export async function requestProviderText({provider,key,model,prompt,fetchImpl=g
    const session=await postJson(`${GATEWAY}/demo/session`,{}, {project_id:STUDIO_CONFIG.demoGateway.projectId},fetchImpl);
    const token=session.token;
    if(typeof token!=='string'||!token.trim())throw new Error('Gateway session returned no usable token. Verify the demo-session API schema.');
-   const result=await postJson(`${GATEWAY}/demo/v1/responses`,{Authorization:`Bearer ${token}`},{model:STUDIO_CONFIG.demoGateway.modelId,input:[{role:'user',content:[{type:'input_text',text:prompt}]}],stream:false},fetchImpl);
+   const result=await postJson(`${GATEWAY}/demo/v1/responses`,{Authorization:`Bearer ${token}`},{model:STUDIO_CONFIG.demoGateway.modelId,input:[{role:'user',content:[{type:'input_text',text:safePrompt}]}],stream:false},fetchImpl);
    raw=getResponseText(result);break;
   }
   case 'openai': {
    if(!key)throw new Error('Enter an OpenAI test API key in Provider settings.');
-   const result=await postJson('https://api.openai.com/v1/responses',{Authorization:`Bearer ${key}`},{model:model||providerModels.openai,input:[{role:'user',content:[{type:'input_text',text:prompt}]}],store:false},fetchImpl);
+   const result=await postJson('https://api.openai.com/v1/responses',{Authorization:`Bearer ${key}`},{model:model||providerModels.openai,input:[{role:'user',content:[{type:'input_text',text:safePrompt}]}],store:false},fetchImpl);
    raw=getResponseText(result);break;
   }
   case 'gemini': {
    if(!key)throw new Error('Enter a Gemini test API key in Provider settings.');
    const chosen=model||providerModels.gemini;
    if(!/^[a-z0-9][a-z0-9._-]{0,100}$/i.test(chosen))throw new Error('Invalid Gemini model name.');
-   const result=await postJson(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(chosen)}:generateContent`,{'x-goog-api-key':key},{contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{responseMimeType:'application/json'}},fetchImpl);
+   const result=await postJson(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(chosen)}:generateContent`,{'x-goog-api-key':key},{contents:[{role:'user',parts:[{text:safePrompt}]}],generationConfig:{responseMimeType:'application/json'}},fetchImpl);
    raw=getGeminiText(result);break;
   }
   default:throw new Error('Unsupported provider. Select a provider from settings.');
@@ -120,5 +124,5 @@ export async function probeProviderConnection({ provider, key = '', fetchImpl = 
     return;
   }
   await requestProviderText({ provider, key, fetchImpl,
-    prompt: 'Connection probe only. Return only this JSON: {"ok":true}.' });
+    prompt: connectionProbePrompt });
 }

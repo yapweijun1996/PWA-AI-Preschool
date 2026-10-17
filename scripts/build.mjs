@@ -14,6 +14,7 @@ const assets = [
   'src/studio/lists.css',
   'src/studio/context.js', 'src/studio/ui.js', 'src/studio/shell.js',
   'src/studio/provider-card.js', 'src/studio/bulk-draft.js', 'src/studio/editor-model.js',
+  'src/studio/privacy-disclosure.js', 'src/privacy-mask.js',
   'src/studio/domain-panel.js', 'src/studio/photo-controls.js', 'src/studio/narrative-controls.js',
   'src/studio/page-controls.js', 'src/studio/models/home-model.js',
   'src/studio/models/students-model.js', 'src/studio/models/profile-model.js',

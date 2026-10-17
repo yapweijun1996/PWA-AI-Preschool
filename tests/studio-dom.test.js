@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createContext } from '../src/studio/context.js';
 import { render } from '../src/studio/pages/child-editor.js';
+import { buildNarrativePrompt } from '../src/narrative.js';
+import { privacyNotice } from '../src/privacy-mask.js';
 
 class Element {
   constructor(tag, document) {
@@ -221,4 +223,20 @@ test('review counts live narratives and clearing text restores empty provenance'
   await input.emit('input');
   assert.match(hint.textContent, /0\/4 complete$/);
   assert.equal(sources[0].textContent, 'No narrative');
+});
+
+test('editor binds masked disclosure to its child and refreshes comments without exposing names', async t => {
+  const { page, ctx } = setup(t);
+  const child = ctx.children.find(member => member.id === 'C-05');
+  const record = ctx.get(child.id);
+  const preview = page.querySelectorAll('pre').find(node =>
+    node.attributes['aria-label'] === 'Exact masked model prompt');
+  assert.ok(page.textContent.includes(privacyNotice));
+  assert.equal(preview.textContent, buildNarrativePrompt(ctx.narrativeInput(child, record)));
+  const comment = page.querySelectorAll('textarea')[0];
+  comment.value = `${child.name} shares ideas with Avery W.`;
+  await comment.emit('input');
+  assert.equal(preview.textContent, buildNarrativePrompt(ctx.narrativeInput(child, record)));
+  assert.doesNotMatch(preview.textContent, /李沐辰|Avery|C-05/);
+  assert.equal(page.querySelectorAll('select').length, 0);
 });

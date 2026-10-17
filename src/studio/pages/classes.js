@@ -113,17 +113,17 @@ export function render(ctx, route = {}) {
       'Fictional demonstration only. Not an approved school system. '
       + 'Printed portfolios contain teacher-reviewable drafts, not assessments.',
       'classes-disclaimer'));
-  const disposeLayout = bindListLayout(root, provider, listing.tools, summary, controls, actions);
+  const disposeLayout = bindListLayout(root, provider, listing.tools, summary, controls, actions, ctx);
   refresh();
   return root;
 }
 
-function bindListLayout(root, provider, tools, summary, controls, actions) {
+function bindListLayout(root, provider, tools, summary, controls, actions, ctx) {
   const media = globalThis.matchMedia?.('(min-width: 1024px)');
   if (!media) return () => {};
   const print = actions.root.querySelector('a');
   const update = () => {
-    provider.querySelector('details').open = media.matches;
+    provider.querySelector('details').open = ctx.provider.id !== 'mock';
     actions.root.open = media.matches;
     if (media.matches) {
       root.insertBefore(summary, controls);

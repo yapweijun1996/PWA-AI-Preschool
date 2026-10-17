@@ -10,7 +10,7 @@ Each child-semester record has domain ratings/comments and abstract placeholder 
 
 ## Drafting and traceability
 
-`src/narrative.js` builds per-domain inputs from the child's first name, rating, educator comment and available previous rating. Photos are not sent to providers. Strict JSON parsing and grounding guards can reject output, but do not prove factual correctness. Rejections remain visible; no failed remote call silently becomes mock output.
+`src/narrative.js` builds per-domain inputs from a request-local child pseudonym, masked educator comments and current/previous ratings. Photos and identity metadata are not sent to providers. Known identifiers and contact patterns are masked in the browser; the reverse map is disposed after local selected-child restoration. Strict JSON parsing and grounding guards check masked and restored output but do not prove factual correctness or anonymisation. Rejections remain visible; no failed remote call silently becomes mock output. See [privacy masking](28-privacy-masking.md).
 
 Narratives distinguish `mock`, `ai` and `teacher` sources and retain available provider/model provenance and edited state. Review is local editable state, not authenticated authorship, approval or finalisation. Educators must compare every narrative with the supplied evidence. Do not infer diagnosis, personality, gender or unobserved achievements.
 

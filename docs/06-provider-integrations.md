@@ -60,7 +60,7 @@ Content-Type: application/json
 
 ## Studio narrative response contract
 
-`src/narrative.js` builds per-domain requests from the selected fictional child's first name, rating, comment and available previous rating. Photos are not sent. Strict JSON parsing, first-name/language constraints and grounding guards reject unsupported or malformed output without changing the existing narrative. See [semester data and traceability](05-data-and-rag.md) and the [submission write-up](26-submission-writeup.md).
+`src/narrative.js` builds per-domain requests using request-local pseudonyms, masked comments and current/previous ratings. `src/privacy-mask.js` removes known identifiers and contact patterns before provider dispatch; photos, filenames and image metadata are excluded. The disclosure previews the exact masked prompt. Strict JSON parsing and grounding run before and after local name restoration; the reverse map is disposed after the request. Pseudonymised text is not anonymous. See [privacy masking and limitations](28-privacy-masking.md) and [semester data and traceability](05-data-and-rag.md).
 
 These guards can reject faithful text or miss unsupported claims; they do not establish factual entailment or a quality benchmark. Teacher review remains mandatory. Provider/model/source metadata is recorded with accepted narratives; Offline mock is a separately selected, labelled deterministic mode, never a failure fallback.
 

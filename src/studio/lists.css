@@ -1,20 +1,15 @@
+.privacy-disclosure { min-width: 0; width: 100%; flex-basis: 100%; grid-column: 1 / -1; }
+.privacy-disclosure > p { margin-block: var(--space-2); }
+.privacy-disclosure summary { min-height: var(--control-min-height); align-content: center; cursor: pointer; }
+.privacy-disclosure select { display: block; width: 100%; }
+.privacy-prompt { white-space: pre-wrap; overflow-wrap: anywhere; max-width: 100%; font-size: var(--text-sm); }
 .list-chevron, .compact-empty, .compact-no-comparison, .domain-key { display: none; }
-.provider-disclosure summary { min-height: 44px; align-content: center; cursor: pointer; }
 .evidence-page > .chips button { min-width: var(--control-min-height); }
 @media screen and (min-width: 1024px) {
-  .provider-disclosure { display: contents; }
   .classes-actions { display: flex; flex-wrap: wrap; align-items: center; }
-  .classes-actions::details-content, .provider-disclosure::details-content { display: contents; }
+  .classes-actions::details-content { display: contents; }
   .classes-actions .classes-continue { order: -1; }
-  .provider-disclosure > summary, .classes-actions > summary { display: none; }
-  .provider-disclosure > p:not([role]) {
-    flex: 1 1 16rem; margin: 0; padding-left: var(--space-4);
-    border-left: 1px solid var(--color-line);
-    color: var(--color-muted); font-size: var(--text-sm);
-  }
-  .provider-disclosure > [role="status"] {
-    margin: 0; color: var(--color-muted); font-size: var(--text-xs);
-  }
+  .classes-actions > summary { display: none; }
 }
 @media screen and (max-width: 1023px) {
   .classes-page, .students-page, .evidence-page { min-width: 0; }
@@ -31,8 +26,10 @@
   }
   .classes-provider > label select { flex: 1; min-width: 0; width: 0; }
   .classes-provider > div, .classes-provider > section { grid-column: 1 / -1; }
-  .classes-provider .provider-disclosure { font-size: var(--text-xs); }
-  .classes-provider .provider-disclosure[open] { grid-column: 1 / -1; }
+  .classes-provider .privacy-disclosure { font-size: var(--text-xs); }
+  .classes-provider > .privacy-disclosure:not(:has(details[open])) {
+    grid-column: auto; width: auto;
+  }
   .classes-tools { margin: var(--space-1) 0; }
   .classes-tools label { width: 100%; }
   .classes-tools input { width: 100%; }

@@ -7,6 +7,7 @@ import { editorModel } from '../editor-model.js';
 import { domainPanel } from '../domain-panel.js';
 import { narrativeControls } from '../narrative-controls.js';
 import { PROVIDER_LABELS } from '../../class-view.js';
+import { privacyDisclosure } from '../privacy-disclosure.js';
 
 export function render(ctx, route) {
   const child = ctx.children.find(child => child.id === route.childId);
@@ -19,7 +20,7 @@ export function render(ctx, route) {
   const record = ctx.current(child.id);
   const root = el('section', undefined, 'child-editor');
   const header = childHeader(ctx, child, record);
-  const provider = compactProvider(ctx);
+  const provider = compactProvider(ctx, child, record);
   const tabs = editorTabs(ctx, child, record, route.domain);
   const draft = button('Draft all four', async () => {
     await ctx.runDraft(() => ctx.draft(child, record, DOMAINS.map(domain => domain.id)));
@@ -144,7 +145,7 @@ function refreshSave(ctx, save) {
   if (failed) save.append(button('Retry save', ctx.retrySave));
 }
 
-function compactProvider(ctx) {
+function compactProvider(ctx, child, record) {
   const root = el('div', undefined, 'editor-provider-line');
   root.setAttribute('role', 'group');
   root.setAttribute('aria-label', 'Narrative drafting tools');
@@ -152,9 +153,8 @@ function compactProvider(ctx) {
   settings.className = 'editor-provider-settings';
   const status = el('span', undefined, 'editor-provider-status');
   status.setAttribute('role', 'status');
-  const disclosure = el('span', 'Photos are never sent.', 'editor-provider-disclosure');
-  disclosure.title = "Only the child's first name, ratings and comments "
-    + 'are sent to the selected provider.';
+  const disclosure = privacyDisclosure(ctx, { child, record });
+  ctx.privacyPreviewChildId = child.id;
   root.append(settings, status, disclosure);
   const refresh = () => {
     settings.textContent = `Provider: ${PROVIDER_LABELS[ctx.provider.id]}`;
@@ -162,7 +162,7 @@ function compactProvider(ctx) {
   };
   const unsubscribe = ctx.subscribe(refresh);
   refresh();
-  return { root, dispose: unsubscribe };
+  return { root, dispose() { unsubscribe(); disclosure.dispose(); } };
 }
 
 function editorTabs(ctx, child, record, initialDomain) {

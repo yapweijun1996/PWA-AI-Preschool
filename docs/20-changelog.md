@@ -1,5 +1,15 @@
 # 20 — Documentation and Project Changelog
 
+## Request-local privacy masking — 2026-10-17
+
+- Added browser-only request masking before narrative-provider calls and the Offline mock path, with local selected-child restoration, residual-identifier rejection and visible failure rather than silent mock fallback.
+- Studio generation supplies all available child/record identities plus class, teacher, configured organisation and derived first-name variants as local-only masking metadata.
+- Replaced first-name transmission claims with the shared fictional-demo/pseudonymisation notice; class, child, drafts and provider settings disclose the exact masked prompt using the generation prompt builder. Settings distinguish the exact direct-provider connection probe from Gateway session creation.
+- Added UI coverage for preview refresh and selection, preview-to-network equality, excluded private metadata/images, nested aliases/guardians, offline masking and fail-closed visibility.
+- Added [privacy masking boundaries](28-privacy-masking.md), separating LAW, regulator GUIDANCE and implementation choices. Pseudonymisation is not anonymisation; gateway retention/training/processing locations and real-deployment legal arrangements remain unverified. Existing fictional portfolio persistence remains unchanged.
+- Verification: `npm run check && npm test && npm run build` passed with 212/212 tests and 57 precached routes. `npm run ui:audit -- --quick` reported 0/60 failed combinations; full `npm run ui:audit` reported 0/150 failed combinations. Reports: `artifacts/ui-audit/2026-10-17T10-29-24-919Z/summary.md` and `artifacts/ui-audit/2026-10-17T10-30-49-461Z/summary.md`. Heuristic warnings are not screen-reader or physical-device acceptance.
+- Actual local Chromium QA verified settings/editor masked previews, masked contacts, local child-name restoration, visible sensitive-input failure preserving the existing narrative, mobile external-provider notice expansion, and a fully visible first class card at 320×720. Live Gateway/OpenAI/Gemini availability, provider policies and legal acceptance were not tested.
+
 ## Root studio cutover — 2026-10-17
 
 - Made the studio the sole root product; `class.html` is a small redirect preserving hash routes, including child/editor and print destinations.

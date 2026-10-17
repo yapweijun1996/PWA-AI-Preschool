@@ -1,5 +1,7 @@
 import { el, button, link, chip, errorState, loadingState, offlineState } from '../ui.js';
 import { createSettingsModel, PROVIDER_CHOICES, KEY_WARNING } from '../models/settings-model.js';
+import { privacyDisclosure } from '../privacy-disclosure.js';
+import { connectionProbePrompt } from '../../providers.js';
 
 export function render(ctx) {
   const model = createSettingsModel(ctx);
@@ -17,6 +19,9 @@ export function render(ctx) {
     if (model.apply()) location.hash = '#/drafts';
     else refresh();
   }, true);
+  const disclosure = privacyDisclosure(ctx, { provider: () => model.state.id });
+  const probePreview = el('pre', undefined, 'privacy-prompt');
+  probePreview.setAttribute('aria-label', 'Exact connection probe payload');
   const refresh = () => {
     const keyed = ['openai', 'gemini'].includes(model.state.id);
     key.root.hidden = !keyed;
@@ -33,14 +38,19 @@ export function render(ctx) {
         : el('p', model.state.message);
     result.replaceChildren(chip(model.state.status), status);
     if (offline) result.append(offlineState());
+    probePreview.textContent = model.state.id === 'mock'
+      ? 'Offline mock: no connection request.'
+      : model.state.id === 'gateway'
+        ? 'Demo session only: no model prompt. Session project_id is configured for this demo.'
+        : connectionProbePrompt;
   };
   choices.addEventListener('change', refresh);
   connection.append(el('h2', 'Connection status'), result, test);
-  const disclosure = el('aside', undefined, 'provider-data-disclosure');
-  disclosure.append(
-    el('p', "Sends only the child's first name, ratings and comments. Photos are never sent."),
+  const probeDisclosure = el('details', undefined, 'privacy-probe');
+  probeDisclosure.append(el('summary', 'Connection probe payload'),
     el('p', 'A connection probe sends no child data. Browser memory is not secure key custody.',
-      'hint'));
+      'hint'), probePreview);
+  disclosure.append(probeDisclosure);
   const actions = el('div', undefined, 'toolbar settings-actions');
   actions.append(apply, link('Back to drafts', '#/drafts'));
   root.append(heading, choices, key.root, disclosure, connection, actions);
@@ -48,6 +58,7 @@ export function render(ctx) {
   root.dispose = () => {
     unsubscribe();
     model.dispose();
+    disclosure.dispose();
     key.input.value = '';
   };
   refresh();

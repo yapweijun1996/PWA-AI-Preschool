@@ -1,4 +1,4 @@
-import { CHILDREN, seedRecords } from '../portfolio-seed.js';
+import { CHILDREN, CLASS, seedRecords } from '../portfolio-seed.js';
 import { createStore } from '../portfolio-store.js';
 import {
   emptyRecord, computeStatus, narrativeInputFor, validateRecord
@@ -6,6 +6,8 @@ import {
 import {
   mockNarrative, generateNarrativesWithProvider, validateNarrativeText, NarrativeDraftError
 } from '../narrative.js';
+import { createPrivacyMask } from '../privacy-mask.js';
+import { STUDIO_CONFIG } from '../config.js';
 
 export function createContext({ storage = null, generateNarrative = mockNarrative,
   generateAI = generateNarrativesWithProvider, isOffline = () => false } = {}) {
@@ -50,6 +52,13 @@ export function createContext({ storage = null, generateNarrative = mockNarrativ
     }
   };
   Object.assign(ctx, persistence(ctx), {
+    narrativeInput: (child, record) => ({
+      ...narrativeInputFor(child, record,
+        record.semester.endsWith('S2') ? ctx.get(child.id, '2026-S1') : null),
+      knownIdentifiers: ctx.children.map(member => narrativeInputFor(member, record).firstName),
+      privacyMetadata: { child, children: ctx.children, record, records: ctx.records,
+        class: CLASS, organizationName: STUDIO_CONFIG.organizationName }
+    }),
     draft: (child, record, ids) => draft(ctx, child, record, ids, generateNarrative, generateAI),
     runDraft: action => runDraft(ctx, action)
   });
@@ -138,14 +147,25 @@ async function runDraft(ctx, action) {
 }
 
 async function draft(ctx, child, record, ids, generateNarrative, generateAI) {
-  const input = narrativeInputFor(child, record,
-    record.semester.endsWith('S2') ? ctx.get(child.id, '2026-S1') : null);
+  const input = ctx.narrativeInput(child, record);
   const result = { accepted: {}, rejected: {} };
   if (ctx.provider.id === 'mock') {
-    for (const id of ids) {
-      result.accepted[id] = await generateNarrative(input.domains[id], {
-        previousRating: input.domains[id].previousRating
-      });
+    let mask;
+    try {
+      mask = createPrivacyMask(input);
+      for (const id of ids) {
+        const domain = { ...mask.input.domains[id], id };
+        const narrative = await generateNarrative(domain, {
+          previousRating: domain.previousRating
+        });
+        mask.assertSafe(narrative.text);
+        result.accepted[id] = { ...narrative, text: mask.restore(narrative.text) };
+      }
+    } catch {
+      throw new NarrativeDraftError('Privacy masking failed. No text was sent. '
+        + 'Remove identifying or sensitive details and retry.');
+    } finally {
+      mask?.dispose();
     }
   } else {
     Object.assign(result, await generateAI({ provider: ctx.provider.id,
