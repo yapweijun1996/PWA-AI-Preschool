@@ -67,7 +67,7 @@ function workQueue(model, semester) {
       childId: row.child.id, semester, domain: row.domain
     });
     action.setAttribute('aria-label', `Open portfolio for ${row.child.name}`);
-    card.append(avatar(row.child), el('h3', row.child.name), statusChip(row.status),
+    card.append(avatar(row.child), el('h3', row.child.name, 'identity-text'), statusChip(row.status),
       el('p', row.task, 'home-work-task'), action);
     section.append(card);
   }

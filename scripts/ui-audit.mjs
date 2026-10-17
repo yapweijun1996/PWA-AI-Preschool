@@ -1,5 +1,8 @@
+// Full audit: node scripts/ui-audit.mjs (built dist required).
+// Defaults cover every key route, en/ms/zh-Hans, all viewports and both schemes.
+// Narrow example: --viewports=320x720,390x844 --locales=en,ms,zh-Hans
 import { readFile, mkdir } from 'node:fs/promises';
-import { parseArgs } from './ui-audit/options.mjs';
+import { parseArgs, auditMatrix } from './ui-audit/options.mjs';
 import { startServer } from './ui-audit/server.mjs';
 import { launchChrome } from './ui-audit/cdp.mjs';
 import { capture } from './ui-audit/capture.mjs';
@@ -16,21 +19,16 @@ async function main() {
     if (!options.url) server = await startServer('dist');
     chrome = await launchChrome();
     const results = [];
-    for (const route of options.routes) {
-      for (const viewport of options.viewports) {
-        for (const scheme of options.schemes) {
-          const context = { route, ...viewport, scheme };
-          const origin = options.url || server.url;
-          const base = new URL(origin);
-          const row = await capture(chrome.endpoint, base.href, context, options);
-          row.budgets = evaluateBudgets(row.metrics, context, budgets);
-          results.push(row);
-          const failed = row.budgets.filter(b => !b.passed && b.severity === 'fail');
-          console.log(`${failed.length ? 'FAIL' : 'PASS'} ${route} `
-            + `${viewport.width}x${viewport.height} ${scheme}: `
-            + failed.map(b => b.budget).join(', '));
-        }
-      }
+    for (const context of auditMatrix(options)) {
+      const origin = options.url || server.url;
+      const base = new URL(origin);
+      const row = await capture(chrome.endpoint, base.href, context, options);
+      row.budgets = evaluateBudgets(row.metrics, context, budgets);
+      results.push(row);
+      const failed = row.budgets.filter(b => !b.passed && b.severity === 'fail');
+      console.log(`${failed.length ? 'FAIL' : 'PASS'} ${context.route} `
+        + `${context.width}x${context.height} ${context.scheme} ${context.locale}: `
+        + failed.map(b => b.budget).join(', '));
     }
     const failures = await writeReport(options.out, results);
     console.log(`Summary: ${options.out}/summary.md (${failures}/${results.length} failed)`);

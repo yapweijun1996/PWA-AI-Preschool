@@ -1,6 +1,7 @@
 import { samplePhoto } from '../demo-media.js';
 import { fileToDataUri } from '../photo.js';
 import { el, button, photoFigure } from './ui.js';
+import { translateText } from '../i18n/index.js';
 
 export function photoControls(ctx, record, id) {
   const root = el('section', undefined, 'editor-photo-controls');
@@ -87,7 +88,7 @@ function pendingPhoto(src, save, cancel) {
   altLabel.append(alt);
   root.append(altLabel, button('Save photo', () => {
     if (!alt.value.trim()) {
-      alt.setCustomValidity('Alt text is required.');
+      alt.setCustomValidity(translateText('Alt text is required.'));
       alt.reportValidity();
       return;
     }
@@ -111,7 +112,7 @@ function savedPhoto(photo, remove, changed) {
   alt.addEventListener('input', () => alt.setCustomValidity(''));
   alt.addEventListener('change', () => {
     if (!alt.value.trim()) {
-      alt.setCustomValidity('Alt text is required.');
+      alt.setCustomValidity(translateText('Alt text is required.'));
       alt.reportValidity();
       return;
     }

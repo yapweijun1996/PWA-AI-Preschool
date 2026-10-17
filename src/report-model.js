@@ -1,11 +1,12 @@
 import { STUDIO_CONFIG } from './config.js';
 import { DOMAINS, RATINGS, parseSemester, validateRecord } from './portfolio-model.js';
 import { narrativeChip } from './class-view.js';
+import { narrativeLanguage, normalizeReportLanguage } from './report-language.js';
 
 export const REPORT_DISCLAIMER = 'Fictional demonstration data. AI-assisted drafts must be reviewed and approved by an educator before release.';
 const ratingLabel = value => RATINGS.find(rating => rating.value === value)?.label ?? 'Not rated';
 
-export function buildReport({ child, record, previousRecord, className = '', teacherName = '', generatedOn = '' }) {
+export function buildReport({ child, record, previousRecord, className = '', teacherName = '', generatedOn = '', language = 'en' }) {
   const current = validateRecord(record);
   if (current.childId !== child.id) throw new Error('Report child does not match record');
   const { year, half } = parseSemester(current.semester);
@@ -31,11 +32,13 @@ export function buildReport({ child, record, previousRecord, className = '', tea
     }
     return { id, label, ratingValue: entry.rating, ratingLabel: ratingLabel(entry.rating),
       comment: entry.comment,
-      narrative: draft?.text.trim() ? { text: draft.text, sourceLabel: narrativeChip(draft) } : null,
+      narrative: draft?.text.trim() ? { text: draft.text, sourceLabel: narrativeChip(draft),
+        language: narrativeLanguage(id, draft.language) } : null,
       photos: entry.photos.map(({ src, alt }) => ({ src, alt })),
       previous: half === 2 ? { ratingLabel: ratingLabel(prior) } : null, changeText };
   });
   return {
+    language: normalizeReportLanguage(language),
     header: { productName: STUDIO_CONFIG.productName,
       ...(STUDIO_CONFIG.organizationName.trim() ? { organizationName: STUDIO_CONFIG.organizationName } : {}),
       title: STUDIO_CONFIG.portfolioTitle },

@@ -1,8 +1,10 @@
 import { RATINGS } from '../portfolio-model.js';
 import { STATUS_LABELS } from '../class-view.js';
 import { avatarSource, ILLUSTRATION_CAPTION, photoProvenance } from '../demo-media.js';
+import { translateText } from '../i18n/index.js';
 
-export function avatar(child, className = 'avatar') {
+export function avatar(child, className = 'avatar', language) {
+  const label = text => language ? translateText(text, language) : text;
   const root = el('span', '', avatarClass(child.initials || '?', className));
   const fallback = el('span', child.initials || '?', 'avatar-initials');
   fallback.setAttribute('aria-hidden', 'true');
@@ -12,7 +14,7 @@ export function avatar(child, className = 'avatar') {
   if (src) {
     root.dataset.imageState = 'loading';
     const image = el('img');
-    image.alt = `${child.name}: ${ILLUSTRATION_CAPTION}`;
+    image.alt = label(`${child.name}: ${ILLUSTRATION_CAPTION}`);
     image.width = image.height = 48;
     image.loading = 'lazy';
     image.decoding = 'async';
@@ -26,13 +28,13 @@ export function avatar(child, className = 'avatar') {
       image.hidden = true;
       root.dataset.imageState = 'error';
       fallback.hidden = false;
-      root.setAttribute('aria-label', `${child.name} initials: ${child.initials || '?'}`);
+      root.setAttribute('aria-label', label(`${child.name} initials: ${child.initials || '?'}`));
     });
     root.append(image);
     image.src = src;
   } else {
     fallback.hidden = false;
-    root.setAttribute('aria-label', `${child.name} initials: ${child.initials || '?'}`);
+    root.setAttribute('aria-label', label(`${child.name} initials: ${child.initials || '?'}`));
   }
   return root;
 }
@@ -41,6 +43,7 @@ export function photoFigure(photo, className = 'photo') {
   const figure = el('figure', undefined, className);
   const image = el('img');
   image.alt = photo.alt;
+  image.dataset.i18n = 'off';
   image.width = 720;
   image.height = 480;
   image.loading = 'lazy';

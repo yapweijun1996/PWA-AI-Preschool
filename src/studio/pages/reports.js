@@ -1,6 +1,8 @@
 import { el, link, chip, emptyState, avatar } from '../ui.js';
 import { selectField } from '../page-controls.js';
 import { reportsModel } from '../models/reports-model.js';
+import { reportLanguageControl } from '../report-language-control.js';
+import { translateText } from '../../i18n/index.js';
 
 export function render(ctx, route = {}) {
   const root = el('section', undefined, 'reports-page');
@@ -10,8 +12,10 @@ export function render(ctx, route = {}) {
   if (route.semester) ctx.semester = route.semester;
   const selection = { type: 'child', childId: route.childId ?? ctx.children[0]?.id };
   const controls = el('div', undefined, 'toolbar report-selectors');
+  const language = reportLanguageControl(ctx);
   const child = selectField('Child', ctx.children.map(child => [child.id, child.name]),
     selection.childId, value => { selection.childId = value; refresh(); });
+  for (const option of child.querySelectorAll('option')) option.dataset.i18n = 'off';
   const type = selectField('Report type', [['child', 'Child report'], ['class', 'Class report']],
     selection.type, value => {
       selection.type = value;
@@ -44,27 +48,32 @@ export function render(ctx, route = {}) {
     print.href = model.href;
     print.hidden = !model.reports.length;
   };
-  root.append(heading, actions, controls, columns);
-  root.dispose = ctx.subscribe(refresh);
+  root.append(heading, actions, language, controls, columns);
+  const unsubscribe = ctx.subscribe(refresh);
+  root.dispose = () => { unsubscribe(); language.dispose(); };
   refresh();
   return root;
 }
 
 function reportThumbnail(report) {
+  const label = (tag, text, className) => el(tag, translateText(text, report.language), className);
   const page = el('article', undefined, 'report-thumbnail');
+  page.lang = report.language;
   page.append(avatar({ id: report.childId, name: report.childName,
-    initials: report.childInitials || '?' }));
+    initials: report.childInitials || '?' }, 'avatar', report.language));
   page.append(el('p', report.header.productName, 'report-thumbnail-brand'),
-    el('h3', report.header.title), el('h4', report.childName),
-    el('p', report.semesterLabel));
+    label('h3', report.header.title), el('h4', report.childName, 'identity-text'),
+    label('p', report.semesterLabel));
   for (const domain of report.domains) {
     const row = el('section', undefined, 'report-thumbnail-domain');
-    row.append(el('h5', domain.label), el('p', `Rating: ${domain.ratingLabel}`),
-      el('p', domain.comment || 'No comment recorded.', 'report-thumbnail-comment'));
+    const comment = domain.comment ? el('p', domain.comment, 'report-thumbnail-comment')
+      : label('p', 'No comment recorded.', 'report-thumbnail-comment');
+    if (domain.comment) comment.dataset.i18n = 'off';
+    row.append(label('h5', domain.label), label('p', `Rating: ${domain.ratingLabel}`), comment);
     page.append(row);
   }
-  if (!report.status.complete) page.append(el('p', 'INCOMPLETE', 'incomplete-chip chip'));
-  page.append(el('p', 'Open Print / Save as PDF to review the complete report.', 'hint'));
+  if (!report.status.complete) page.append(label('p', 'INCOMPLETE', 'incomplete-chip chip'));
+  page.append(label('p', 'Open Print / Save as PDF to review the complete report.', 'hint'));
   return page;
 }
 

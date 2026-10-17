@@ -12,8 +12,9 @@ export const DEFAULT_VIEWPORTS = Object.freeze([
   {width: 768, height: 1024}, {width: 1440, height: 900}
 ].map(Object.freeze));
 export const DEFAULT_SCHEMES = Object.freeze(['light', 'dark']);
+export const DEFAULT_LOCALES = Object.freeze(['en', 'ms', 'zh-Hans']);
 const quickViewports = [DEFAULT_VIEWPORTS[1], DEFAULT_VIEWPORTS[4]];
-const valueFlags = new Set(['routes', 'viewports', 'schemes', 'out', 'url']);
+const valueFlags = new Set(['routes', 'viewports', 'schemes', 'locales', 'out', 'url']);
 
 function splitValues(value, flag) {
   const values = value.split(',').map((part) => part.trim());
@@ -56,6 +57,9 @@ function assignValue(options, flag, value) {
     if (flag === 'schemes' && values.some((scheme) => !DEFAULT_SCHEMES.includes(scheme))) {
       throw new Error('--schemes accepts only light and dark');
     }
+    if (flag === 'locales' && values.some((locale) => !DEFAULT_LOCALES.includes(locale))) {
+      throw new Error('--locales accepts only en, ms and zh-Hans');
+    }
     if (flag === 'routes' && values.some((route) => !route.startsWith('#/'))) {
       throw new Error('--routes requires hash routes beginning with #/');
     }
@@ -68,6 +72,7 @@ export function parseArgs(argv = []) {
   const options = {
     routes: [...DEFAULT_ROUTES], viewports: DEFAULT_VIEWPORTS.map((size) => ({...size})),
     schemes: [...DEFAULT_SCHEMES], out: `artifacts/ui-audit/${timestamp}`,
+    locales: [...DEFAULT_LOCALES],
     url: null, quick: false, screenshots: true
   };
   for (let index = 0; index < argv.length; index += 1) {
@@ -93,4 +98,14 @@ export function routeSlug(route) {
   const slug = route.replace(/^#\//, '').toLowerCase().replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
   return slug || 'home';
+}
+
+export function auditMatrix(options) {
+  return options.routes.flatMap((route) => options.viewports.flatMap((viewport) =>
+    options.schemes.flatMap((scheme) => options.locales.map((locale) =>
+      ({route, ...viewport, scheme, locale})))));
+}
+
+export function captureName({route, width, height, scheme, locale}) {
+  return `${routeSlug(route)}__${width}x${height}__${scheme}__${locale}`;
 }

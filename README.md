@@ -6,7 +6,7 @@ A neutral, fictional-data static PWA for class portfolios: 20 sample children, s
 
 > Use fictional records only. Never enter real child, family, staff, photo, voice or workplace data. Browser storage and local review are not secure records storage or authenticated approval.
 
-**Status (2026-10-17):** browser-only fictional-data prototype, not a production school system. This README/history update inspected source and Git history; it did not recheck the published build or exercise providers. See the [changelog](docs/CHANGELOG.md) for the integration owner's supplied automated gate result; historical QA remains revision-specific.
+**Status (2026-10-17):** browser-only fictional-data prototype, not a production school system. The i18n update is local; its final integration verification will be recorded separately in the [changelog](docs/CHANGELOG.md) by the integration owner. This documentation update did not inspect Git history or reverify the published build, live providers or Gateway. Historical QA remains revision-specific; machine-translated locale coverage is not native-speaker acceptance.
 
 ## Local use
 
@@ -33,7 +33,9 @@ The dependency-free build stages `index.html`, the compatibility redirect, `stud
 
 **Not implemented:** real login, roles, tenant isolation, application server/database, private object storage, authenticated approval/finalisation, vector RAG, server PDF, production AI hosting, classroom tracking or inter-school transfer. No measured time-saving, edit-rate or quality benefit is claimed.
 
-The UI is English; existing Simplified Chinese domain narratives and report support are not a complete translated application. An `en` / `ms` / `zh-Hans` UI, formal measurement and PDPA/DPIA work remain planned.
+The UI has `en`, `ms` and `zh-Hans` catalogs. Select **English**, **Bahasa Melayu** or **简体中文** in the desktop top bar or mobile **More** sheet. English is the default with no browser-language autodetection; explicit choices persist through guarded `localStorage` access. Translations are machine-translated **UNREVIEWED**; native-speaker review is still required, as disclosed in About. This is not production or privacy/security acceptance.
+
+The independent report/narrative language preference controls printed document labels and newly drafted text; the Chinese domain always stays `zh-Hans`. Changing either preference does not translate stored drafts or alter supplied evidence. `src/i18n/` catalogs use a pure `t` helper with named parameters and `Intl` formatting. Generate the native-review CSV with `npm run i18n:review-sheet` (`artifacts/i18n-review-sheet.csv`). Formal measurement and PDPA/DPIA work remain planned.
 
 ## Development and references
 

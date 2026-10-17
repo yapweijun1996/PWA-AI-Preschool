@@ -27,6 +27,8 @@ const assets = [
   'src/report-model.js', 'src/report-view.js',
   'src/narrative.js', 'src/photo.js', 'src/portfolio-model.js', 'src/portfolio-seed.js', 'src/portfolio-store.js',
   'src/demo-media.js', 'src/child-name.js',
+  'src/i18n/index.js', 'src/i18n/en.js', 'src/i18n/ms.js', 'src/i18n/zh-Hans.js',
+  'src/report-language.js', 'src/studio/report-language-control.js',
   'src/config.js', 'src/providers.js', 'src/pwa.js',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png',
   ...Array.from({ length: 20 }, (_, index) =>

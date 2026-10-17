@@ -39,7 +39,7 @@ Eight primary destinations: Home, Class portfolios, Students, Evidence library, 
 
 ## Known limitations and alignment
 
-No measured teacher time saving or edit percentage; factual/spelling/completeness checks still require staff review. Local review is not authenticated release approval. Browser storage is neither encrypted private records storage nor a backup. Full i18n en/ms/zh-Hans, private backend and operational/legal readiness are planned, not delivered. Production authentication, tenant RLS, vector RAG, classroom tracking and inter-school transfer are **NOT IMPLEMENTED**.
+No measured teacher time saving or edit percentage; factual/spelling/completeness checks still require staff review. Local review is not authenticated release approval. Browser storage is neither encrypted private records storage nor a backup. Implemented en/ms/zh-Hans catalogs use pure `t` with named parameters and `Intl`; translations are machine-translated **UNREVIEWED** and require native-speaker review. Native-name selectors appear in the desktop top bar/mobile More, default to English without autodetection and persist explicit choices through guarded `localStorage`. The independent report/narrative preference controls printed labels and new drafts; Chinese-domain output remains `zh-Hans`, with stored drafts and evidence unchanged. See the [root README](../README.md) for the review CSV. Private backend and operational/legal readiness remain planned, not delivered. Production authentication, tenant RLS, vector RAG, classroom tracking and inter-school transfer are **NOT IMPLEMENTED**.
 
 ### Singapore PDPA/PDPC alignment notes
 

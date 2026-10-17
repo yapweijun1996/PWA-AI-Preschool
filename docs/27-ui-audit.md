@@ -12,25 +12,28 @@ npm run build && npm run ui:audit
 npm run ui:audit -- --quick
 npm run ui:audit -- --url https://example.org/demo/ --quick
 npm run ui:audit -- --routes '#/classes,#/students' --viewports 390x844 --schemes dark
+npm run ui:audit -- --locales en,ms,zh-Hans --quick
 npm run ui:audit -- --no-screenshots --out artifacts/ui-audit/local
 ```
 
 Without `--url`, a loopback HTTP server serves `dist/` on an ephemeral port.
 Remote URLs must use HTTP(S), have a host and contain no credentials.
-Each route/viewport/scheme uses a fresh Chrome target and clears origin storage including
+Each route/viewport/scheme/locale uses a fresh Chrome target and clears origin storage including
 service workers before navigation. Do not point the audit at an origin whose browser storage
 must be preserved in this temporary browser profile. No production authentication is supplied.
 The harness waits for an h1 and fonts, checks exact CSS viewport width, and checks PNG width
 against twice the CSS width. Chrome and the temporary profile are cleaned up on completion.
 
-The default matrix includes all main routes and editor domain tabs, five viewport sizes and
-both colour schemes. `--quick` selects 390x844 and 1440x900 with both schemes.
-Routes, viewports and schemes accept comma-separated lists.
+The default matrix includes 15 routes (including editor domain tabs), five viewport sizes,
+both colour schemes and all three locales: **450 combinations** (`15 × 5 × 2 × 3`).
+`--quick` selects 390x844 and 1440x900 with both schemes and all locales: **180 combinations**.
+Routes, viewports, schemes and `--locales` accept comma-separated lists; supported locales
+are `en`, `ms` and `zh-Hans`. These are matrix definitions, not a claim that the current run passed.
 
 ## Outputs and budgets
 
 `artifacts/ui-audit/<UTC timestamp>/` contains `summary.json` and `summary.md`.
-Each `<route-slug>__<width>x<height>__<scheme>/` contains `metrics.json`, `full.png` and up to
+Each `<route-slug>__<width>x<height>__<scheme>__<locale>/` contains `metrics.json`, `full.png` and up to
 eight viewport PNGs spanning the page. All PNGs use device scale factor 2.
 `--no-screenshots` keeps metrics and reports without PNGs.
 

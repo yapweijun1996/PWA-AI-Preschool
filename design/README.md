@@ -44,6 +44,8 @@ Desktop uses `AppShell` with `SidebarNav`, `TopBar` and `DemoNotice`. The fixed 
 
 At mobile width, the sidebar becomes the five-tab `MobileTabBar`: Home, Classes, Students, Drafts, More. Child pages highlight their parent tab; More opens Evidence library, Reports, AI provider settings and About and privacy. P09 is a print document without app navigation and retains its report disclaimer. P12 is a reference sheet, not a product route.
 
+The desktop top bar and mobile More sheet offer native-name UI selectors: English, Bahasa Melayu and 简体中文. English is the default, with no autodetection; guarded `localStorage` remembers explicit choices. The independent report/narrative preference affects printed labels and new drafts, not stored drafts or evidence; the Chinese domain always uses `zh-Hans`. Catalog translations are machine-translated **UNREVIEWED**, with native-speaker review still required (also disclosed in About). Existing English wireframe text is not evidence of locale acceptance.
+
 `index.html` mounts `src/studio/app.js` and the shared studio shell. `class.html` is only a hash-preserving root redirect. `legacyRedirect()` preserves `#/child/:id?sem=…`; unknown routes show Home with a visible notice. Real login, server/database, authenticated approval, vector RAG and production AI hosting remain NOT IMPLEMENTED.
 
 ## Historical build sequence

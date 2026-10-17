@@ -3,8 +3,9 @@ import { join } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import { connect, evaluate } from './cdp.mjs';
 import { collectMetrics } from './metrics.mjs';
-import { routeSlug } from './options.mjs';
+import { captureName } from './options.mjs';
 import { readFile } from 'node:fs/promises';
+import {setLocale, translateText} from '../../src/i18n/index.js';
 
 const { firstScreenSelectors } = JSON.parse(await readFile(
   new URL('../ui-audit.budgets.json', import.meta.url), 'utf8'
@@ -56,7 +57,7 @@ async function screenshots(cdp, directory, width, height, documentHeight) {
 
 export async function capture(endpoint, base, context, options) {
   const { route, width, height, scheme } = context;
-  const name = `${routeSlug(route)}__${width}x${height}__${scheme}`;
+  const name = captureName(context);
   const directory = join(options.out, name);
   await mkdir(directory, { recursive: true });
   const target = await fetch(`${endpoint}/json/new?about:blank`, { method: 'PUT' })
@@ -78,9 +79,13 @@ export async function capture(endpoint, base, context, options) {
     await cdp.send('Page.navigate', { url: `${base.replace(/#.*$/, '')}${route}` });
     await ready(cdp);
     const metrics = await evaluate(cdp,
-      `(${collectMetrics.toString()})(${JSON.stringify(firstScreenSelectors)})`);
+      `(${collectMetrics.toString()})(${JSON.stringify(localizedSelectors(context.locale))})`);
     if (metrics.innerWidth !== width) {
       throw new Error(`Emulation self-check failed: innerWidth ${metrics.innerWidth} != ${width}`);
+    }
+    metrics.locale = await evaluate(cdp, 'document.documentElement.lang');
+    if (metrics.locale !== context.locale) {
+      throw new Error(`Locale self-check failed: ${metrics.locale} != ${context.locale}`);
     }
     metrics.consoleErrors = errors.length;
     metrics.errors = errors;
@@ -96,7 +101,7 @@ export async function capture(endpoint, base, context, options) {
   }
 }
 
-async function prepare(cdp, base, { width, height, scheme }) {
+export async function prepare(cdp, base, { width, height, scheme, locale }) {
   await cdp.send('Page.enable');
   await cdp.send('Runtime.enable');
   await cdp.send('Log.enable');
@@ -109,4 +114,21 @@ async function prepare(cdp, base, { width, height, scheme }) {
   await cdp.send('Storage.clearDataForOrigin', {
     origin: new URL(base).origin, storageTypes: 'all'
   });
+  await cdp.send('Page.addScriptToEvaluateOnNewDocument', {
+    source: localeInitialization(base, locale)
+  });
+}
+
+export function localeInitialization(base, locale) {
+  return `if (location.origin === ${JSON.stringify(new URL(base).origin)}) {
+    localStorage.setItem('ai-preschool-ui-language', ${JSON.stringify(locale)});
+  }`;
+}
+
+export function localizedSelectors(locale) {
+  setLocale(locale);
+  return Object.fromEntries(Object.entries(firstScreenSelectors).map(([route, selectors]) =>
+    [route, selectors.map(selector => ({
+      ...selector, ...(selector.text ? {text: translateText(selector.text)} : {})
+    }))]));
 }

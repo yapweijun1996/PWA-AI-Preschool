@@ -2,6 +2,7 @@ import { el, button, link, chip, errorState, loadingState, offlineState } from '
 import { createSettingsModel, PROVIDER_CHOICES, KEY_WARNING } from '../models/settings-model.js';
 import { privacyDisclosure } from '../privacy-disclosure.js';
 import { connectionProbePrompt } from '../../providers.js';
+import { reportLanguageControl } from '../report-language-control.js';
 
 export function render(ctx) {
   const model = createSettingsModel(ctx);
@@ -11,6 +12,7 @@ export function render(ctx) {
     el('p', 'Choose how narrative drafts are generated.'));
   const choices = providerChoices(model);
   const key = disposableKey(model);
+  const language = reportLanguageControl(ctx);
   const connection = el('section', undefined, 'card provider-connection');
   const result = el('div', undefined, 'provider-connection-result');
   result.setAttribute('aria-live', 'polite');
@@ -53,12 +55,13 @@ export function render(ctx) {
   disclosure.append(probeDisclosure);
   const actions = el('div', undefined, 'toolbar settings-actions');
   actions.append(apply, link('Back to drafts', '#/drafts'));
-  root.append(heading, choices, key.root, disclosure, connection, actions);
+  root.append(heading, choices, language, key.root, disclosure, connection, actions);
   const unsubscribe = ctx.subscribe(refresh);
   root.dispose = () => {
     unsubscribe();
     model.dispose();
     disclosure.dispose();
+    language.dispose();
     key.input.value = '';
   };
   refresh();

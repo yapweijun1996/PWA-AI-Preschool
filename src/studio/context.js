@@ -9,6 +9,7 @@ import {
 import { createPrivacyMask } from '../privacy-mask.js';
 import { STUDIO_CONFIG } from '../config.js';
 import { childInitials, normalizeChildName } from '../child-name.js';
+import { loadReportLanguage, saveReportLanguage, normalizeReportLanguage, narrativeLanguage } from '../report-language.js';
 
 export function createContext({ storage = null, generateNarrative = mockNarrative,
   generateAI = generateNarrativesWithProvider, isOffline = () => false } = {}) {
@@ -22,6 +23,14 @@ export function createContext({ storage = null, generateNarrative = mockNarrativ
     }), semester: '2026-S2',
     childNameHistory: store.childNameHistory,
     provider: { id: 'mock', key: '', status: 'not tested' },
+    reportLanguage: loadReportLanguage(storage),
+    reportLanguageSaved: true,
+    setReportLanguage(value) {
+      if (ctx.busy) return;
+      ctx.reportLanguage = normalizeReportLanguage(value);
+      ctx.reportLanguageSaved = saveReportLanguage(storage, ctx.reportLanguage);
+      ctx.notify();
+    },
     rejections: new Map(), stale: new Set(), busy: false, message: '', saveStatus: '', isOffline,
     batch: null, draftError: '', retryDraft: null, route: '', failures: [],
     routeVersion: 0,
@@ -61,6 +70,7 @@ export function createContext({ storage = null, generateNarrative = mockNarrativ
     narrativeInput: (child, record) => ({
       ...narrativeInputFor(child, record,
         record.semester.endsWith('S2') ? ctx.get(child.id, '2026-S1') : null),
+      reportLanguage: ctx.reportLanguage,
       knownIdentifiers: ctx.children.map(member => narrativeInputFor(member, record).firstName),
       privacyMetadata: { child, children: ctx.children, record, records: ctx.records,
         class: CLASS, organizationName: STUDIO_CONFIG.organizationName }
@@ -237,10 +247,11 @@ async function draft(ctx, child, record, ids, generateNarrative, generateAI) {
       for (const id of ids) {
         const domain = { ...mask.input.domains[id], id };
         const narrative = await generateNarrative(domain, {
-          previousRating: domain.previousRating
+          previousRating: domain.previousRating, reportLanguage: input.reportLanguage
         });
         mask.assertSafe(narrative.text);
-        result.accepted[id] = { ...narrative, text: mask.restore(narrative.text) };
+        result.accepted[id] = { ...narrative, text: mask.restore(narrative.text),
+          language: narrativeLanguage(id, input.reportLanguage) };
       }
     } catch {
       throw new NarrativeDraftError('Privacy masking failed. No text was sent. '

@@ -188,7 +188,7 @@ test('generation grounds every domain before returning provenance, including no-
   const result = await generateNarrativesWithProvider({ provider: 'openai', key, childInput: input,
     requestText: async options => maskedReply(options) });
   assert.deepEqual(result.accepted.english, { text: faithful().english, source: 'ai', edited: false,
-    provider: 'openai', model: providerModels.openai });
+    provider: 'openai', model: providerModels.openai, language: 'en' });
   assert.deepEqual(input, before);
   input.domains.chinese.noEvidence = true;
   const noChinese = { ...faithful(), chinese: noEvidenceChineseText };

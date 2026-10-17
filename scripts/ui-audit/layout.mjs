@@ -18,13 +18,19 @@ export function unionHeight(intervals) {
   return height;
 }
 
+export function hasWordBreakOpportunity(value, locale = 'en') {
+  const words = [...new Intl.Segmenter(locale, { granularity: 'word' }).segment(value)];
+  return words.length > 1;
+}
+
 export function measureBrokenWords(ctx, texts) {
   const brokenWords = [];
   const canvas = document.createElement('canvas');
   const painter = canvas.getContext('2d');
   for (const node of texts) {
     const value = ctx.text(node);
-    if (!value || /\s/.test(value) || node.matches('input,textarea,select')) continue;
+    if (!value || /\s/.test(value) || hasWordBreakOpportunity(value, document.documentElement.lang)
+      || node.matches('input,textarea,select')) continue;
     const style = ctx.style(node);
     if (intentionalClip(style, node.getBoundingClientRect())) continue;
     painter.font = style.font;

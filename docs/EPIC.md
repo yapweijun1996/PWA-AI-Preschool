@@ -13,7 +13,7 @@ This document describes outcomes and proposed work, not contractual targets. Cur
 1. Educators can assemble evidence and obtain a near-final draft that remains editable and requires educator approval before release.
 2. Every material claim is attributable to the correct child's recorded evidence; missing evidence stays visibly missing rather than becoming an invented developmental achievement.
 3. Total educator time, including verification, correction and formatting, decreases relative to an observed manual baseline without lowering correctness or increasing privacy risk.
-4. Approved portfolio structure and language are usable for educators and recipients; planned interface locales are `en`, `ms` and `zh-Hans`.
+4. Approved portfolio structure and language are usable for educators and recipients; implemented interface locales are `en`, `ms` and `zh-Hans`, with machine-translated **UNREVIEWED** catalogs pending native-speaker review.
 5. Any future real-data service demonstrably enforces authorization, controlled disclosure and data lifecycle obligations.
 
 ### Assumptions and proposed thresholds — not agreed results
@@ -68,11 +68,11 @@ This document describes outcomes and proposed work, not contractual targets. Cur
 
 **User outcome:** Educators can finish a correct, formatted portfolio efficiently across the intended devices and languages, with measurable total effort rather than unsupported productivity claims.
 
-**Present implementation:** English UI, multilingual name/input handling, Chinese-domain narrative support, responsive module pages and a build-time offline/update mechanism. Evidence: `src/child-name.js`, `src/narrative.js`, `src/pwa.js`, `sw.js`; `tests/child-name.test.js`, `tests/narrative-ai.test.js`, `tests/pwa.test.js`. Full interface i18n and outcome measurement are **NOT IMPLEMENTED**.
+**Present implementation:** `en`/`ms`/`zh-Hans` catalogs, native-name UI selectors, multilingual name/input handling, independent report/narrative preference, Chinese-domain invariant, responsive module pages and a build-time offline/update mechanism. Catalog translations are machine-translated **UNREVIEWED**; native-speaker review is still required. Evidence: `src/i18n/`, `src/child-name.js`, `src/narrative.js`, `src/pwa.js`, `sw.js`. Outcome measurement is **NOT IMPLEMENTED**; implemented locale support is not native-review or browser/accessibility/print acceptance.
 
-**Acceptance:** Hosted/device/accessibility/print journeys are evidenced separately from Node tests. Full `en`/`ms`/`zh-Hans` localisation requires reviewed catalogues and locale regression tests. A controlled study reports manual versus assisted total minutes, review/correction time, proposed edit metric, correctness failures, costs and uncertainty; quality thresholds are agreed before observing outcomes.
+**Acceptance:** Hosted/device/accessibility/print journeys are evidenced separately from Node tests. Native speakers must review the implemented `en`/`ms`/`zh-Hans` catalogs using `npm run i18n:review-sheet` and record terminology/copy decisions; locale regression and print acceptance remain gates. A controlled study reports manual versus assisted total minutes, review/correction time, proposed edit metric, correctness failures, costs and uncertainty; quality thresholds are agreed before observing outcomes.
 
-**Work packages:** D3, P6–P7. **Boundary:** Multilingual identity support and a Chinese narrative domain do not equal a translated interface.
+**Work packages:** D3, P6–P7. **Boundary:** Machine-translated interface coverage is not reviewed language quality, measured benefit or production/security/privacy acceptance; stored drafts and evidence stay unchanged on locale changes.
 
 ## Explicit exclusions
 

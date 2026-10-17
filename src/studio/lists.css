@@ -142,6 +142,51 @@
     width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: contain;
   }
 }
+@media screen and (max-width: 600px) {
+  html:lang(ms) .class-domain-list,
+  html:lang(ms) .students-page .student-roster .student-ratings {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  html:lang(ms) .class-domain-row .chip,
+  html:lang(ms) .students-page .rating-line .chip {
+    white-space: normal;
+    overflow-wrap: normal;
+    max-width: 100%;
+  }
+  html:lang(ms) .classes-tools { margin-block: 0; }
+  html:lang(ms) .class-child-card { padding: var(--space-1); }
+  html:lang(ms) .class-child-identity {
+    display: flex; align-items: center; gap: var(--space-1);
+  }
+  html:lang(ms) .class-child-identity h2 { flex: 1; }
+  html:lang(ms) .class-child-identity .chip { flex: none; }
+  html:lang(ms) .class-domain-list .class-domain-row {
+    display: flex; flex-direction: row; flex-wrap: wrap;
+    align-items: center; gap: var(--space-1);
+  }
+  html:lang(ms) .class-domain-row::before {
+    content: ''; order: 2; flex-basis: 100%; height: 0;
+  }
+  html:lang(ms) .class-domain-row .compact-domain-label { order: 0; flex: none; }
+  html:lang(ms) .class-domain-row .chip { order: 1; flex: 1; min-width: 0; }
+  html:lang(ms) .class-domain-row .class-domain-readiness {
+    order: 4; flex: 1; text-align: right;
+  }
+  html:lang(ms) .class-domain-row .compact-domain-change { order: 3; flex: none; }
+  html:lang(ms) .class-domain-row .chip,
+  html:lang(ms) .class-domain-row .class-domain-readiness,
+  html:lang(ms) .class-domain-row .compact-domain-change,
+  html:lang(ms) .students-page .rating-line .chip { line-height: var(--line-tight); }
+  html:lang(ms) .students-page .student-ratings .rating-line {
+    flex-direction: row; flex-wrap: nowrap; align-items: center; justify-content: space-between;
+  }
+  html:lang(ms) .students-page .rating-line .compact-domain-label { flex: none; }
+  html:lang(ms) .evidence-page .evidence-toolbar { row-gap: 0; }
+  html:lang(ms) .evidence-page .library-evidence-card { padding: var(--space-1); }
+  html:lang(ms) .evidence-page .library-evidence-card .evidence-text {
+    line-height: var(--line-normal);
+  }
+}
 @media screen and (max-width: 360px) {
   .class-domain-list, .students-page .student-roster .student-ratings {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -179,6 +224,10 @@
   .evidence-page .library-evidence-card h3 { margin-bottom: 0; }
   .evidence-listing > h2 { margin-bottom: 0; }
   .classes-controls, .evidence-page > .chips { margin-block: 0; }
+  html:lang(ms) .class-child-heading { margin-bottom: 0; }
+  html:lang(ms) .class-domain-list { margin-top: 0; }
+  html:lang(ms) .class-child-card { padding-bottom: 0; }
+  html:lang(ms) .evidence-page .evidence-listing { padding: 0; }
   .classes-page .classes-filters { padding-block: 0; }
   .students-page .directory-toolbar, .evidence-page .evidence-toolbar { padding: 0; }
   .evidence-page .evidence-toolbar { margin-bottom: 0; }

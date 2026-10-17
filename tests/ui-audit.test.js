@@ -4,13 +4,17 @@ import {request} from 'node:http';
 import {mkdtemp, mkdir, readFile, rm, symlink, writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
+import {runInNewContext} from 'node:vm';
 import {
-  parseArgs, routeSlug, DEFAULT_ROUTES, DEFAULT_VIEWPORTS, DEFAULT_SCHEMES
+  parseArgs, routeSlug, auditMatrix, captureName, DEFAULT_ROUTES, DEFAULT_VIEWPORTS,
+  DEFAULT_SCHEMES, DEFAULT_LOCALES
 } from '../scripts/ui-audit/options.mjs';
 import {startServer} from '../scripts/ui-audit/server.mjs';
+import {prepare, localeInitialization, localizedSelectors} from '../scripts/ui-audit/capture.mjs';
+import {writeReport} from '../scripts/ui-audit/report.mjs';
 import {evaluateBudgets} from '../scripts/ui-audit/budgets.mjs';
 import {relativeLuminance, contrastRatio} from '../scripts/ui-audit/metrics.mjs';
-import { countLines, unionHeight, insideFirstScreen } from '../scripts/ui-audit/layout.mjs';
+import { countLines, unionHeight, insideFirstScreen, hasWordBreakOpportunity } from '../scripts/ui-audit/layout.mjs';
 import {
   largeTarget, labelledTarget, ownLabelPair, exemptOverlap, intentionalClip, overflowOffender
 } from '../scripts/ui-audit/exemptions.mjs';
@@ -18,6 +22,15 @@ import {
 const budgets = JSON.parse(await readFile(
   new URL('../scripts/ui-audit.budgets.json', import.meta.url), 'utf8'
 ));
+
+test('word-break auditing distinguishes natural Chinese wrapping from split Latin words', () => {
+  for (const word of ['Developing', 'Berkembang', 'Mathematics']) {
+    assert.equal(hasWordBreakOpportunity(word, 'ms'), false);
+  }
+  assert.equal(hasWordBreakOpportunity('继续处理下一名档案未完成的儿童', 'zh-Hans'), true);
+  assert.equal(hasWordBreakOpportunity('第一学期→第二学期', 'zh-Hans'), true);
+  assert.equal(hasWordBreakOpportunity('S1→S2', 'ms'), true);
+});
 const context = {route: '#/classes', width: 390, height: 844, scheme: 'light'};
 const baseline = () => ({
   innerWidth: 390, horizontalOverflow: 0, overflowElements: [], headerHeight: 130,
@@ -72,6 +85,8 @@ test('audit defaults cover routes, editor domains, viewports and schemes', () =>
   }
   assert.deepEqual(options.viewports, DEFAULT_VIEWPORTS);
   assert.deepEqual(options.schemes, DEFAULT_SCHEMES);
+  assert.deepEqual(options.locales, DEFAULT_LOCALES);
+  assert.deepEqual(options.locales, ['en', 'ms', 'zh-Hans']);
   assert.match(options.out, /^artifacts\/ui-audit\/\d{4}-\d\d-\d\dT[\d-]+Z$/);
   assert.equal(options.url, null);
   assert.equal(options.screenshots, true);
@@ -105,7 +120,8 @@ test('audit arguments reject missing, malformed and unsafe values', () => {
     ['--viewports=0x800'], ['--viewports=390'], ['--viewports=3.5x8'],
     ['--viewports=9007199254740992x8'], ['--schemes=sepia'], ['--quick=yes'],
     ['--url=file:///tmp/app'], ['--url=javascript:alert(1)'], ['--url=//example.com'],
-    ['--url=https://name:secret@example.com'], ['--url=http://user@example.com']
+    ['--url=https://name:secret@example.com'], ['--url=http://user@example.com'],
+    ['--locales=zh'], ['--locales=en,'], ['--locales=EN'],
   ];
   for (const args of invalid) assert.throws(() => parseArgs(args), Error, args.join(' '));
   assert.equal(parseArgs(['--url=http://localhost:4173']).url, 'http://localhost:4173/');
@@ -118,6 +134,101 @@ test('route slugs are readable, safe and distinguish editor tabs', () => {
   assert.equal(new Set(slugs).size, DEFAULT_ROUTES.length);
   assert.ok(slugs.every((slug) => /^[a-z0-9-]+$/.test(slug)));
   assert.equal(routeSlug('#/../../odd?x=1&domain=review'), 'odd-x-1-domain-review');
+});
+
+test('full matrix covers every route and locale at 320 and 390 without artifact collisions', () => {
+  const options = parseArgs([]);
+  const matrix = auditMatrix(options);
+  assert.equal(matrix.length, 15 * 5 * 2 * 3);
+  assert.equal(new Set(matrix.map(captureName)).size, matrix.length);
+  for (const route of DEFAULT_ROUTES) {
+    for (const locale of DEFAULT_LOCALES) {
+      for (const width of [320, 390]) {
+        for (const scheme of DEFAULT_SCHEMES) {
+          const matches = matrix.filter(item => item.route === route && item.locale === locale
+            && item.width === width && item.scheme === scheme);
+          assert.equal(matches.length, 1, `${route} ${locale} ${width} ${scheme}`);
+          const metrics = {...baseline(), innerWidth: width, horizontalOverflow: 1};
+          assert.equal(row(evaluate(metrics, matches[0]), 'horizontalOverflow').passed, false);
+        }
+      }
+    }
+  }
+  options.locales.pop();
+  assert.deepEqual(parseArgs([]).locales, DEFAULT_LOCALES);
+});
+
+test('locale filters deduplicate and quick retains all locales', () => {
+  assert.deepEqual(parseArgs(['--locales=ms,en,ms']).locales, ['ms', 'en']);
+  const options = parseArgs(['--quick']);
+  assert.deepEqual(options.locales, DEFAULT_LOCALES);
+  assert.equal(auditMatrix(options).length, 15 * 2 * 2 * 3);
+});
+
+test('browser initialization seeds locale before navigation without URL overrides', async () => {
+  for (const locale of DEFAULT_LOCALES) {
+    const calls = [];
+    await prepare({send: async (method, params) => calls.push({method, params})},
+      'https://example.com/demo/', {...context, locale});
+    const clear = calls.findIndex(call => call.method === 'Storage.clearDataForOrigin');
+    const init = calls.findIndex(call => call.method === 'Page.addScriptToEvaluateOnNewDocument');
+    assert.ok(clear >= 0 && init > clear);
+    assert.equal(calls.some(call => call.method === 'Page.navigate'), false);
+    const values = new Map([['ai-preschool-ui-language', 'old']]);
+    const sandbox = {
+      location: {origin: 'https://example.com'},
+      localStorage: {setItem: (key, value) => values.set(key, value)}
+    };
+    runInNewContext(calls[init].params.source, sandbox);
+    assert.equal(values.get('ai-preschool-ui-language'), locale);
+    assert.equal(values.size, 1);
+    sandbox.location.origin = 'https://other.example';
+    values.clear();
+    runInNewContext(localeInitialization('https://example.com/demo/', locale), sandbox);
+    assert.equal(values.size, 0);
+  }
+});
+
+test('reports distinguish locale rows and retain localized failures', async (t) => {
+  const out = await mkdtemp(join(tmpdir(), 'ui-audit-report-'));
+  t.after(() => rm(out, {recursive: true, force: true}));
+  const results = DEFAULT_LOCALES.map(locale => {
+    const target = {...context, locale};
+    const metrics = {...baseline(), horizontalOverflow: locale === 'ms' ? 1 : 0};
+    return {...target, directory: captureName(target), metrics, screenshots: [],
+      budgets: evaluate(metrics, target)};
+  });
+  assert.equal(await writeReport(out, results), 1);
+  const summary = JSON.parse(await readFile(join(out, 'summary.json'), 'utf8'));
+  assert.equal(summary.combinations, 3);
+  assert.equal(summary.failed, 1);
+  assert.deepEqual(summary.results.map(item => item.locale), DEFAULT_LOCALES);
+  const markdown = await readFile(join(out, 'summary.md'), 'utf8');
+  assert.match(markdown, /\| Locale \|/);
+  assert.match(markdown, /\| ms \| FAIL \|/);
+  assert.match(markdown, /\| zh-Hans \| PASS \|/);
+});
+
+test('first-screen text selectors use the same locale as the rendered interface', () => {
+  const source = structuredClone(budgets.firstScreenSelectors);
+  for (const locale of DEFAULT_LOCALES) {
+    const selectors = localizedSelectors(locale);
+    for (const [route, items] of Object.entries(source)) {
+      assert.equal(selectors[route].length, items.length);
+      for (const [index, item] of items.entries()) {
+        assert.equal(selectors[route][index].selector, item.selector);
+        assert.equal(selectors[route][index].all, item.all);
+        assert.equal(selectors[route][index].count, item.count);
+        if (item.text) {
+          assert.equal(typeof selectors[route][index].text, 'string');
+          assert.ok(selectors[route][index].text.length > 0);
+          if (locale === 'en') assert.equal(selectors[route][index].text, item.text);
+          else assert.notEqual(selectors[route][index].text, item.text, `${locale}: ${item.text}`);
+        }
+      }
+    }
+  }
+  assert.deepEqual(budgets.firstScreenSelectors, source);
 });
 
 test('luminance and WCAG contrast match known colour pairs', () => {

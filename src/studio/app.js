@@ -13,6 +13,7 @@ import * as reports from './pages/reports.js';
 import * as print from './pages/print.js';
 import * as settings from './pages/ai-settings.js';
 import * as about from './pages/about.js';
+import { initializeLocale, localizeDocument, translateText } from '../i18n/index.js';
 
 const pages = { home, classes, 'child-editor': editor, students, 'student-profile': profile,
   evidence, drafts, reports, print, 'print-class': print, 'ai-settings': settings, about };
@@ -20,10 +21,12 @@ const pages = { home, classes, 'child-editor': editor, students, 'student-profil
 export function startStudio() {
   let storage = null;
   try { storage = window.localStorage; } catch { /* Visible store status handles denial. */ }
+  initializeLocale(storage);
   const ctx = createContext({ storage, isOffline: () => navigator.onLine === false });
-  ctx.confirm = text => window.confirm(text);
+  ctx.confirm = text => window.confirm(translateText(text));
   const shell = mountShell(ctx);
   document.getElementById('app').replaceChildren(shell.root);
+  localizeDocument();
   shell.main.tabIndex = -1;
   document.querySelector('.skip').addEventListener('click', event => {
     event.preventDefault();

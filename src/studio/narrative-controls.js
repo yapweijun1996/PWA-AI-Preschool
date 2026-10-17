@@ -1,5 +1,6 @@
 import { narrativeChip } from '../class-view.js';
 import { el, button, offlineState, rejectedState } from './ui.js';
+import { narrativeLanguage } from '../report-language.js';
 
 export function narrativeControls(ctx, child, record, id) {
   const root = el('section', undefined, 'narrative-box');
@@ -19,6 +20,7 @@ export function narrativeControls(ctx, child, record, id) {
     const old = record.narratives[id];
     record.narratives[id] = { ...old, text: narrative.value,
       source: old?.source ?? 'teacher',
+      language: old?.language ?? narrativeLanguage(id, old ? 'en' : ctx.reportLanguage),
       edited: old?.edited === true || narrative.value !== baseline };
     ctx.rejections.delete(key);
     ctx.change(record);
@@ -33,6 +35,7 @@ export function narrativeControls(ctx, child, record, id) {
   const update = () => {
     const text = record.narratives[id]?.text ?? '';
     if (narrative.value !== text) narrative.value = text;
+    narrative.lang = record.narratives[id]?.language ?? narrativeLanguage(id, record.narratives[id] ? 'en' : ctx.reportLanguage);
     count.textContent = `${text.length} / 2000`;
     source.textContent = record.narratives[id]?.text.trim()
       ? narrativeChip(record.narratives[id]) : 'No narrative';

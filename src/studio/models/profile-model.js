@@ -1,6 +1,7 @@
 import { DOMAINS, progressComparison, recordProgress } from '../../portfolio-model.js';
 import { narrativeChip } from '../../class-view.js';
 import { evidenceModel } from './evidence-model.js';
+import { narrativeLanguage } from '../../report-language.js';
 
 export function profileComparison(previous, current) {
   return progressComparison(previous, current).map(row => ({ ...row,
@@ -17,6 +18,7 @@ export function profileModel(child, records) {
     const narratives = DOMAINS.flatMap(domain => {
       const narrative = record?.narratives[domain.id];
       return narrative ? [{ domain: domain.label, text: narrative.text,
+        language: narrativeLanguage(domain.id, narrative.language),
         source: narrativeChip(narrative) }] : [];
     });
     return { semester, status: record ? recordProgress(record).status : 'not-started',

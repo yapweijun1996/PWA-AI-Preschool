@@ -86,7 +86,7 @@ export function createPrivacyMask(source) {
     assertSafe(result);
     return result;
   };
-  const input = { firstName: childToken, domains: {} };
+  const input = { firstName: childToken, reportLanguage: source.reportLanguage, domains: {} };
   for (const [id, domain] of Object.entries(source.domains ?? {})) {
     if (!domain || typeof domain !== 'object' ||
         [domain.rating, domain.previousRating].some(value =>

@@ -2,6 +2,7 @@ import { NAV_ITEMS, buildRoute, parentModule } from './router.js';
 import { PROVIDER_LABELS } from '../class-view.js';
 import { el, button, link, chip, pwaStatusChip, icon,
   offlineState, errorState, loadingState } from './ui.js';
+import { LANGUAGES, getLocale, setLocale, subscribeLocale } from '../i18n/index.js';
 
 export function navigationModel(name) {
   const parent = parentModule(name);
@@ -90,6 +91,9 @@ function topbar(ctx) {
   host.id = 'pwa-controls-host';
   pwa.append(el('summary', 'Offline and installation details'), host);
   root.append(el('strong', 'AI Preschool Studio', 'mobile-brand'), breadcrumb, label, chips);
+  const language = languageSelector('desktop-language');
+  root.append(language);
+  subscribeLocale(() => { language.querySelector('select').value = getLocale(); });
   let currentRoute = null;
   ctx.subscribe(() => {
     const model = providerChipModel(ctx.provider);
@@ -119,7 +123,7 @@ function topbar(ctx) {
       breadcrumb.append(icon('chevron'), link(parent?.label ?? 'Reports',
         buildRoute(parent?.name ?? 'reports')));
     }
-    if (child) breadcrumb.append(icon('chevron'), el('span', child.name));
+    if (child) breadcrumb.append(icon('chevron'), el('span', child.name, 'identity-text'));
     semester.value = ctx.semester;
   };
   return { root, update, pwa };
@@ -134,6 +138,8 @@ function navigation() {
   more.setAttribute('aria-label', 'More destinations');
   more.id = 'more-destinations';
   more.hidden = true;
+  let language;
+  subscribeLocale(() => { if (language) language.querySelector('select').value = getLocale(); });
   const moreButton = button('More', () => {
     more.hidden = !more.hidden;
     moreButton.setAttribute('aria-expanded', String(!more.hidden));
@@ -158,6 +164,8 @@ function navigation() {
       sidebar.append(destination);
       if (item.tab === 'More') more.append(navLink(item));
     }
+    language = languageSelector('mobile-language');
+    more.append(language);
     for (const tab of ['Home', 'Classes', 'Students', 'Drafts']) {
       const item = model.find(item => item.tab === tab);
       tabs.append(navLink({ ...item, label: tab }));
@@ -176,4 +184,22 @@ function navLink(item) {
   destination.replaceChildren(icon(item.icon), el('span', item.label));
   if (item.active) destination.setAttribute('aria-current', 'page');
   return destination;
+}
+
+function languageSelector(className) {
+  const label = el('label', undefined, `language-selector ${className}`);
+  const caption = el('span', 'Interface language', 'visually-hidden');
+  const select = el('select');
+  select.setAttribute('aria-label', 'Interface language');
+  for (const [value, name] of LANGUAGES) {
+    const option = el('option', name);
+    option.value = value;
+    option.lang = value;
+    select.append(option);
+  }
+  select.value = getLocale();
+  select.addEventListener('change', () => setLocale(select.value));
+  select.addEventListener('focus', () => { select.value = getLocale(); });
+  label.append(caption, select);
+  return label;
 }

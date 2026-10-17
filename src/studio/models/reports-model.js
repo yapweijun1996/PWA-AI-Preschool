@@ -8,7 +8,7 @@ export function reportsModel(ctx, { type = 'child', childId = ctx.children[0]?.i
   const reports = children.map(child => buildReport({ child,
     record: ctx.get(child.id, semester),
     previousRecord: semester === '2026-S2' ? ctx.get(child.id, '2026-S1') : null,
-    generatedOn
+    generatedOn, language: ctx.reportLanguage
   }));
   const warnings = reports.flatMap(report => report.status.warnings.map(text =>
     type === 'class' ? `${report.childName}: ${text}` : text));

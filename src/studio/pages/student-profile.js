@@ -15,7 +15,7 @@ export function render(ctx, route) {
   const identity = el('div', undefined, 'profile-identity');
   const portrait = avatar(child, 'avatar profile-avatar');
   const title = el('div');
-  title.append(el('h1', child.name),
+  title.append(el('h1', child.name, 'identity-text'),
     el('p', `${child.id} · ${CLASS.name} · Fictional student`));
   const portfolioStatus = el('span', undefined, 'profile-current-status');
   identity.append(portrait, title, portfolioStatus);
@@ -120,8 +120,9 @@ function narratives(semesters) {
       const source = el('p', narrative.source, 'narrative-source');
       source.dataset.source = narrative.source.startsWith('MOCK') ? 'mock'
         : narrative.source.startsWith('AI') ? 'ai' : 'teacher';
-      box.append(el('h4', narrative.domain), source,
-        el('p', narrative.text, 'evidence-text'));
+      const text = el('p', narrative.text, 'evidence-text');
+      text.lang = narrative.language;
+      box.append(el('h4', narrative.domain), source, text);
       group.append(box);
     }
     group.append(el('p', semester.reviewed

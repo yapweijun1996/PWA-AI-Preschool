@@ -61,7 +61,7 @@ function reviewQueue(root, queue) {
   for (const item of queue) {
     const row = el('article', undefined, 'work-row');
     const identity = el('div', undefined, 'draft-identity');
-    identity.append(avatar(item.child), el('h3', item.child.name));
+    identity.append(avatar(item.child), el('h3', item.child.name, 'identity-text'));
     const sources = el('div', undefined, 'draft-sources');
     for (const narrative of item.narratives) {
       const source = chip(narrative.source);

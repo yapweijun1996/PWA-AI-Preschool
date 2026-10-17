@@ -101,10 +101,15 @@ export function validateRecord(record) {
     if (narrative?.model !== undefined)
       requireValue(typeof narrative.model === "string" && narrative.model.length > 0 &&
         narrative.model.length <= 101, `${id}: narrative model must be a nonempty string of at most 101 characters`);
+    if (narrative?.language !== undefined)
+      requireValue(["en", "ms", "zh-Hans"].includes(narrative.language) &&
+        (id !== "chinese" || narrative.language === "zh-Hans"),
+        `${id}: narrative language must be en, ms or zh-Hans; Chinese must be zh-Hans`);
     result.narratives[id] = narrative === null ? null : {
       text: narrative.text, source: narrative.source, edited: narrative.edited,
       ...(narrative.provider !== undefined ? { provider: narrative.provider } : {}),
-      ...(narrative.model !== undefined ? { model: narrative.model } : {})
+      ...(narrative.model !== undefined ? { model: narrative.model } : {}),
+      ...(narrative.language !== undefined ? { language: narrative.language } : {})
     };
   }
   if (record.reviewed !== undefined) result.reviewed = record.reviewed;

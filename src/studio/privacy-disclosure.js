@@ -21,6 +21,7 @@ export function privacyDisclosure(ctx, { child, record, provider = () => ctx.pro
     for (const member of ctx.children) {
       const option = el('option', member.name);
       option.value = member.id;
+      option.dataset.i18n = 'off';
       select.append(option);
     }
     select.value = selectedId;

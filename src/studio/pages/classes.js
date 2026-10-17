@@ -26,7 +26,7 @@ function childCard(ctx, child) {
   const header = el('div', undefined, 'class-child-heading');
   const portrait = avatar(child);
   const identity = el('div', undefined, 'class-child-identity');
-  identity.append(el('h2', child.name), statusChip(computeStatus(record)));
+  identity.append(el('h2', child.name, 'identity-text'), statusChip(computeStatus(record)));
   header.append(portrait, identity);
   const chevron = icon('chevron');
   chevron.setAttribute('class', 'icon list-chevron');

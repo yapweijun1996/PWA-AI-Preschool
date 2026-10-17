@@ -73,7 +73,7 @@ function studentRow(row) {
   const tr = el('tr', undefined, 'student-row');
   const name = el('th', undefined, 'student-name');
   name.scope = 'row';
-  name.append(avatar(row.child), el('span', row.child.name));
+  name.append(avatar(row.child), el('span', row.child.name, 'identity-text'));
   const ratings = el('td', undefined, 'student-ratings');
   ratings.dataset.label = 'Latest ratings';
   if (row.compact) {

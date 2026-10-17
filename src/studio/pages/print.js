@@ -2,6 +2,7 @@ import { reportsModel } from '../models/reports-model.js';
 import { renderReport, renderReportControls } from '../../report-view.js';
 import { el, errorState } from '../ui.js';
 import { buildRoute } from '../router.js';
+import { formatDate } from '../../i18n/index.js';
 
 export function printModel(ctx, route, generatedOn) {
   return reportsModel(ctx, { type: route.name === 'print-class' ? 'class' : 'child',
@@ -15,7 +16,7 @@ export function render(ctx, route) {
   }) : '#/classes';
   root.append(renderReportControls(back));
   const pages = el('div', undefined, 'report-pages');
-  const reports = printModel(ctx, route, new Date().toISOString().slice(0, 10));
+  const reports = printModel(ctx, route, formatDate(new Date(), { dateStyle: 'medium' }, ctx.reportLanguage));
   for (const [index, report] of reports.entries()) {
     const page = renderReport(report);
     if (index > 0) {

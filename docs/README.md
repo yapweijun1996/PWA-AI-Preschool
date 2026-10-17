@@ -11,7 +11,7 @@ Current product: **AI Preschool Studio**, a fictional-data browser prototype. [P
 - [TASK — actionable work and verification status](TASK.md)
 - [CHANGELOG — Git-based implementation history](CHANGELOG.md)
 
-Read these current contracts before older planning material. Source and actual runtime/test evidence take precedence over documentation; a proposal is not an implemented feature. The standard set distinguishes unmeasured workflow assumptions, proposed edit-effort targets and future multilingual/measurement/privacy work from the shipped demo.
+Read these current contracts before older planning material. Source and actual runtime/test evidence take precedence over documentation; a proposal is not an implemented feature. The standard set distinguishes implemented `en`/`ms`/`zh-Hans` UI catalogs (machine-translated **UNREVIEWED**, native-speaker review still required) from unmeasured workflow assumptions, proposed edit-effort targets and future measurement/privacy work. See the [root README](../README.md) for selectors, independent report/narrative preference and review CSV; language coverage does not establish production readiness.
 
 
 ## Current behavior and development

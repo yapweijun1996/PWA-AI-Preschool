@@ -13,7 +13,7 @@ export function render(ctx) {
   const listing = el('section', undefined, 'card evidence-listing');
   const update = (key, value) => { filters[key] = value; refresh(); };
   const fields = [
-    ['Child', 'childId', [['', 'All children'], ...ctx.children.map(c => [c.id, c.name])]],
+    ['Child', 'childId', [['', 'All children'], ...ctx.children.map(c => [c.id, c.name, false])]],
     ['Domain', 'domain', [['', 'All domains'], ...DOMAINS.map(d => [d.id, d.label])]],
     ['Semester', 'semester', [['', 'All semesters'], ['2026-S1', '2026-S1'],
       ['2026-S2', '2026-S2']]]

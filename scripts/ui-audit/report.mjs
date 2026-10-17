@@ -7,15 +7,15 @@ export async function writeReport(out, results) {
     'Geometry and contrast heuristics are candidates; no screen reader or real-device run;',
     'gradients/images unknown contrast. Fresh synthetic seed state only.',
     'Gateway not exercised.', '',
-    '| Route | Viewport | Scheme | Result | Violated budgets | Screenshots |',
-    '| --- | --- | --- | --- | --- | --- |'];
+    '| Route | Viewport | Scheme | Locale | Result | Violated budgets | Screenshots |',
+    '| --- | --- | --- | --- | --- | --- | --- |'];
   for (const row of results) {
     const violations = row.budgets.filter(b => !b.passed);
     const status = violations.some(b => b.severity === 'fail') ? 'FAIL'
       : violations.length ? 'WARN' : 'PASS';
     const links = row.screenshots.map(image =>
       `[${image.file}](${row.directory}/${image.file})`).join(' ');
-    lines.push(`| ${row.route} | ${row.width}x${row.height} | ${row.scheme} | ${status} | `
+    lines.push(`| ${row.route} | ${row.width}x${row.height} | ${row.scheme} | ${row.locale} | ${status} | `
       + `${violations.map(b => `${b.severity}: ${b.budget}`
         + (b.skipped ? ` SKIPPED (${b.reason})` : ` (${b.actual} / ${b.limit})`))
         .join('; ')} | ${links} |`);

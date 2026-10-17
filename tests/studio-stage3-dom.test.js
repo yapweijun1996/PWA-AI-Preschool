@@ -69,7 +69,7 @@ test('report selectors update warnings, class preview and print destination', as
   assert.equal(preview.open, false);
   assert.match(page.textContent, /Chinese: narrative not drafted/);
   assert.match(page.textContent, /Mathematics: rating not recorded/);
-  const [type, semester, child] = page.querySelectorAll('select');
+  const [type, semester, child] = page.querySelectorAll('select').filter(node => node.name !== 'report-language');
   assert.equal(anchor(page, 'Print / Save as PDF').href, '#/print/C-05?sem=2026-S2');
   child.value = 'C-01';
   await child.emit('change');

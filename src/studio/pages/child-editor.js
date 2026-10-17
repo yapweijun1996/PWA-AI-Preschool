@@ -9,6 +9,7 @@ import { narrativeControls } from '../narrative-controls.js';
 import { PROVIDER_LABELS } from '../../class-view.js';
 import { privacyDisclosure } from '../privacy-disclosure.js';
 import { normalizeChildName } from '../../child-name.js';
+import { translateText } from '../../i18n/index.js';
 
 export function render(ctx, route) {
   const child = ctx.children.find(child => child.id === route.childId);
@@ -112,7 +113,7 @@ function childIdentity(ctx, child) {
   const identity = el('div', undefined, 'editor-identity');
   const picture = el('div', undefined, 'editor-avatar-holder');
   const name = el('div', undefined, 'editor-name');
-  const heading = el('h1', child.name);
+  const heading = el('h1', child.name, 'identity-text');
   const disclosure = el('details', undefined, 'editor-name-disclosure');
   disclosure.open = false;
   disclosure.append(el('summary', 'Edit child name'));
@@ -162,7 +163,7 @@ function childIdentity(ctx, child) {
       disclosure.querySelector('summary').focus();
       ctx.announce('Name updated');
     } catch (error) {
-      input.setCustomValidity(error.message);
+      input.setCustomValidity(translateText(error.message));
       input.setAttribute('aria-invalid', 'true');
       feedback.textContent = error.message;
       input.reportValidity();

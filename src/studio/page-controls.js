@@ -5,9 +5,10 @@ export function selectField(label, options, value, change) {
   const root = el('label');
   root.append(el('span', label, 'field-label'));
   const select = el('select');
-  for (const [id, text] of options) {
+  for (const [id, text, translate = true] of options) {
     const option = el('option', text);
     option.value = id;
+    if (!translate) option.dataset.i18n = 'off';
     select.append(option);
   }
   select.value = value;

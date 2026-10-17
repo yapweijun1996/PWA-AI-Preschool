@@ -37,6 +37,9 @@ export function render(ctx) {
         + 'session memory only; test keys are never stored with records.'
     ]),
     panel('NOT IMPLEMENTED', NOT_IMPLEMENTED, 'card not-implemented'),
+    panel('Interface translations', [
+      'Malay and Simplified Chinese interface text is machine-translated and not yet reviewed by a native speaker.'
+    ]),
     panel('Known limitations', [
       'AI output can be wrong or conservatively rejected. Educator review is required.',
       'Local review is not authenticated approval or report release.',
