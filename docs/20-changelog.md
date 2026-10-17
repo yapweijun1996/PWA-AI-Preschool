@@ -1,5 +1,12 @@
 # 20 — Documentation and Project Changelog
 
+## Development UI audit harness — 2026-10-17
+
+- Added a dependency-free CDP runner with real mobile metrics, light/dark captures,
+  geometry/accessibility candidates and configurable fail/warn budgets.
+- Added pure helper tests and [audit workflow documentation](27-ui-audit.md).
+- Audit artifacts remain ignored and outside the shipped static build; no app UI changes.
+
 ## Page-per-module studio and design SSOT — 2026-10-17
 
 - Fixed ≤600 px Classes/Students cards and Evidence rows; final measured 390 px heights 4,884 / 4,358 / 5,241 px; retained desktop layouts and refreshed verification evidence.

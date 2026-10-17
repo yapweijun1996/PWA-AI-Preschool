@@ -1,0 +1,33 @@
+{
+  "budgets": [
+    {"id": "viewportWidth", "metric": "innerWidth", "severity": "fail", "equalsContext": "width"},
+    {"id": "horizontalOverflow", "metric": "horizontalOverflow", "severity": "fail", "max": 0},
+    {
+      "id": "headerHeight", "metric": "headerHeight", "severity": "fail", "max": null,
+      "overrides": [{"maxWidth": 600, "max": 130}]
+    },
+    {
+      "id": "noticeHeight", "metric": "noticeHeight", "severity": "warn", "max": null,
+      "overrides": [{"maxWidth": 600, "max": 90}]
+    },
+    {"id": "bodyFontSize", "metric": "smallText", "severity": "fail", "min": 12},
+    {"id": "chipFontSize", "metric": "smallText", "severity": "warn", "min": 12},
+    {"id": "tapTargets", "metric": "smallTapTargets", "severity": "fail", "max": 0},
+    {"id": "contrast", "metric": "contrastFailures", "severity": "fail", "max": 0},
+    {"id": "unknownContrast", "metric": "unknownContrast", "severity": "warn", "max": 0},
+    {"id": "clippedText", "metric": "clippedText", "severity": "fail", "max": 0},
+    {"id": "overlaps", "metric": "overlaps", "severity": "fail", "max": 0},
+    {"id": "controlNames", "metric": "unnamedControls", "severity": "fail", "max": 0},
+    {"id": "h1Count", "metric": "h1Count", "severity": "fail", "equals": 1},
+    {"id": "focusOnH1", "metric": "focusOnH1", "severity": "warn", "equals": true},
+    {
+      "id": "documentHeight", "metric": "documentHeight", "severity": "fail", "max": null,
+      "overrides": [
+        {"width": 390, "route": "#/classes", "max": 5000},
+        {"width": 390, "route": "#/students", "max": 4500},
+        {"width": 390, "route": "#/evidence", "max": 5500}
+      ]
+    },
+    {"id": "consoleErrors", "metric": "consoleErrors", "severity": "fail", "max": 0}
+  ]
+}

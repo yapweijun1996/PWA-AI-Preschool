@@ -28,6 +28,7 @@ This is a company-agnostic **AI Preschool Studio** reference package. Files are 
 24. [Verification and delivery report](24-verification-report.md)
 25. [PWA product standard and acceptance](25-pwa-standard.md)
 26. [Submission write-up and production proposal](26-submission-writeup.md)
+27. [Development UI audit harness](27-ui-audit.md)
 
 Design source of truth: [`design/README.md`](../design/README.md) — canonical routes/menu,
 12 page specs, 24 WebP wireframes, shared tokens and the consistency review. Specs define
