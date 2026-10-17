@@ -36,113 +36,136 @@ Proposed priorities, not shipped features:
 - Parent release with sign-off.
 - Accessibility audit and cross-device verification.
 
+### Architecture and design SSOT
+
+`class.html` mounts `src/studio/app.js`. `src/studio/` separates the hash router, context,
+shell, UI helpers, `pages/` and pure `models/`, reusing the portfolio, provider and report
+modules. `studio.css` supplies layouts; `src/studio/tokens.css` copies `design/tokens.css`.
+The obsolete `src/class-app.js` and `class.css` were removed; `index.html` is unchanged.
+
+The [design SSOT](../design/README.md) includes 12 page specs, 24 WebP wireframes generated
+with Codex CLI image generation, shared tokens and a consistency review. Images express visual
+intent; specs own exact copy and behavior; tokens own enforceable values. To change a page,
+edit its spec, regenerate its image, update shared tokens when needed and synchronize the
+runtime token copy before implementing the page.
+
+The design index still describes target routes as unimplemented, names the retired
+`src/class-app.js`, and calls the wireframes PNGs despite linking WebP files. Those historical
+statements do not describe the current studio. Design files were left unchanged in this stage.
+
 ### What to try (3 minutes)
 
-Suggested walkthrough, not measured duration: open https://yapweijun1996.github.io/PWA-AI-Preschool/class.html, or run locally:
+Suggested walkthrough, not a measured duration:
 
 ```bash
-npm run build
-python3 -m http.server 4175 --directory dist
-# Open http://localhost:4175/class.html
+npm run build && python3 -m http.server 4173 --directory dist
+# Open http://localhost:4173/class.html
 ```
 
-Inspect the overview, switch S1/S2, open a child, select Offline mock, draft, edit, mark reviewed and continue. Open child Print / PDF or Print class report, then Print / Save as PDF. Disposable provider test keys are memory-only, not secure browser custody.
+1. Start on Home, inspect needing-work rows, then open Class portfolios and switch semesters.
+2. Open a child, choose Offline mock, Draft all four, edit a narrative and Mark reviewed.
+   Continue to the next child, then reload to inspect persisted progress.
+3. Explore Students and a profile, filter Evidence library, and inspect the AI drafts queue.
+4. In Reports choose a child/semester, open print preview and explicitly Print / Save as PDF.
+5. Inspect AI provider settings and About and privacy. Use only disposable test keys and
+   fictional data; memory-only keys are not secure browser custody.
+
+| Page | Route |
+|---|---|
+| Home | `#/` |
+| Class portfolios | `#/classes` |
+| Child editor, domain tabs and Review narratives | `#/classes/class-a/children/<id>?sem=<semester>` |
+| Students / profile | `#/students`, `#/students/<id>` |
+| Evidence library | `#/evidence` |
+| AI drafts | `#/drafts` |
+| Reports | `#/reports` |
+| Child / class print | `#/print/<id>?sem=<semester>`, `#/print-class?sem=<semester>` |
+| AI provider settings | `#/settings/ai` |
+| About and privacy | `#/about` |
+
+Legacy `#/child/<id>?sem=...` redirects to the editor. Unknown hashes show Home with a notice.
+The desktop icon sidebar follows the canonical module order; the topbar includes breadcrumbs,
+semester, provider, fictional-data and offline chips. An amber notice strip persists.
+Mobile uses a chip row and five fixed bottom tabs; print routes hide app navigation.
 
 | Built vs designed-only | Status |
 |---|---|
-| Overview/editor, local autosave, semester ratings, provider selector, partial draft acceptance, review, child/class print | Built; verification scope below |
-| Backend, database/object storage, real login/RLS, finalisation, server PDF, production AI contracts, vector RAG, classroom tracking and inter-school transfer | NOT IMPLEMENTED |
+| Routed studio, shared shell, local autosave, semester comparison, evidence filters, drafts, review and child/class print | Built; verification scope below |
+| Login, roles, tenant RLS, application server, database/private object storage | NOT IMPLEMENTED |
+| Finalisation lock, server PDF, vector RAG, audit log, production AI hosting/contracts | NOT IMPLEMENTED |
+| Classroom tracking and inter-school transfer | NOT IMPLEMENTED |
 
 ## Verification evidence
 
-Supplied measurements collected 2026-10-16/17 on macOS, runtime v23.10.0 and Google Chrome 155.0.8059.84. Branch `omp/portfolio-v2-polish-2026-10-16`, measured HEAD `3d792df`. This documentation-only task ran no commands, browser journeys, provider calls or deployment.
+Browser/PDF observations below were supplied by the owner for 2026-10-17; they were not rerun
+in this documentation-only stage. Earlier-release Gateway session/CORS evidence is explicitly
+separated from new-build deployment acceptance.
 
 ### Commands and counts
 
-| Command | Recorded result |
-|---|---|
-| `npm run check` | Pass: all syntax checks |
-| `npm test` | 129 tests, 129 pass, 0 fail; `node --test`, including grounding, pronoun, Chinese, seed, report and PWA tests |
-| `npm run build` | Pass; build ID `afcb039a23b3a3f2`; 26 precached routes, including `class.html` |
+This task prohibits shell execution. No current command result, test count, build ID or
+`git rev-parse --short HEAD` value was measured here. Earlier-release counts and hashes are
+not substituted for current results.
 
-| Seed measurement | Recorded result |
+| Command | Current result |
 |---|---|
-| S1 | 15 ready-for-draft; 5 drafted |
-| S2 | 3 ready-for-draft; 5 in-progress; 12 not-started, fully empty |
-| S1-to-S2 rating-change histogram over compared domain pairs | No change: 12; +1: 6; +2: 2; -1: 1 |
-
-Measured commit lineage, oldest first: `c7cd1a5` data model; `2c3e6f7` overview/editor; `5164674` whitespace-only reformat (whitespace-stripped hash equality for 8 files); `94a6702` labels/seed/mobile cards; `efffb10` AI/provider selector; `6a014ae` print report; `f250d35` Simplified Chinese seed; `e5e7ae0` grounding/partial acceptance; `a7bf0ff` gendered-pronoun guard; `8f83c52` Chinese mock narrative; `c84124d` non-numeric Chinese compound handling; `3221d72` exact-first-name prompt; `3d792df` restored S2 mix.
+| `npm run check` | Not run in this edit-only stage |
+| `npm test` | Not run; current pass/fail counts unverified |
+| `npm run build` | Not run; current build ID unverified |
+| `git rev-parse --short HEAD` | Not run; current HEAD unverified |
 
 ### Browser QA
 
-Built-in browser, fictional data, served from `dist` at `http://localhost:4175`:
+Owner-supplied built-in browser QA, served from `dist`, light scheme:
 
 | Scenario | Recorded observation |
 |---|---|
-| Responsive overview/editor/print | No horizontal overflow at 390x844, 430x932 and 1440x900; interactive targets at least 44px at 390 and 430; 20-child overview about 4.5 phone screens at 390 |
-| Draft/review workflow | Open child, draft all four using mock, mark reviewed and go to next child; saved to localStorage and navigated; humanised status/filter labels checked |
-| Provider controls | Offline mock default, GPT Demo Gateway, OpenAI test key, Gemini test key; disclosure and connection status visible |
-| Disposable-key handling | Password field, autocomplete off, disposable-key/not-stored/not-production warning; fake key absent from localStorage, sessionStorage and URL |
-| Provider failure | Fake OpenAI key produced sanitized “AI request failed ... No narratives were changed.”; narratives unchanged, no mock label, no key displayed |
+| Every route at 1440×900, 430×932 and 390×844 | One h1, focus moved to h1, no horizontal overflow, interactive targets at least 44 px |
+| Navigation | Sidebar icons and canonical order; five-icon mobile tab bar fixed to bottom and hidden on print routes |
+| Home | Height reduced from 9,273 px to 1,162 px; three needing-work rows |
+| Draft/edit/review | Offline mock Draft all four; editing marked narrative edited; Mark reviewed persisted to localStorage and moved to next child |
+| Reload | Saved data retained; Home showed “1 / 20 reviewed” |
+| Key handling | Empty field with “Paste a disposable test key”, autocomplete off; fake key absent from localStorage, sessionStorage, URL and page |
+| Failed provider request | Fake OpenAI key produced sanitized “AI request failed ... No narratives were changed.”; narratives unchanged, no mock label |
+| Route recovery | Legacy redirect and unknown-hash Home notice verified |
 
 ### PDF
 
-Headless Google Chrome printed `http://localhost:4175/class.html#/print/C-01?sem=2026-S1`.
-
-| Check | Recorded result |
-|---|---|
-| Child PDF | 2 A4 pages, 594.96 x 841.92 pt |
-| Chinese glyphs | Embedded PingFang SC Regular and Semibold; Simplified Chinese child name, comment and narrative rendered correctly |
-| Labels and focus | Narrative labelled “MOCK DRAFT (offline, not AI)”; no focus outline in print |
-| Class PDF | 40 pages for 20 children, two pages each |
-
-This sample does not guarantee fixed pagination for edited content. Glyph coverage depends on installed CJK fonts; Linux/CI without them was not tested.
+Owner-supplied headless Chrome result for `#/print/C-01?sem=2026-S1`: two A4 pages,
+embedded PingFang SC, correct Simplified Chinese comment and narrative, no printed app chrome.
+No current class-PDF page count is claimed. Pagination depends on content and installed fonts.
 
 ### Live Gateway
 
-Public demo-session Node harness used the project's own `buildNarrativePrompt -> requestProviderText -> parse -> grounding` path with fictional children C-01 through C-08 for 2026-S2.
-
-| Check | Recorded result |
-|---|---|
-| Session | `POST /demo/session`: HTTP 201; keys `token`, `token_type`, `expires_in` (900), `expires_at`, `model` (`demo-auto`); no credential value reproduced |
-| CORS | Allowed the configured GitHub Pages origin; did not allow `http://localhost:4175`. Browser Gateway drafting was therefore tested on the deployed origin; see Deployment check |
-| Latency | About 2-5 seconds per child, four domains per request |
-| Final sample | 8 children x 4 domains: 30 of 32 accepted; 2 visible retryable conservative rejections (capitalised-word and number-word); 0 gendered pronouns in accepted drafts |
-
-The initial run exposed false rejection of Chinese drafts repeating picture-card evidence, invented gender, English rating words in Chinese, and whole-response loss after a domain rejection. The evidence records fixes in `e5e7ae0`/`a7bf0ff` and subsequent prompt/Chinese refinements. The final harness run is a single non-deterministic sample, not a quality benchmark. Separate deployed-browser evidence is recorded under Deployment check.
+Earlier-release verification, still applicable to the shared code paths: Demo Gateway session
+returned HTTP 201 with `token`, `token_type`, `expires_in` (900), `expires_at` and `model`.
+CORS allows only the GitHub Pages origin. This is not evidence of browser drafting from the
+new deployed build; that requires deployment verification. No credentials are reproduced.
 
 ### Not tested
 
-- Service-worker registration and cache population were verified on the deployed origin; a real offline reload with the network disabled is still not tested.
-- Real phone/tablet hardware, screen readers, Safari/Firefox, Windows/Linux CJK fonts and print-to-PDF on other operating systems.
-- Live OpenAI/Gemini calls with real disposable test keys.
-- Teacher time saved, edit rate or draft quality; the school's hypothetical hours-per-portfolio baseline is unverified.
+- Service-worker offline reload with the network disabled.
+- Browser Gateway drafting from the new deployed build.
+- Real phone/tablet hardware, screen readers, Safari/Firefox and Windows/Linux CJK fonts.
+- OpenAI/Gemini calls with real disposable test keys.
+- Teacher time saved, edit rate or draft quality.
 
 ### Deployment check
 
-Supplied deployment measurements collected 2026-10-16/17; no deployment or browser checks were rerun for this documentation update.
-
-| Check | Recorded result |
-|---|---|
-| Commit | `e617229` pushed to `main` |
-| GitHub Actions | Run [38925528814](https://github.com/yapweijun1996/PWA-AI-Preschool/actions/runs/38925528814), workflow “Static checks and Pages deployment”: “Check, test, and build” = success; “Deploy GitHub Pages” = success |
-| Live demo | https://yapweijun1996.github.io/PWA-AI-Preschool/class.html returned HTTP 200; `index.html`, `src/class-app.js`, `sw.js` and `build-info.json` also returned HTTP 200 |
-| Repository | https://github.com/yapweijun1996/PWA-AI-Preschool |
-| Deployed build | `build-info.json` buildId `e617229a4613-afcb039a23b3a3f2`; source snapshot id suffix `afcb039a23b3a3f2` matches the local build |
-| Deployed-origin Gateway | Built-in browser at origin `https://yapweijun1996.github.io`, fictional child `C-01`, semester `2026-S2`, provider “GPT Demo Gateway (public demo session)”: pressed “Draft all four”; connection status became “ok”; all four domains showed “AI DRAFT (GPT Demo Gateway (public demo session)) - teacher must review”; 0 mock labels; 0 rejected domains |
-| Service worker and cache | Registered with scope `https://yapweijun1996.github.io/PWA-AI-Preschool/`, activated and controlling the page; cache contained 26 entries including `class.html`, `src/class-app.js` and `src/report-view.js`. A true offline reload with the network disabled was not performed |
-
-The deployed-origin Gateway result is a single non-deterministic sample, not a benchmark. Cosmetic observation: a generated sentence boundary before a CJK first name lacked a space.
+Pending: to be filled after deployment is verified.
 
 ## Known limitations
 
-- Grounding heuristics can falsely reject faithful text and miss unsupported claims; they are not semantic proof. Exact-name and language prompt requirements are not guarantees. Teacher review is mandatory.
-- Model output is non-deterministic. The Gateway sample is not a quality benchmark; availability and quota are external.
-- Browser Print/Save as PDF depends on local fonts and content length. The macOS sample is not cross-platform font or pagination proof.
-- `localStorage` is per-browser/origin, quota-limited, not secure or shared storage, and not a backup. Clearing browser data loses records; no cross-device sync exists.
-- No real login, authenticated approval or tenant isolation exists. Local “reviewed” state is not finalisation.
-- A real offline reload with the network disabled and the other surfaces listed under Not tested remain outside measured acceptance. Deployed-origin Gateway drafting, service-worker registration and cache population were verified as recorded above.
-- Production SQL, finalisation, retention, private hosting and provider contracts are designs only. No compliance or measured efficiency benefit is claimed.
+- Grounding heuristics can reject faithful text or miss unsupported claims; teacher review is
+  mandatory. Model output is non-deterministic; no quality benchmark is claimed.
+- Browser Print/Save as PDF depends on local fonts and content length; the macOS sample is
+  not cross-platform pagination or font proof.
+- `localStorage` is browser/origin-specific, quota-limited, not secure storage and not a backup.
+  Clearing it loses records; no cross-device sync exists. Keys remain in memory only.
+- Local review is editable state, not authenticated approval or finalisation.
+- Offline reload and new-build deployed Gateway drafting remain unverified as listed above.
+- Production SQL, private hosting, retention and provider contracts are designs only.
+  No compliance or measured efficiency benefit is claimed.
 
 ## Appendix: detailed design
 

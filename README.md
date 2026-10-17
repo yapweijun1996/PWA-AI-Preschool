@@ -19,31 +19,77 @@ npm test
 npm run build
 ```
 
-Open **AI provider settings**, select **Offline Mock Demo** for a walkthrough without any live external provider, or try GPT Demo Gateway. Wait for **Ready · offline shell available** before disconnecting and reloading. Cloud generation is disabled offline; Mock is always an explicit choice. Drafts, added observations, approvals and keys remain memory-only and reset on reload. To test OpenAI/Gemini BYOK, only use a disposable restricted key and fictional data; browsers may reject cross-origin provider requests. Page memory is **not equivalent to secure client-side key custody**.
+For the original `index.html` demo, open **AI provider settings**, select **Offline Mock Demo**
+for an explicitly labelled local walkthrough, or try the configured Demo Gateway. Its drafts,
+observations, approvals and keys reset on reload. The class studio below instead persists
+fictional learning records in `localStorage`. Use only disposable restricted BYOK keys and
+fictional data; browser memory is not secure key custody. Offline shell behavior requires
+successful initial caching and is not new-studio offline-reload acceptance evidence.
 
-## Class portfolio prototype
+## Page-per-module studio
 
-Open [`class.html`](class.html) for the separate class workflow with 20 fictional children, S1/S2 rating comparison, browser-local autosave, teacher editing and review. Offline mock is the default and explicitly labelled as not AI. The overview and editor also offer GPT Demo Gateway sessions and disposable OpenAI/Gemini test keys. Remote prompts use structured first name, ratings, comments and available previous ratings; no photos, image bytes or photo metadata are sent. Keys stay in memory; records and AI provider/model provenance persist in this browser's `localStorage`, which is neither secure storage nor a backup. All data must remain fictional.
-
-Prompts require strict domain JSON, no invented facts or gendered pronouns, exact first-name spelling and Simplified Chinese for the Chinese domain. Grounding accepts domains independently and preserves existing text for rejected domains, with visible retry/manual-edit guidance. Malformed responses and provider failures change no narratives and never silently fall back to mock. Sequential bulk drafting counts fully accepted children, reports domains needing attention and stops on request errors. Heuristics can reject faithful text or miss unsupported claims; teacher review is mandatory.
-
-Populated Chinese seed domains use rating-aligned Simplified Chinese observations, and pre-drafted S1 Chinese narratives use the offline mock generator. Measured S1 state: 15 ready-for-draft and 5 drafted. S2: 3 ready-for-draft, 5 in-progress and 12 fully empty not-started records.
-
-Child Print / PDF and overview Print class report render source-labelled A4 HTML, missing-input warnings, photos/captions and semester ratings. Browser Print / Save as PDF uses a Simplified Chinese system font stack and `lang="zh-Hans"` markers. The measured headless Chrome child PDF had 2 pages with embedded PingFang SC; the class PDF had 40 pages for 20 children. Other content and platforms may paginate differently; Windows/Linux CJK font coverage is untested.
+Open [`class.html`](class.html) for the static, vanilla ES-module studio: 20 fictional
+children, semester comparison, browser-local autosave, editable drafts, review and printable
+reports. The original five-record `index.html` demo remains independent and unchanged.
 
 ```bash
+npm run build && python3 -m http.server 4173 --directory dist
+# Open http://localhost:4173/class.html
+
 npm run check
 npm test
-npm run build
-python3 -m http.server 4175 --directory dist
-# Open http://localhost:4175/class.html
 ```
 
-Supplied evidence records passing syntax checks, 129 passing tests, the static build, responsive browser mock/review and failure-path QA, and a live Gateway Node-harness sample with 30 of 32 domains accepted. This is not a quality benchmark. Deployed-browser Gateway drafting, real-browser offline reload and live OpenAI/Gemini test-key calls remain untested. See the [submission write-up, evidence and detailed production proposal](docs/26-submission-writeup.md).
+The shared shell has an icon sidebar in canonical order: Home, Class portfolios, Students,
+Evidence library, AI drafts, Reports, then AI provider settings and About and privacy.
+The topbar shows breadcrumbs, semester, provider, fictional-data and offline status; an amber
+notice reinforces the demo boundaries. Mobile uses a chip row and five bottom tabs, hidden
+on print routes.
 
-**NOT IMPLEMENTED:** real login/roles/tenant isolation, application server, database, private object storage, server-side PDF, finalisation lock, vector RAG, audit log, production AI hosting, classroom tracking and inter-school transfer.
+| Page | Hash route |
+|---|---|
+| Home | `#/` |
+| Class portfolios | `#/classes` |
+| Child editor: domain tabs and Review narratives | `#/classes/class-a/children/<id>?sem=<semester>` |
+| Students / profile | `#/students`, `#/students/<id>` |
+| Evidence library | `#/evidence` |
+| AI drafts | `#/drafts` |
+| Reports | `#/reports` |
+| Child / class print | `#/print/<id>?sem=<semester>`, `#/print-class?sem=<semester>` |
+| Provider settings | `#/settings/ai` |
+| About and privacy | `#/about` |
 
-## Features in the current build
+Legacy `#/child/<id>?sem=...` links redirect to the editor. Unknown hashes show Home with a
+visible notice. Records and provider/model provenance persist in `localStorage`; keys and
+rejection history remain in page memory. Browser storage is neither secure storage nor a backup.
+Offline mock is explicit and labelled, not AI. Provider failures never silently select mock.
+Grounding can reject faithful text or miss unsupported claims; teacher review is mandatory.
+
+Owner-supplied QA (2026-10-17, built-in browser, `dist`, light scheme): every route loaded at
+1440×900, 430×932 and 390×844 with one focused h1, no horizontal overflow and targets at least
+44 px. Home reduced from 9,273 px to 1,162 px with three needing-work rows. Mock drafting,
+editing, persisted review, fake-key non-persistence and sanitized failure were exercised.
+The C-01 S1 PDF had two A4 pages, embedded PingFang SC, correct Simplified Chinese and no
+app chrome. These are supplied observations, not checks rerun for this documentation edit.
+
+Service-worker offline reload with networking disabled, new-build deployed Gateway drafting,
+real hardware, screen readers, Safari/Firefox, Windows/Linux CJK fonts and real OpenAI/Gemini
+test keys remain untested. No teacher-time, edit-rate or quality measurement is claimed.
+Current command counts and HEAD were not verified here: this edit-only task forbids shell
+execution. Historical counts are not current acceptance evidence.
+
+Implementation: `src/studio/` contains routing, context, shared shell/UI, pages and models;
+`studio.css` uses `src/studio/tokens.css`. The [design SSOT](design/README.md) contains
+12 page specs and 24 WebP wireframes generated with Codex CLI image generation: images express
+visual intent, specs define copy/behavior, tokens define enforceable values.
+See the [submission write-up](docs/26-submission-writeup.md) for the walkthrough, evidence,
+deployment status and production proposals.
+
+**NOT IMPLEMENTED:** real login/roles/tenant isolation, application server, database, private
+object storage, server-side PDF, finalisation lock, vector RAG, audit log, production AI hosting,
+classroom tracking and inter-school transfer.
+
+## Original five-record demo features
 
 | Feature | Actual status |
 |---|---|
@@ -75,9 +121,16 @@ Edit **`src/config.js`**. `organizationName` and `logoUrl` default to empty stri
 4. Wait for the **Static checks and Pages deployment** workflow and its `github-pages` deployment to succeed, then open the actual deployment URL (normally `https://YOUR_GITHUB_USERNAME.github.io/YOUR_REPOSITORY/`).
 5. Smoke-test Offline Mock from that real origin first. Live Gateway/BYOK results are separate: the Gateway may allow only configured origins/project identities. Do not change live access controls, disable authentication or use an unrestricted key to make a demo work.
 
-`npm run build` recreates `dist/` with only runtime HTML/CSS/favicon, five `src/` modules, three PNG icons, two generated theme manifests, `build-info.json`, a versioned `sw.js` and `.nojekyll`. Documentation, tests, schemas and repository history are not published. No bundler, dependencies or secrets are added. Relative paths and worker scope support a repository subpath. See [deployment, offline, update and rollback instructions](docs/09-deployment.md).
+`npm run build` recreates `dist/` from the explicit runtime asset allowlist, including every studio
+page/helper, both application hosts, token/component styles, icons, generated theme manifests,
+`build-info.json`, a versioned `sw.js` and `.nojekyll`. Documentation, tests, schemas and repository
+history are not published. No bundler, dependencies or secrets are added. Relative paths and worker
+scope support a repository subpath. See [deployment instructions](docs/09-deployment.md).
 
-**Ready for local testing:** `npm start` serves the built app. Syntax checks, **43 tests**, the static build, cold offline reload, mock editing/review/PDF, controlled version updates, multi-tab behavior, failure recovery and required responsive viewports passed. See [the current verification report and screenshots](docs/24-verification-report.md) and [the KB-MCP PWA acceptance contract](docs/25-pwa-standard.md). The earlier static site was deployed; these new PWA commits are local and require the owner's manual push before hosted acceptance.
+**Historical original-demo evidence:** the earlier 43-test PWA verification, responsive screenshots
+and offline/update checks are documented in [the original verification report](docs/24-verification-report.md).
+They do not establish acceptance of the redesigned class studio. See also the
+[PWA acceptance contract](docs/25-pwa-standard.md). Publishing still requires the owner's approval.
 
 Documentation: [`docs/README.md`](docs/README.md), including PRD, architecture, governance, provider protocols, security, deployment, acceptance tests, and a ready-to-paste coding-agent task. `AGENTS.md` describes project-safe engineering boundaries.
 
