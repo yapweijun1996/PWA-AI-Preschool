@@ -13,6 +13,9 @@ export const NAV_ITEMS = Object.freeze([
 export function buildRoute(name, params = {}) {
   const { childId, semester = '2026-S2', domain } = params;
   const item = NAV_ITEMS.find(item => item.name === name);
+  if (name === 'classes' && params.filter === 'ready-for-draft') {
+    return '#/classes?filter=ready-for-draft';
+  }
   if (name === 'reports' && params.semester && ['2026-S1', '2026-S2'].includes(semester)) {
     const query = new URLSearchParams({ sem: semester });
     if (childId) query.set('child', childId);
@@ -31,7 +34,7 @@ export function buildRoute(name, params = {}) {
   if (name === 'student-profile') return `#/students/${id}`;
   const path = name === 'child-editor' ? `/classes/class-a/children/${id}`
     : name === 'print' ? `/print/${id}` : null;
-  const tab = ['english', 'chinese', 'mathematics', 'social-emotional'].includes(domain)
+  const tab = ['english', 'chinese', 'mathematics', 'social-emotional', 'review'].includes(domain)
     && name === 'child-editor' ? `&domain=${domain}` : '';
   return path ? `#${path}?sem=${semester}${tab}` : '#/';
 }
@@ -45,6 +48,9 @@ export function legacyRedirect(hash) {
 export function parseRoute(hash) {
   const source = legacyRedirect(hash) ?? hash;
   if (!source || source === '#') return { name: 'home' };
+  if (source === '#/classes?filter=ready-for-draft') {
+    return { name: 'classes', filter: 'ready-for-draft' };
+  }
   const reports = /^#\/reports\?sem=(2026-S[12])(?:&child=([^&#]+))?$/.exec(source);
   if (reports) {
     try {
@@ -52,7 +58,7 @@ export function parseRoute(hash) {
         ...(reports[2] ? { childId: decodeURIComponent(reports[2]) } : {}) };
     } catch { return { name: 'home', unknown: true, message: 'Unknown route. Home is shown.' }; }
   }
-  const tab = /&domain=(english|chinese|mathematics|social-emotional)$/.exec(source);
+  const tab = /&domain=(english|chinese|mathematics|social-emotional|review)$/.exec(source);
   if (tab && source.startsWith('#/classes/class-a/children/')) {
     const route = parseRoute(source.slice(0, tab.index));
     if (route.name === 'child-editor') return { ...route, domain: tab[1] };

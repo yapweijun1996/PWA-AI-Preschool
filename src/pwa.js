@@ -4,7 +4,8 @@ const UPDATE_TIMEOUT = 15000;
 const VERSION_TIMEOUT = 4000;
 const RESET_WARNING = `Updating reloads ${APP_NAME}. All session-only drafts, review approvals, added observations, provider selections and disposable API keys will be reset. Nothing is saved. Continue?`;
 
-export function initPwa({isBusy = () => false, updateWarning = RESET_WARNING} = {}) {
+export function initPwa({isBusy = () => false, updateWarning = RESET_WARNING,
+  onState = () => {}, updateLabel = 'Update available', confirmLabel = null} = {}) {
   const buildId = document.body.dataset.buildId;
   const create = (tag, className, text, id) => {
     const node = document.createElement(tag);
@@ -67,8 +68,10 @@ export function initPwa({isBusy = () => false, updateWarning = RESET_WARNING} = 
     const connection = navigator.onLine === false ? 'Offline' : 'Online';
     status.textContent = `${connection} · Build ${buildId && buildId !== '__BUILD_ID__' ? buildId : 'source preview'} · ${detail}${navigator.onLine === false ? ' Remote AI is unavailable; Offline Mock remains an explicit choice.' : ''}`;
     updateButton.hidden = !waiting && !refreshRequired;
-    updateButton.textContent = refreshRequired ? 'Reload updated app' : 'Update available';
+    updateButton.textContent = refreshRequired ? 'Reload updated app' : updateLabel;
     updateButton.disabled = optedIn;
+    onState({ online: navigator.onLine !== false, cacheReady,
+      updateAvailable: Boolean(waiting || refreshRequired), detail });
   }
   function closeDialog(node) { if (node.open) node.close(); }
   function showDialog(node) {
@@ -113,7 +116,7 @@ export function initPwa({isBusy = () => false, updateWarning = RESET_WARNING} = 
     message.textContent = text;
     renderStatus();
     showDialog(dialog);
-    confirm.textContent = 'Retry update and reset';
+    confirm.textContent = confirmLabel || 'Retry update and reset';
   }
   function reload() {
     if (!optedIn || reloading) return;
@@ -127,7 +130,8 @@ export function initPwa({isBusy = () => false, updateWarning = RESET_WARNING} = 
   function requestUpdate() {
     if (optedIn) return;
     message.textContent = '';
-    confirm.textContent = refreshRequired ? 'Reload and reset session' : 'Update and reset session';
+    confirm.textContent = confirmLabel
+      || (refreshRequired ? 'Reload and reset session' : 'Update and reset session');
     showDialog(dialog);
     if (isBusy()) busyWarning();
   }

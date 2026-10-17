@@ -1,11 +1,12 @@
 import {
   DOMAINS, computeStatus, adjacentChildId, nextChildNeedingWork
 } from '../../portfolio-model.js';
-import { el, button, link, statusChip, progressBar, errorState } from '../ui.js';
+import { el, button, link, statusChip, progressBar, errorState, saveState } from '../ui.js';
 import { buildRoute } from '../router.js';
 import { editorModel } from '../editor-model.js';
 import { domainPanel } from '../domain-panel.js';
 import { narrativeControls } from '../narrative-controls.js';
+import { providerCard } from '../provider-card.js';
 
 export function render(ctx, route) {
   const child = ctx.children.find(child => child.id === route.childId);
@@ -18,6 +19,7 @@ export function render(ctx, route) {
   const record = ctx.current(child.id);
   const root = el('section');
   const header = childHeader(ctx, child, record);
+  const provider = providerCard(ctx);
   const tabs = editorTabs(ctx, child, record, route.domain);
   const draft = button('Draft all four', async () => {
     await ctx.runDraft(() => ctx.draft(child, record, DOMAINS.map(domain => domain.id)));
@@ -28,12 +30,13 @@ export function render(ctx, route) {
   });
   draft.disabled = ctx.provider.id !== 'mock' && ctx.isOffline();
   header.root.append(draft, tabs.tabs);
-  root.append(header.root, el('p',
+  root.append(header.root, provider, el('p',
     'Keyboard: Alt+ArrowRight / Alt+ArrowLeft moves to the next / previous child.'), tabs.panel);
   root.dispose = () => {
     header.dispose();
     tabs.dispose();
     unsubscribe();
+    provider.dispose();
   };
   return root;
 }
@@ -41,8 +44,7 @@ export function render(ctx, route) {
 function childHeader(ctx, child, record) {
   const root = el('header', undefined, 'child-header');
   const status = statusChip(computeStatus(record));
-  const save = el('span');
-  save.setAttribute('role', 'status');
+  const save = el('div');
   const progress = el('div');
   const nav = el('div', undefined, 'toolbar');
   const move = direction => ctx.go(adjacentChildId(ctx.children, child.id, direction));
@@ -56,7 +58,7 @@ function childHeader(ctx, child, record) {
     progress.replaceChildren(progressBar(model.ready, 4, `${model.ready} / 4 domains ready`));
     status.textContent = statusChip(computeStatus(record)).textContent;
     status.dataset.status = computeStatus(record);
-    save.textContent = ctx.saveStatus;
+    save.replaceChildren(saveState(ctx.saveStatus, ctx.retrySave));
     for (const node of nav.querySelectorAll('button')) node.disabled = ctx.busy;
   };
   const shortcut = event => {
@@ -83,7 +85,7 @@ function editorTabs(ctx, child, record, initialDomain) {
   const panel = el('div');
   panel.id = 'editor-panel';
   panel.setAttribute('role', 'tabpanel');
-  let selected = DOMAINS.some(domain => domain.id === initialDomain)
+  let selected = [...DOMAINS.map(domain => domain.id), 'review'].includes(initialDomain)
     ? initialDomain : DOMAINS[0].id;
   let content = null;
   let disposed = false;
@@ -135,6 +137,7 @@ function tabKey(event, id, tabs, select) {
 function reviewPanel(ctx, child, record) {
   const root = el('section', undefined, 'domain');
   root.append(el('h2', 'Review narratives'));
+  root.append(el('p', 'Local review is not authenticated approval or report release.', 'notice'));
   const list = el('div');
   const addNarratives = () => {
     list.replaceChildren();

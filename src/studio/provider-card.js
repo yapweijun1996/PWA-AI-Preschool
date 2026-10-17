@@ -1,5 +1,5 @@
 import { PROVIDER_LABELS } from '../class-view.js';
-import { el } from './ui.js';
+import { el, link, offlineState } from './ui.js';
 
 export function providerCard(ctx) {
   const panel = el('section', undefined, 'provider-panel');
@@ -22,18 +22,18 @@ export function providerCard(ctx) {
   });
   const status = el('p');
   status.setAttribute('role', 'status');
-  const offline = el('p',
-    'Offline: select Offline mock or reconnect before remote drafting.', 'provider-warning');
+  const offline = offlineState();
   panel.append(label, key.root, el('p',
     "Sends only the child's first name, ratings and comments to the selected provider. "
-    + 'Photos are never sent.'), status, offline);
+    + 'Photos are never sent.'), status, offline, link('Provider settings', '#/settings/ai'));
   const refresh = () => {
     select.disabled = key.input.disabled = ctx.busy;
     key.root.hidden = !['openai', 'gemini'].includes(ctx.provider.id);
     status.textContent = ctx.provider.status;
     offline.hidden = ctx.provider.id === 'mock' || !ctx.isOffline();
   };
-  panel.dispose = ctx.subscribe(refresh);
+  panel.dispose = () => { unsubscribe(); key.input.value = ''; };
+  const unsubscribe = ctx.subscribe(refresh);
   refresh();
   return panel;
 }
@@ -46,7 +46,7 @@ function keyField(ctx) {
   input.autocomplete = 'off';
   input.spellcheck = false;
   input.placeholder = 'Paste a disposable test key';
-  input.value = ctx.provider.key;
+  input.value = '';
   label.append(input);
   input.addEventListener('input', () => {
     ctx.provider.key = input.value;

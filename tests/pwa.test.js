@@ -397,3 +397,34 @@ test('an uncontrolled tab that explicitly opts into a waiting update reloads on 
     assert.equal(browser.window.reloads, 1);
   } finally { browser.restore(); }
 });
+
+test('studio receives verified offline/update state without changing legacy update defaults', async () => {
+  const browser = browserEnvironment({controlled: false, waiting: false});
+  const states = [];
+  try {
+    initPwa({onState: state => states.push(state), updateLabel: 'Review update',
+      confirmLabel: 'Update app', updateWarning:
+        'Saved portfolios stay in this browser. Unsaved changes and temporary provider choices '
+        + 'will be lost.'});
+    await settle();
+    assert.equal(states.at(-1).cacheReady, false);
+    browser.serviceWorker.controller = fakeWorker('release-one');
+    browser.serviceWorker.emit('controllerchange');
+    await settle();
+    assert.equal(states.at(-1).cacheReady, true);
+    browser.navigator.onLine = false;
+    browser.window.emit('offline');
+    assert.equal(states.at(-1).online, false);
+    browser.registration.waiting = fakeWorker('release-two');
+    browser.registration.installing = browser.registration.waiting;
+    browser.registration.installing.state = 'installed';
+    browser.registration.emit('updatefound');
+    assert.equal(states.at(-1).updateAvailable, true);
+    assert.equal(browser.byId('pwa-update-button').textContent, 'Review update');
+    browser.byId('pwa-update-button').click();
+    assert.equal(browser.byId('pwa-confirm-update').textContent, 'Update app');
+    browser.byId('pwa-cancel-update').click();
+    assert.equal(browser.registration.waiting.skips, 0);
+    assert.equal(browser.window.reloads, 0);
+  } finally { browser.restore(); }
+});

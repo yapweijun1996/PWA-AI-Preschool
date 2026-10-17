@@ -41,7 +41,7 @@ class Element {
   reportValidity() { return !this.validationMessage; }
 }
 
-function setup(t) {
+function setup(t, route = {}) {
   const doc = new Element('document');
   doc.createElement = tag => new Element(tag, doc);
   const before = Object.getOwnPropertyDescriptor(globalThis, 'document');
@@ -51,7 +51,8 @@ function setup(t) {
     getItem: key => data.get(key) ?? null, setItem: (key, value) => data.set(key, value)
   } });
   ctx.go = id => { ctx.destination = id; };
-  const page = render(ctx, { name: 'child-editor', childId: 'C-05', semester: '2026-S2' });
+  const page = render(ctx, { name: 'child-editor', childId: 'C-05', semester: '2026-S2',
+    ...route });
   const find = text => page.querySelectorAll('button').find(node => node.textContent === text);
   t.after(() => {
     page.dispose();
@@ -108,4 +109,14 @@ test('review is distinct, requires all narratives and advances only after explic
   await find('Mark reviewed and go to next child').emit('click');
   assert.equal(ctx.get('C-05').reviewed, true);
   assert.equal(ctx.destination, 'C-06');
+});
+
+test('draft review deep links open the Review step and retain quick provider settings access', t => {
+  const { page } = setup(t, { domain: 'review' });
+  assert.equal(page.querySelectorAll('h2')[0].textContent, 'Review narratives');
+  assert.equal(page.querySelectorAll('textarea').length, 4);
+  assert.match(page.textContent, /Local review is not authenticated approval/);
+  const settings = page.querySelectorAll('a').find(link => link.textContent === 'Provider settings');
+  assert.equal(settings.href, '#/settings/ai');
+  assert.equal(page.querySelectorAll('select')[0].value, 'mock');
 });

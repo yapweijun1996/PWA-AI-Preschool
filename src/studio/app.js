@@ -40,7 +40,8 @@ export function startStudio() {
     const route = parseRoute(location.hash);
     if (['child-editor', 'print', 'print-class'].includes(route.name)) {
       location.hash = buildRoute(route.name, { childId: route.childId, semester });
-    } else render();
+    } else if (route.name === 'reports') ctx.notify();
+    else render();
   };
   function render() {
     ctx.persist();
@@ -61,10 +62,15 @@ export function startStudio() {
   window.addEventListener('beforeunload', ctx.persist);
   for (const event of ['online', 'offline']) window.addEventListener(event, ctx.notify);
   render();
-  initPwa({ isBusy: () => ctx.busy, updateWarning:
-    'Updating reloads AI Preschool Studio and clears memory-only provider keys. '
-    + 'Saved fictional portfolios remain in this browser. Continue?' });
+  initStudioPwa(ctx);
   return ctx;
+}
+
+function initStudioPwa(ctx) {
+  initPwa({ isBusy: () => ctx.busy, updateWarning:
+    'Saved portfolios stay in this browser. Unsaved changes and temporary provider choices '
+    + 'will be lost.', updateLabel: 'Review update', confirmLabel: 'Update app',
+    onState: state => { ctx.pwa = state; ctx.notify(); } });
 }
 
 startStudio();

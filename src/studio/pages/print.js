@@ -1,16 +1,11 @@
-import { buildReport } from '../../report-model.js';
+import { reportsModel } from '../models/reports-model.js';
 import { renderReport, renderReportControls } from '../../report-view.js';
 import { el, errorState } from '../ui.js';
 import { buildRoute } from '../router.js';
 
 export function printModel(ctx, route, generatedOn) {
-  const children = route.name === 'print-class' ? ctx.children
-    : ctx.children.filter(child => child.id === route.childId);
-  return children.map(child => buildReport({ child,
-    record: ctx.get(child.id, route.semester),
-    previousRecord: route.semester === '2026-S2' ? ctx.get(child.id, '2026-S1') : null,
-    generatedOn
-  }));
+  return reportsModel(ctx, { type: route.name === 'print-class' ? 'class' : 'child',
+    childId: route.childId, semester: route.semester }, generatedOn).reports;
 }
 
 export function render(ctx, route) {

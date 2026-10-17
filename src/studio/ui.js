@@ -42,18 +42,47 @@ export function progressBar(value, max, text) {
   progress.value = value;
   progress.max = max;
   progress.setAttribute('aria-label', text);
-  node.append(el('p', text), progress);
+  const label = el('p', text);
+  label.setAttribute('role', 'status');
+  node.append(label, progress);
   return node;
 }
 
-export function emptyState(text) { return el('p', text, 'empty-state'); }
-export function errorState(text) {
-  const node = el('p', text, 'error-state');
-  node.setAttribute('role', 'alert');
+export function stateCard(kind, text, action) {
+  const node = el('section', undefined, `state-card ${kind}-state`);
+  node.dataset.state = kind;
+  node.setAttribute('role', kind === 'error' ? 'alert' : 'status');
+  const titles = { empty: 'Empty', error: 'Error', loading: 'Loading',
+    rejected: 'Rejected draft', offline: 'Offline', saved: 'Saved', unsaved: 'Not saved' };
+  node.append(el('strong', titles[kind] ?? kind), el('p', text));
+  if (action) node.append(action);
+  if (kind === 'loading') node.setAttribute('aria-busy', 'true');
   return node;
 }
-export function loadingState(text = 'Loading records…') {
-  const node = el('p', text, 'loading-state');
-  node.setAttribute('aria-busy', 'true');
-  return node;
+
+export function emptyState(text, action) { return stateCard('empty', text, action); }
+export function errorState(text, action) { return stateCard('error', text, action); }
+export function loadingState(text = 'Loading portfolios…') {
+  return stateCard('loading', text);
+}
+
+export function rejectedState(text, action) { return stateCard('rejected', text, action); }
+export function offlineState() {
+  return stateCard('offline',
+    'Offline: select Offline mock or reconnect before remote drafting. Local work remains available.',
+    link('Provider settings', '#/settings/ai'));
+}
+
+export function saveState(status, retry) {
+  const failed = status.startsWith('Not saved');
+  if (status === 'Saving…') return loadingState(status);
+  return stateCard(failed ? 'unsaved' : 'saved', failed
+    ? 'Not saved: storage unavailable. Your edits remain on this screen.' : status,
+  failed && retry ? button('Retry save', retry) : null);
+}
+
+export function pwaStatusChip(state = {}) {
+  const label = state.updateAvailable ? 'Update available' : state.cacheReady ? 'Offline ready'
+    : state.online === false ? 'Offline · readiness not verified' : 'Offline readiness not verified';
+  return chip(label);
 }

@@ -19,7 +19,7 @@ export const FILTER_LABELS = Object.freeze({
 
 export const PROVIDER_LABELS = Object.freeze({
   mock: "Offline mock (not AI)",
-  gateway: "GPT Demo Gateway (public demo session)",
+  gateway: "GPT Demo Gateway",
   openai: "OpenAI (test key)",
   gemini: "Gemini (test key)"
 });

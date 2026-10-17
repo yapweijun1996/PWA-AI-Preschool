@@ -2,7 +2,8 @@ import {
   DOMAINS, computeStatus, nextChildNeedingWork, progressComparison
 } from '../../portfolio-model.js';
 import { filterChildren, domainDot, classSummary, FILTER_LABELS } from '../../class-view.js';
-import { el, button, link, statusChip, ratingChip, progressBar } from '../ui.js';
+import { el, button, link, statusChip, ratingChip, progressBar, emptyState,
+  rejectedState } from '../ui.js';
 import { buildRoute } from '../router.js';
 import { providerCard } from '../provider-card.js';
 import { draftReadyChildren } from '../bulk-draft.js';
@@ -32,7 +33,7 @@ function childCard(ctx, child) {
         : `Change: ${change > 0 ? '+' : ''}${change}`));
     }
     const rejection = ctx.rejections.get(`${child.id}:${ctx.semester}:${domain.id}`);
-    if (rejection) row.append(el('p', `${domain.label}: ${rejection}`, 'provider-warning'));
+    if (rejection) row.append(rejectedState(`${domain.label}: ${rejection}`));
     list.append(row);
   }
   card.append(list, link('Open portfolio', buildRoute('child-editor', {
@@ -41,12 +42,12 @@ function childCard(ctx, child) {
   return card;
 }
 
-export function render(ctx) {
+export function render(ctx, route = {}) {
   const root = el('section');
   root.append(el('h1', 'Class portfolios'),
     el('p', 'Review learning progress across 20 fictional children.'));
   const provider = providerCard(ctx);
-  const listing = childListing(ctx);
+  const listing = childListing(ctx, route.filter);
   const summary = el('section', undefined, 'summary');
   const actions = classActions(ctx, listing.refresh);
   const refresh = () => {
@@ -59,6 +60,7 @@ export function render(ctx) {
       summary.append(node);
     }
     actions.refresh();
+    listing.refresh();
   };
   const unsubscribe = ctx.subscribe(refresh);
   root.dispose = () => {
@@ -73,7 +75,7 @@ export function render(ctx) {
   return root;
 }
 
-function childListing(ctx) {
+function childListing(ctx, initialFilter = 'all') {
   const tools = el('div', undefined, 'toolbar');
   const label = el('label', 'Search children');
   const search = el('input');
@@ -86,17 +88,21 @@ function childListing(ctx) {
   const grid = el('div', undefined, 'grid');
   const count = el('p');
   count.setAttribute('role', 'status');
-  let filter = 'all';
+  let filter = initialFilter;
   const refresh = () => {
     const model = classesModel(ctx, { query: search.value, filter });
     grid.replaceChildren(...model.children.map(child => childCard(ctx, child)));
     count.textContent = `Showing ${model.children.length} of ${ctx.children.length} children`;
-    if (!model.children.length) grid.append(el('p', 'No children match this search.'),
+    if (!model.children.length) grid.append(emptyState('No children match this search.',
       button('Clear search', () => {
         search.value = '';
+        filter = 'all';
+        for (const node of filters.children) {
+          node.setAttribute('aria-pressed', String(node.textContent === FILTER_LABELS.all));
+        }
         refresh();
         search.focus();
-      }));
+      })));
   };
   for (const [value, text] of Object.entries(FILTER_LABELS)) {
     const control = button(text, () => {

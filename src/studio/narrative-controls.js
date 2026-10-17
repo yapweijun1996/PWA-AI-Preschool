@@ -1,13 +1,12 @@
 import { narrativeChip } from '../class-view.js';
-import { el, button } from './ui.js';
+import { el, button, offlineState, rejectedState } from './ui.js';
 
 export function narrativeControls(ctx, child, record, id) {
   const root = el('section', undefined, 'narrative-box');
   const key = `${child.id}:${record.semester}:${id}`;
   const source = el('p', narrativeChip(record.narratives[id]), 'chip');
   const stale = el('p', 'Narrative may be out of date', 'stale');
-  const rejected = el('p', '', 'provider-warning');
-  rejected.setAttribute('role', 'status');
+  const rejected = el('div');
   const label = el('label', 'Narrative (teacher editable)');
   const narrative = el('textarea');
   narrative.maxLength = 2000;
@@ -21,6 +20,7 @@ export function narrativeControls(ctx, child, record, id) {
     record.narratives[id] = { ...old, text: narrative.value,
       source: old?.source ?? 'teacher',
       edited: old?.edited === true || narrative.value !== baseline };
+    ctx.rejections.delete(key);
     ctx.change(record);
     source.textContent = narrativeChip(record.narratives[id]);
     count.textContent = `${narrative.value.length} / 2000`;
@@ -31,12 +31,15 @@ export function narrativeControls(ctx, child, record, id) {
     source.textContent = narrativeChip(record.narratives[id]);
     count.textContent = `${narrative.value.length} / 2000`;
   }, true);
-  const offline = el('p',
-    'Offline: select Offline mock or reconnect before remote drafting.', 'provider-warning');
+  const offline = offlineState();
   const update = () => {
     stale.hidden = !ctx.stale.has(key);
-    rejected.textContent = ctx.rejections.get(key) ?? '';
-    rejected.hidden = !rejected.textContent;
+    const reason = ctx.rejections.get(key);
+    rejected.replaceChildren();
+    if (reason) rejected.append(rejectedState(reason, button('Write it yourself', () => {
+      narrative.focus();
+    })));
+    rejected.hidden = !reason;
     draft.disabled = ctx.busy || (ctx.provider.id !== 'mock' && ctx.isOffline());
     offline.hidden = ctx.provider.id === 'mock' || !ctx.isOffline();
     narrative.disabled = ctx.busy;

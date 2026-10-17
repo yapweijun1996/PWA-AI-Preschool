@@ -1,6 +1,7 @@
 import { NAV_ITEMS, buildRoute, parentModule } from './router.js';
 import { PROVIDER_LABELS } from '../class-view.js';
-import { el, button, link, chip } from './ui.js';
+import { el, button, link, chip, pwaStatusChip, saveState,
+  offlineState, errorState, loadingState } from './ui.js';
 
 export function navigationModel(name) {
   const parent = parentModule(name);
@@ -15,17 +16,23 @@ export function mountShell(ctx) {
   const notice = el('aside',
     'Fictional demo data | Stored only in this browser | '
     + 'NOT IMPLEMENTED: real login / server / database', 'notice');
-  const save = el('p');
-  save.setAttribute('role', 'status');
+  const feedback = el('div', undefined, 'session-feedback');
   const live = el('p');
   live.setAttribute('aria-live', 'polite');
   live.setAttribute('aria-atomic', 'true');
   const main = el('main');
   main.id = 'main';
-  content.append(top.root, notice, save, live, main, nav.more, nav.tabs);
+  main.append(loadingState());
+  content.append(top.root, notice, feedback, live, main, nav.more, nav.tabs);
   root.append(nav.sidebar, content);
   ctx.subscribe(() => {
-    save.textContent = ctx.saveStatus;
+    feedback.replaceChildren(saveState(ctx.saveStatus, ctx.retrySave));
+    if (ctx.isOffline()) feedback.append(offlineState());
+    if (ctx.draftError) {
+      const retry = button('Retry draft', () => ctx.retryDraft?.());
+      retry.disabled = ctx.busy || (ctx.provider.id !== 'mock' && ctx.isOffline());
+      feedback.append(errorState(ctx.draftError, retry));
+    }
     live.textContent = ctx.message;
   });
   const update = route => {
@@ -50,11 +57,19 @@ function topbar(ctx) {
   label.append(semester);
   semester.addEventListener('change', () => ctx.setSemester(semester.value));
   const provider = link('', '#/settings/ai');
-  const pwa = el('div');
-  pwa.id = 'pwa-controls-host';
-  root.append(breadcrumb, label, provider, chip('Fictional demo data'), pwa);
+  provider.className = 'chip';
+  const pwaChip = el('span');
+  const chips = el('div', undefined, 'status-chips');
+  chips.append(provider, chip('Fictional demo data'), pwaChip);
+  const pwa = el('details', undefined, 'pwa-details');
+  const host = el('div');
+  host.id = 'pwa-controls-host';
+  pwa.append(el('summary', 'Offline and installation details'), host);
+  root.append(breadcrumb, label, chips, pwa);
   ctx.subscribe(() => {
     provider.textContent = `${PROVIDER_LABELS[ctx.provider.id]} · ${ctx.provider.status}`;
+    pwaChip.replaceChildren(pwaStatusChip(ctx.pwa));
+    semester.value = ctx.semester;
     semester.disabled = ctx.busy;
   });
   const update = route => {
@@ -73,10 +88,19 @@ function navigation() {
   tabs.setAttribute('aria-label', 'Mobile navigation');
   const more = el('nav', undefined, 'more-menu');
   more.setAttribute('aria-label', 'More destinations');
+  more.id = 'more-destinations';
   more.hidden = true;
   const moreButton = button('More', () => {
     more.hidden = !more.hidden;
     moreButton.setAttribute('aria-expanded', String(!more.hidden));
+    if (!more.hidden) more.querySelector('a')?.focus();
+  });
+  moreButton.setAttribute('aria-controls', more.id);
+  more.addEventListener('keydown', event => {
+    if (event.key !== 'Escape') return;
+    more.hidden = true;
+    moreButton.setAttribute('aria-expanded', 'false');
+    moreButton.focus();
   });
   const update = route => {
     const model = navigationModel(route.name);
@@ -87,7 +111,7 @@ function navigation() {
       const destination = navLink(item);
       if (item.name === 'ai-settings') destination.className = 'nav-divider';
       sidebar.append(destination);
-      if (item.tab === 'More') more.append(link(item.label, buildRoute(item.name)));
+      if (item.tab === 'More') more.append(navLink(item));
     }
     for (const tab of ['Home', 'Classes', 'Students', 'Drafts']) {
       const item = model.find(item => item.tab === tab);

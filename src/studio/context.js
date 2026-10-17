@@ -4,7 +4,7 @@ import {
   emptyRecord, computeStatus, narrativeInputFor, validateRecord
 } from '../portfolio-model.js';
 import {
-  mockNarrative, generateNarrativesWithProvider, validateNarrativeText
+  mockNarrative, generateNarrativesWithProvider, validateNarrativeText, NarrativeDraftError
 } from '../narrative.js';
 
 export function createContext({ storage = null, generateNarrative = mockNarrative,
@@ -15,6 +15,7 @@ export function createContext({ storage = null, generateNarrative = mockNarrativ
     store, records: store.load(), children: CHILDREN, semester: '2026-S2',
     provider: { id: 'mock', key: '', status: 'not tested' },
     rejections: new Map(), stale: new Set(), busy: false, message: '', saveStatus: '', isOffline,
+    batch: null, draftError: '', retryDraft: null,
     subscribe(fn) {
       listeners.add(fn);
       return () => listeners.delete(fn);
@@ -51,6 +52,7 @@ function persistence(ctx) {
   let timer = null;
   let dirty = false;
   return {
+    retrySave() { dirty = true; ctx.persist(); },
     persist() {
       clearTimeout(timer);
       if (!dirty) return;
@@ -78,6 +80,9 @@ function persistence(ctx) {
       ctx.records = seedRecords();
       ctx.stale.clear();
       ctx.rejections.clear();
+      ctx.batch = null;
+      ctx.draftError = '';
+      ctx.retryDraft = null;
       dirty = true;
       ctx.persist();
       ctx.announce('Sample data restored.');
@@ -92,6 +97,8 @@ async function runDraft(ctx, action) {
     return false;
   }
   ctx.busy = true;
+  ctx.draftError = '';
+  ctx.retryDraft = null;
   ctx.provider.status = 'drafting';
   ctx.notify();
   try {
@@ -100,7 +107,11 @@ async function runDraft(ctx, action) {
     return true;
   } catch (error) {
     ctx.provider.status = 'failed';
-    ctx.announce(`${error.message} Existing narratives were kept. Retry explicitly.`);
+    ctx.draftError = error instanceof NarrativeDraftError ? error.message
+      : 'AI request failed. Check the connection, model, permissions or quota, then retry. '
+        + 'No narratives were changed.';
+    ctx.retryDraft = () => ctx.runDraft(action);
+    ctx.announce(`${ctx.draftError} Existing narratives were kept. Retry explicitly.`);
     return false;
   } finally {
     ctx.busy = false;
