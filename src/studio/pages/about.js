@@ -1,5 +1,6 @@
 import { STUDIO_CONFIG } from '../../config.js';
 import { el, link, icon } from '../ui.js';
+import { resetSampleButton } from '../page-controls.js';
 
 export const NOT_IMPLEMENTED = Object.freeze([
   'Real login, roles or tenant isolation',
@@ -17,7 +18,7 @@ export function writeupHref(config = STUDIO_CONFIG) {
     ? `${repository}/blob/HEAD/docs/26-submission-writeup.md` : null;
 }
 
-export function render() {
+export function render(ctx) {
   const root = el('section', undefined, 'about-page');
   const heading = el('header', undefined, 'page-header');
   heading.append(el('h1', 'About and privacy'),
@@ -59,7 +60,7 @@ export function render() {
   }
   cards.append(writeup);
   const actions = el('div', undefined, 'toolbar about-actions');
-  actions.append(link('Open the legacy demo', './index.html'));
+  actions.append(link('Open the legacy demo', './index.html'), resetSampleButton(ctx));
   root.append(heading, cards, actions);
   return root;
 }

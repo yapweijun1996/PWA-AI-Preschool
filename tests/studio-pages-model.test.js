@@ -72,6 +72,10 @@ test('roster filters actual semester status, names and the seeded class', () => 
   assert.deepEqual(studentsModel(CHILDREN, records, '2026-S2', { classId: 'missing' }), []);
   assert.equal(studentsModel(CHILDREN, records, '2026-S2', { classId: 'class-a' }).length, 20);
   assert.equal(studentsModel(CHILDREN, [], '2026-S2')[0].status, 'not-started');
+  const untouched = studentsModel(CHILDREN, [], '2026-S2');
+  assert.equal(untouched[0].compact, true);
+  const partial = studentsModel(CHILDREN, records, '2026-S2', { query: '李沐辰' });
+  assert.equal(partial[0].compact, false);
 });
 
 test('evidence combines child, domain, semester, type and multilingual text filters', () => {

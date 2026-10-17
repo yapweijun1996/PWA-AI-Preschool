@@ -3,7 +3,7 @@ import { el, link, offlineState } from './ui.js';
 
 export function providerCard(ctx) {
   const panel = el('section', undefined, 'provider-panel');
-  const label = el('label', 'Narrative provider');
+  const label = el('label', 'Provider');
   const select = el('select');
   for (const [id, text] of Object.entries(PROVIDER_LABELS)) {
     const option = el('option', text);
@@ -23,9 +23,11 @@ export function providerCard(ctx) {
   const status = el('p');
   status.setAttribute('role', 'status');
   const offline = offlineState();
-  panel.append(label, key.root, el('p',
+  const disclosure = el('details', undefined, 'provider-disclosure');
+  disclosure.append(el('summary', 'What is sent?'), el('p',
     "Sends only the child's first name, ratings and comments to the selected provider. "
-    + 'Photos are never sent.'), status, offline, link('Provider settings', '#/settings/ai'));
+    + 'Photos are never sent.'), status, link('Provider settings', '#/settings/ai'));
+  panel.append(label, key.root, disclosure, offline);
   const refresh = () => {
     select.disabled = key.input.disabled = ctx.busy;
     key.root.hidden = !['openai', 'gemini'].includes(ctx.provider.id);

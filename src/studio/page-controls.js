@@ -2,7 +2,8 @@ import { el, button, link } from './ui.js';
 import { buildRoute } from './router.js';
 
 export function selectField(label, options, value, change) {
-  const root = el('label', label);
+  const root = el('label');
+  root.append(el('span', label, 'field-label'));
   const select = el('select');
   for (const [id, text] of options) {
     const option = el('option', text);
@@ -16,7 +17,8 @@ export function selectField(label, options, value, change) {
 }
 
 export function searchField(label, change) {
-  const root = el('label', label);
+  const root = el('label');
+  root.append(el('span', label, 'field-label'));
   const input = el('input');
   input.type = 'search';
   input.addEventListener('input', () => change(input.value));
@@ -33,9 +35,18 @@ export function filterChips(options, selected, change) {
       change(value);
     });
     control.setAttribute('aria-pressed', String(value === selected));
+    control.dataset.filter = value;
     root.append(control);
   }
   return root;
+}
+
+export function updateFilterChips(root, options, selected) {
+  for (const [value, label] of options) {
+    const control = [...root.children].find(node => node.dataset.filter === value);
+    control.textContent = label;
+    control.setAttribute('aria-pressed', String(value === selected));
+  }
 }
 
 export function editorLink(text, item) {
@@ -60,4 +71,17 @@ export function evidenceCard(item) {
   action.setAttribute('aria-label', `Open ${item.childName} ${item.domainLabel} in editor`);
   card.append(action);
   return card;
+}
+
+export function resetSampleButton(ctx, refresh = () => {}) {
+  return button('Reset sample data', () => {
+    if (ctx.confirm('Replace all browser portfolios with fictional sample data?')) {
+      ctx.reset();
+      refresh();
+    }
+  });
+}
+
+export function domainKey() {
+  return el('p', 'EN English · ZH Chinese · MA Mathematics · SE Social-Emotional', 'domain-key');
 }

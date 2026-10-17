@@ -1,4 +1,6 @@
-import { RATINGS, classProgress, computeStatus, domainState, emptyRecord } from "./portfolio-model.js";
+import {
+  DOMAINS, RATINGS, classProgress, computeStatus, domainState, emptyRecord
+} from "./portfolio-model.js";
 
 const filters = new Set(["all", "needs-work", "ready-for-draft", "drafted", "reviewed"]);
 
@@ -40,7 +42,8 @@ export function filterChildren(children, records, semester, { query = "", filter
     const record = records.find(record => record.childId === child.id && record.semester === semester)
       ?? emptyRecord(child.id, semester);
     const status = computeStatus(record);
-    return filter === "needs-work" ? status !== "reviewed" : status === filter;
+    return filter === "needs-work"
+      ? status !== "reviewed" && status !== "ready-for-draft" : status === filter;
   });
 }
 
@@ -53,4 +56,23 @@ export function domainDot(entry) {
 
 export function classSummary(children, records, semester) {
   return classProgress(children, records, semester).totals;
+}
+
+export function portfolioFilters(children, records, semester, query = "") {
+  return Object.entries(FILTER_LABELS).map(([value, label]) => {
+    const count = filterChildren(children, records, semester, { query, filter: value }).length;
+    return [value, `${label} ${count}`];
+  });
+}
+
+export function compactPortfolio(record) {
+  return DOMAINS.every(domain => {
+    const entry = record.domains[domain.id];
+    return entry.rating === null && !entry.comment && !entry.photos.length
+      && !record.narratives[domain.id];
+  });
+}
+
+export function listComparison(change) {
+  return change === null ? "No comparison" : `S1 → S2: ${change > 0 ? "+" : ""}${change}`;
 }

@@ -11,6 +11,7 @@ const assets = [
   'index.html', 'styles.css', 'favicon.svg',
   'class.html', 'studio.css', 'src/class-view.js',
   'src/studio/tokens.css', 'src/studio/app.js', 'src/studio/router.js',
+  'src/studio/lists.css',
   'src/studio/context.js', 'src/studio/ui.js', 'src/studio/shell.js',
   'src/studio/provider-card.js', 'src/studio/bulk-draft.js', 'src/studio/editor-model.js',
   'src/studio/domain-panel.js', 'src/studio/photo-controls.js', 'src/studio/narrative-controls.js',

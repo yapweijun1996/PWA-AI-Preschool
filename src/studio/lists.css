@@ -1,0 +1,188 @@
+.list-chevron, .compact-empty, .compact-no-comparison, .domain-key { display: none; }
+.provider-disclosure summary { min-height: 44px; align-content: center; cursor: pointer; }
+.evidence-page > .chips button { min-width: var(--control-min-height); }
+@media screen and (min-width: 1024px) {
+  .provider-disclosure { display: contents; }
+  .classes-actions { display: flex; flex-wrap: wrap; align-items: center; }
+  .classes-actions::details-content, .provider-disclosure::details-content { display: contents; }
+  .classes-actions .classes-continue { order: -1; }
+  .provider-disclosure > summary, .classes-actions > summary { display: none; }
+  .provider-disclosure > p:not([role]) {
+    flex: 1 1 16rem; margin: 0; padding-left: var(--space-4);
+    border-left: 1px solid var(--color-line);
+    color: var(--color-muted); font-size: var(--text-sm);
+  }
+  .provider-disclosure > [role="status"] {
+    margin: 0; color: var(--color-muted); font-size: var(--text-xs);
+  }
+}
+@media screen and (max-width: 1023px) {
+  .classes-page, .students-page, .evidence-page { min-width: 0; }
+  .classes-page h1, .students-page h1, .evidence-page h1 { margin-bottom: var(--space-1); }
+  .classes-page .page-intro, .students-page .page-header p,
+  .evidence-page .page-header p { margin: 0 0 var(--space-2); }
+  .classes-provider {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 var(--space-2);
+    padding: var(--space-1); margin: 0;
+  }
+  .classes-provider > label {
+    display: flex; flex-wrap: nowrap; gap: var(--space-2); width: 100%;
+    font-size: var(--text-md);
+  }
+  .classes-provider > label select { flex: 1; min-width: 0; width: 0; }
+  .classes-provider > div, .classes-provider > section { grid-column: 1 / -1; }
+  .classes-provider .provider-disclosure { font-size: var(--text-xs); }
+  .classes-provider .provider-disclosure[open] { grid-column: 1 / -1; }
+  .classes-tools { margin: var(--space-1) 0; }
+  .classes-tools label { width: 100%; }
+  .classes-tools input { width: 100%; }
+  .classes-summary { padding: 0; margin: var(--space-1) 0; border: 0; }
+  .classes-summary .progress { display: flex; align-items: center; gap: var(--space-2); }
+  .classes-summary .progress p { margin: 0; white-space: nowrap; }
+  .classes-summary progress { height: var(--space-1); flex: 1; width: 0; }
+  .classes-continue { width: 100%; font-size: var(--text-sm); padding: var(--space-1); }
+  .classes-controls {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-1) var(--space-2); margin: var(--space-1) 0;
+  }
+  .classes-controls > .classes-filters { grid-column: 1 / -1; }
+  .classes-controls:has(.classes-actions[open]) > .classes-actions { grid-column: 1 / -1; }
+  .classes-page .classes-filters, .students-page .directory-toolbar .chips {
+    display: flex; flex-wrap: nowrap; overflow-x: auto; gap: var(--space-1);
+    width: 100%; margin: 0; padding-block: var(--space-1);
+  }
+  .classes-filters button, .students-page .chips button {
+    flex: 0 0 auto; white-space: nowrap;
+    padding-inline: var(--space-2);
+  }
+  .classes-filters button::before { display: none; }
+  .classes-actions { font-size: var(--text-sm); }
+  .classes-actions > summary { min-height: 44px; align-content: center; cursor: pointer; }
+  .classes-actions > button, .classes-actions > a { width: 100%; margin-block: var(--space-1); }
+  .domain-key { display: block; font-size: var(--text-xs); margin: var(--space-1) 0; }
+  .classes-grid, .students-page .student-roster tbody { grid-template-columns: minmax(0, 1fr); }
+  .class-child-card { position: relative; display: block; margin: 0; padding: var(--space-2); }
+  .class-child-heading { gap: var(--space-2); margin: 0 0 var(--space-1); }
+  .class-child-identity { flex: 1; min-width: 0; display: block; }
+  .class-child-identity h2 { margin: 0; font-size: var(--text-sm); }
+  .class-child-identity .chip { margin: 0; }
+  .class-child-heading .avatar { width: var(--space-8); height: var(--space-8); }
+  .list-chevron { display: inline-block; flex: none; color: var(--color-primary); }
+  .class-child-open, .students-page .student-action a {
+    position: absolute; inset: 0; z-index: 1; opacity: 0; margin: 0;
+  }
+  .class-child-card:focus-within, .students-page .student-row:focus-within {
+    outline: 3px solid var(--color-focus); outline-offset: 3px;
+  }
+  .class-domain-list {
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-1); margin: var(--space-1) 0 0;
+  }
+  .class-domain-list .class-domain-row {
+    display: flex; flex-direction: column; min-width: 0; padding: 0; gap: var(--space-1);
+  }
+  .class-domain-label, .class-domain-change,
+  .students-page .rating-line > span:first-child {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%);
+  }
+  .compact-domain-label, .compact-domain-change { display: block; font-size: var(--text-xs); }
+  .class-domain-row .chip, .students-page .rating-line .chip {
+    font-size: var(--text-xs); padding: var(--space-1); margin: 0;
+    overflow-wrap: break-word; white-space: nowrap;
+  }
+  .class-domain-readiness { font-size: var(--text-xs); }
+  .compact-domain-change { overflow-wrap: break-word; }
+  .compact-domain-change.redundant-comparison { display: none; }
+  .compact-no-comparison, .compact-empty { display: block; margin: 0; font-size: var(--text-xs); }
+  .untouched-portfolio .class-domain-list,
+  .untouched-portfolio .rating-line { display: none !important; }
+  .class-child-identity h2, .students-page .student-name > span:not(.avatar) {
+    min-width: 0; word-break: keep-all; overflow-wrap: break-word;
+  }
+  .students-page .directory-toolbar, .evidence-page .evidence-toolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-1) var(--space-2);
+    padding: var(--space-1); margin: 0 0 var(--space-1);
+  }
+  .students-page .directory-toolbar .directory-search { grid-column: 1 / -1; }
+  .students-page .directory-toolbar .chips { grid-column: 1 / -1; }
+  .students-page .directory-toolbar label, .evidence-page .evidence-toolbar label {
+    font-size: var(--text-sm); min-width: 0;
+  }
+  .students-page .directory-toolbar select, .evidence-page .evidence-toolbar select,
+  .students-page .directory-toolbar input, .evidence-page .evidence-toolbar input {
+    min-width: 0; padding-inline: var(--space-2);
+  }
+  .students-page .student-listing > h2 { margin: var(--space-1) 0; }
+  .students-page .student-row {
+    position: relative; grid-template-columns: minmax(0, 1fr) auto;
+    padding: var(--space-2); gap: var(--space-1);
+  }
+  .students-page .student-roster .student-name {
+    display: flex; align-items: center; gap: var(--space-1); min-width: 0;
+    font-size: var(--text-sm);
+  }
+  .students-page .student-name > span:not(.avatar) { flex: 1; min-width: 0; }
+  .students-page .student-name .avatar { flex: none; width: 32px; height: 32px; }
+  .students-page .student-roster .student-status { grid-column: 2; grid-row: 1; }
+  .students-page .student-roster .student-ratings {
+    grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-1); padding: 0;
+  }
+  .students-page .student-ratings .rating-line { gap: var(--space-1); }
+  .students-page .rating-line .compact-domain-label { order: -1; }
+  .students-page .student-roster .student-action { position: static; }
+  .students-page .compact-empty { grid-column: 1 / -1; }
+  .evidence-page > .chips {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-1); margin: var(--space-1) 0;
+  }
+  .evidence-page > .chips button { min-width: 0; white-space: nowrap; padding: var(--space-1); }
+  .evidence-page .evidence-listing { padding: var(--space-2); margin: 0; }
+  .evidence-listing > h2 { margin: 0 0 var(--space-1); }
+  .evidence-page .evidence-grid { grid-template-columns: minmax(0, 1fr); }
+  .evidence-page .library-evidence-card img { width: 72px; height: 72px; flex: none; }
+  .evidence-page .photos-only .photo { display: block; }
+  .evidence-page .photos-only img {
+    width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: contain;
+  }
+}
+@media screen and (max-width: 360px) {
+  .class-domain-list, .students-page .student-roster .student-ratings {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .classes-page .page-intro, .students-page .page-header p,
+  .evidence-page .page-header p { display: none; }
+  .classes-tools .field-label, .directory-search .field-label,
+  .students-page .student-listing > h2 {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%);
+  }
+  .classes-tools label, .students-page .directory-toolbar label,
+  .evidence-page .evidence-toolbar label { gap: 0; }
+  .class-domain-list .class-domain-row {
+    display: grid; grid-template-columns: auto minmax(0, 1fr);
+    align-items: center; column-gap: var(--space-1);
+  }
+  .class-domain-row .compact-domain-label { grid-column: 1; grid-row: 1; }
+  .class-domain-row .chip { grid-column: 2; grid-row: 1; }
+  .class-domain-row .class-domain-readiness {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%);
+  }
+  .class-domain-row .compact-domain-change { grid-column: 1 / -1; white-space: nowrap; }
+  .students-page .student-ratings .rating-line {
+    flex-direction: row; align-items: center; justify-content: space-between;
+  }
+  .students-page .student-class { display: none !important; }
+  .evidence-page .library-evidence-card > p { margin-block: 0; }
+  .evidence-page .evidence-listing { padding: var(--space-1); }
+  .class-child-card { padding: var(--space-1); }
+  .class-child-identity { display: flex; align-items: center; gap: var(--space-1); }
+  .class-child-identity h2 { flex: 1; }
+  .class-child-identity .chip { flex: none; }
+  .class-domain-list { row-gap: 0; }
+  .class-domain-row .compact-domain-change { line-height: var(--line-tight); }
+  .evidence-page .library-evidence-card h3 { margin-bottom: 0; }
+  .evidence-listing > h2 { margin-bottom: 0; }
+  .classes-controls, .evidence-page > .chips { margin-block: 0; }
+  .classes-page .classes-filters { padding-block: 0; }
+  .students-page .directory-toolbar, .evidence-page .evidence-toolbar { padding: 0; }
+  .evidence-page .evidence-toolbar { margin-bottom: 0; }
+}

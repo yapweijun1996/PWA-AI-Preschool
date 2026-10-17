@@ -11,7 +11,9 @@ async function scripts(directory) {
   return result;
 }
 
-for (const file of ['sw.js', ...await scripts('src'), ...await scripts('scripts')]) {
+for (const file of [
+  'sw.js', ...await scripts('src'), ...await scripts('scripts'), ...await scripts('tests')
+]) {
   const result = spawnSync(process.execPath, ['--check', file], { stdio: 'inherit' });
   if (result.status !== 0) process.exit(result.status ?? 1);
 }

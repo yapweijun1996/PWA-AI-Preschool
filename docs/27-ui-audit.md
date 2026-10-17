@@ -106,6 +106,28 @@ Use the five editor routes with `--viewports 320x720,390x844,430x932,768x1024`
 and `--schemes light,dark` to verify the complete compact-editor matrix.
 Review has no rating choices, so its first-screen rating check remains explicitly skipped.
 
+### B3 compact lists
+
+Below 1024px Classes uses a single provider row with a “What is sent?” disclosure,
+full-width search, counted scrolling filters, a slim review progress indicator and Continue.
+Class actions contains batch drafting, printing, reset and the domain abbreviation key.
+Reset also remains available from About, with the same confirmation.
+“Needs work” excludes ready-to-draft and reviewed records; counts follow the current search.
+
+Classes and Students use one card column through tablet widths, visible chevrons and
+full-card links with focus outlines. Untouched records show “No domains rated yet”.
+Unavailable comparisons say “No comparison”; zero deltas remain numeric.
+At 360px and below domain ratings use a two-by-two layout without breaking rating words.
+Redundant page introductions are omitted at that width to leave room for the first record.
+Search labels remain accessible when visually hidden.
+
+Evidence pairs child/domain and semester/search fields, with equal-height All/Comments/Photos
+controls. Mixed results use 72px thumbnails; Photos uses uncropped full-width 16:9 previews.
+Captions and alt text remain attached to the images.
+
+Verify all three list routes at 320x720, 390x844, 430x932 and 768x1024, both schemes,
+then run the quick audit for desktop coverage. No layout budget is relaxed.
+
 ## Agent workflow and limitations
 
 Run the quick audit before proposing UI changes. Read metrics and inspect the linked full-page

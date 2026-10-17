@@ -22,19 +22,13 @@ export function render(ctx) {
     tools.append(selectField(label, options, filters[key], value => update(key, value)));
   }
   const search = searchField('Search evidence', value => update('query', value));
-  const chips = filterChips([['all', 'All evidence'], ['comment', 'Comments'],
+  const chips = filterChips([['all', 'All'], ['comment', 'Comments'],
     ['photo', 'Photos']], filters.type, value => update('type', value));
+  chips.setAttribute('aria-label', 'Evidence type');
   const refresh = () => {
     const items = evidenceModel(ctx.children, ctx.records, filters);
-    const cards = el('div', undefined, 'evidence-grid');
-    for (const item of items) {
-      const card = evidenceCard(item);
-      card.className += ' library-evidence-card';
-      const type = el('span', item.type === 'photo' ? 'Placeholder photo' : 'Teacher comment',
-        'evidence-type');
-      card.replaceChildren(type, ...card.children);
-      cards.append(card);
-    }
+    listing.className = `card evidence-listing${filters.type === 'photo' ? ' photos-only' : ''}`;
+    const cards = libraryCards(items);
     listing.replaceChildren(el('h2', `${items.length} items`), cards);
     if (!items.length) listing.append(emptyState('No evidence matches these filters.'),
       button('Clear filters', () => {
@@ -54,4 +48,17 @@ export function render(ctx) {
   root.dispose = ctx.subscribe(refresh);
   refresh();
   return root;
+}
+
+function libraryCards(items) {
+  const cards = el('div', undefined, 'evidence-grid');
+  for (const item of items) {
+    const card = evidenceCard(item);
+    card.className += ' library-evidence-card';
+    const type = el('span', item.type === 'photo' ? 'Placeholder photo' : 'Teacher comment',
+      'evidence-type');
+    card.replaceChildren(type, ...card.children);
+    cards.append(card);
+  }
+  return cards;
 }

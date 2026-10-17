@@ -130,13 +130,45 @@ test('class cards retain domain comparisons, matching open routes and accurate f
   assert.match(first.textContent, /Change: \+2/);
   assert.equal(first.querySelector('a').href,
     '#/classes/class-a/children/C-01?sem=2026-S2');
-  await control(page, 'Ready to draft').emit('click');
+  await control(page, 'Ready to draft 3').emit('click');
   assert.equal(page.querySelectorAll('article').length, 3);
   assert.match(page.textContent, /Showing 3 of 20 children/);
-  assert.equal(control(page, 'Ready to draft').attributes['aria-pressed'], 'true');
+  assert.equal(control(page, 'Ready to draft 3').attributes['aria-pressed'], 'true');
   const search = page.querySelectorAll('input').find(node => node.type === 'search');
   search.value = '林悦宁';
   await search.emit('input');
   assert.equal(page.querySelectorAll('article').length, 1);
   assert.match(page.textContent, /Showing 1 of 20 children/);
+});
+
+test('count chips stay accurate after evidence edits and search clearing', async t => {
+  const { page, ctx } = mount(t, classes);
+  assert.equal(control(page, 'Needs work 17').dataset.filter, 'needs-work');
+  ctx.get('C-01').domains.english.comment = '';
+  ctx.notify();
+  await control(page, 'Needs work 18').emit('click');
+  const destinations = page.querySelectorAll('article').map(card => card.querySelector('a').href);
+  assert.ok(destinations.some(href => href.includes('/C-01?')));
+  assert.ok(!destinations.some(href => href.includes('/C-02?')));
+  const search = page.querySelectorAll('input').find(node => node.type === 'search');
+  search.value = '李沐辰';
+  await search.emit('input');
+  assert.equal(control(page, 'Needs work 1').attributes['aria-pressed'], 'true');
+  assert.equal(page.querySelectorAll('article')[0].querySelector('a').href,
+    '#/classes/class-a/children/C-05?sem=2026-S2');
+  search.value = '';
+  await search.emit('input');
+  assert.equal(control(page, 'Needs work 18').attributes['aria-pressed'], 'true');
+});
+
+test('sample reset requires confirmation and restores changed evidence', async t => {
+  const { page, ctx } = mount(t, classes);
+  ctx.get('C-01').domains.english.comment = 'Changed fictional observation.';
+  ctx.confirm = () => false;
+  await control(page, 'Reset sample data').emit('click');
+  assert.equal(ctx.get('C-01').domains.english.comment, 'Changed fictional observation.');
+  ctx.confirm = () => true;
+  await control(page, 'Reset sample data').emit('click');
+  assert.notEqual(ctx.get('C-01').domains.english.comment, 'Changed fictional observation.');
+  assert.equal(control(page, 'Ready to draft 3').dataset.filter, 'ready-for-draft');
 });

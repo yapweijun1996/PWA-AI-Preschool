@@ -2,7 +2,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {readFile, readdir} from "node:fs/promises";
 import {DOMAINS, emptyRecord, classProgress} from "../src/portfolio-model.js";
-import {filterChildren, domainDot, classSummary} from "../src/class-view.js";
+import {
+  filterChildren, domainDot, classSummary, portfolioFilters, compactPortfolio, listComparison
+} from "../src/class-view.js";
 import { STATUS_LABELS, FILTER_LABELS } from "../src/class-view.js";
 
 test("status and filter labels cover the complete public vocabulary", () => {
@@ -50,7 +52,8 @@ const ids = rows => rows.map(child => child.id);
 test("filters derive progress, retain roster order and do not mutate inputs", () => {
   const records = fixture(), before = JSON.stringify({children, records});
   assert.deepEqual(ids(filterChildren(children, records, semester)), ids(children));
-  assert.deepEqual(ids(filterChildren(children, records, semester, {filter:"needs-work"})), ["empty","partial","ready","draft"]);
+  assert.deepEqual(ids(filterChildren(children, records, semester, {filter:"needs-work"})),
+    ["empty","partial","draft"]);
   for (const [filter, expected] of [["ready-for-draft","ready"],["drafted","draft"],["reviewed","review"]]) {
     assert.deepEqual(ids(filterChildren(children, records, semester, {filter})), [expected]);
   }
@@ -87,6 +90,44 @@ test("summary equals model totals and counts missing records and semester isolat
   assert.deepEqual(classSummary(children, records, semester).statuses, {"not-started":1,"in-progress":1,"ready-for-draft":1,drafted:1,reviewed:1});
   assert.equal(classSummary(children, records, "2026-S1").statuses["not-started"], 5);
   assert.equal(classSummary([], records, semester).total, 0);
+});
+
+test("counted filters follow query, semester and status transitions", () => {
+  const records = fixture();
+  assert.deepEqual(portfolioFilters(children, records, semester), [
+    ["all", "All 5"], ["needs-work", "Needs work 3"], ["ready-for-draft", "Ready to draft 1"],
+    ["drafted", "Drafted 1"], ["reviewed", "Reviewed 1"]
+  ]);
+  assert.deepEqual(portfolioFilters(children, records, semester, "milo").map(row => row[1]),
+    ["All 1", "Needs work 0", "Ready to draft 1", "Drafted 0", "Reviewed 0"]);
+  for (const { id } of DOMAINS) {
+    records[1].narratives[id] = { text: "Fictional draft.", source: "mock" };
+  }
+  assert.equal(portfolioFilters(children, records, semester)[2][1], "Ready to draft 0");
+  assert.equal(portfolioFilters(children, records, semester)[3][1], "Drafted 2");
+  assert.equal(portfolioFilters(children, [], "2026-S1")[1][1], "Needs work 5");
+});
+
+test("compact portfolios never hide ratings, comments, photos or narratives", () => {
+  assert.equal(compactPortfolio(emptyRecord("empty", semester)), true);
+  const changes = [
+    record => { record.domains.english.rating = 1; },
+    record => { record.domains.chinese.comment = "Fictional observation."; },
+    record => { record.domains.mathematics.photos.push({ id: "sample" }); },
+    record => { record.narratives.english = { text: "Fictional draft." }; }
+  ];
+  for (const change of changes) {
+    const record = emptyRecord("partial", semester);
+    change(record);
+    assert.equal(compactPortfolio(record), false);
+  }
+});
+
+test("comparison distinguishes unavailable, unchanged, gains and regressions", () => {
+  assert.equal(listComparison(null), "No comparison");
+  assert.equal(listComparison(0), "S1 → S2: 0");
+  assert.equal(listComparison(2), "S1 → S2: +2");
+  assert.equal(listComparison(-1), "S1 → S2: -1");
 });
 
 
