@@ -1,21 +1,23 @@
 # AI Preschool Studio
 
-**Live studio:** https://yapweijun1996.github.io/PWA-AI-Preschool/
+**Published demo URL:** https://yapweijun1996.github.io/PWA-AI-Preschool/
 
 A neutral, fictional-data static PWA for class portfolios: 20 sample children, semester comparison, four-domain narrative drafting, local review and printable child/class reports. The root is the only application host. `class.html` redirects to the root while preserving the hash route, including editor and print links.
 
 > Use fictional records only. Never enter real child, family, staff, photo, voice or workplace data. Browser storage and local review are not secure records storage or authenticated approval.
 
+**Status (2026-10-17):** browser-only fictional-data prototype, not a production school system. This README/history update inspected source and Git history; it did not recheck the published build or exercise providers. See the [changelog](docs/CHANGELOG.md) for the integration owner's supplied automated gate result; historical QA remains revision-specific.
+
 ## Local use
 
-Node 24 is used by CI; no dependencies or install step are required.
+Use Node.js 24 (the CI version) and Python 3 (`python3`) for the local server. No npm dependencies or install step are required.
 
 ```sh
 npm start
 # Open http://localhost:4173/
 ```
 
-Start with **Offline mock**, which is explicitly simulated. Gateway, OpenAI and Gemini modes require network/provider access; failures never silently switch to mock. BYOK accepts disposable test keys only, held in page memory—not secure secret custody.
+Start with **Offline mock**, which is explicitly simulated. Gateway, OpenAI and Gemini modes require network/provider access; failures never silently switch to mock. Requests use browser-side pseudonymisation and an inspectable masked-prompt preview, not guaranteed anonymisation. BYOK accepts disposable test keys only, held in page memory—not secure secret custody. See [provider and privacy boundaries](docs/06-provider-integrations.md).
 
 Records, photos and narrative provenance persist in this browser's `localStorage`. Keys and transient rejection history do not. Clearing browser storage loses records; there is no server sync or backup. PWA offline readiness requires successful initial static caching. Current-root offline, update, deployment and device acceptance must be verified independently; historical evidence is not a new cutover pass.
 
@@ -31,6 +33,8 @@ The dependency-free build stages `index.html`, the compatibility redirect, `stud
 
 **Not implemented:** real login, roles, tenant isolation, application server/database, private object storage, authenticated approval/finalisation, vector RAG, server PDF, production AI hosting, classroom tracking or inter-school transfer. No measured time-saving, edit-rate or quality benefit is claimed.
 
+The UI is English; existing Simplified Chinese domain narratives and report support are not a complete translated application. An `en` / `ms` / `zh-Hans` UI, formal measurement and PDPA/DPIA work remain planned.
+
 ## Development and references
 
 ```sh
@@ -39,9 +43,12 @@ npm test
 npm run build
 ```
 
-- [Documentation index](docs/README.md), [deployment](docs/09-deployment.md) and [testing](docs/10-testing.md)
-- [Design source of truth](design/README.md): route/page specs, wireframes and tokens
+Existing regressions include `tests/redirect.test.js` (legacy-entry route preservation), `tests/pwa.test.js` (version-local caching and update control), `tests/child-name.test.js` (renames preserve IDs/prose) and `tests/studio-privacy-dom.test.js` (masked preview/transmission boundaries). Automated tests do not establish live-provider health, deployed-origin behavior, physical-device accessibility or actual print output.
+
+- [Documentation index and standard set](docs/README.md), [current specification](docs/SPEC.md) and [design](docs/DESIGN.md)
+- [Deployment](docs/09-deployment.md), [testing](docs/10-testing.md) and [Git-based changelog](docs/CHANGELOG.md)
+- [Design detail](design/README.md): route/page specs, wireframes and tokens
 - [Submission write-up](docs/26-submission-writeup.md) and [UI audit workflow](docs/27-ui-audit.md)
-- [中文说明](docs/18-zh-quickstart.md), [contributing](CONTRIBUTING.md), [engineering contract](AGENTS.md) and [changelog](docs/20-changelog.md)
+- [Chinese quickstart](docs/18-zh-quickstart.md), [contributing](CONTRIBUTING.md) and [engineering contract](AGENTS.md)
 
 The removed five-record, long-scroll demo is historical; use the `legacy-demo-v1` tag for that version rather than current product instructions. Publishing requires owner authorization; see the deployment guide. License: [MIT](LICENSE).

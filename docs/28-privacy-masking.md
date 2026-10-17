@@ -90,10 +90,10 @@ A failed remote request does not silently switch to mock.
 The class provider card, child editor, draft queue and AI provider settings share the
 exported `privacyNotice`. The class card keeps its notice within “What is sent?” to
 preserve mobile roster access; selecting an external provider opens it automatically.
-The notice says this is a demo, masked text goes to an external AI service, photos are
-never sent, gateway retention/training are unverified, and real children's data must
-not be entered. The masked prompt is pseudonymised, not anonymous. Offline mode
-separately states that no model request is sent.
+The notice says this is a demo, masked text goes to an external AI service via the
+demo gateway (or directly in BYOK mode), photos are never sent, the gateway does not
+store prompt text, and AI-provider retention is not verified. Real children's data
+must not be entered. The prompt is pseudonymised, not anonymous; Offline mock sends no model request.
 
 “What is sent?” calls the same `buildNarrativePrompt(childInput)` used for remote
 requests, rather than showing a manually assembled evidence summary. The editor is
@@ -113,14 +113,32 @@ that store into an ephemeral or encrypted store, remove existing exports, or imp
 secure browser key custody. Only the request-local reverse map is strictly ephemeral.
 Do not use this demo as a real child-record system.
 
-Gateway request/response logging, retention, training policy, upstream provider selection,
-processing countries and enforceable transfer arrangements are **not verified**. An
-OpenAI request's `store: false` field is not evidence about gateway or all provider
-retention/training policies. No completed DPIA, signed DPA, parent-consent workflow,
-production authentication, incident response service or regulatory certification is claimed.
-Education-sector guidance content and applicable licensing/circular requirements were
-not verified by the supplied research. A real deployment needs independent legal,
-security and operational assessment, not just this masking mechanism.
+Owner-supplied gateway source inspection (2026-10-17; external to this repository):
+`POST /demo/session` issues a 15-minute origin-bound `dmo_*` token stored server-side
+only as a SHA-256 hash; `POST /demo/v1/responses` forwards masked text. The inspected
+running configuration has `DEMO_ENABLED=true`, `DEMO_ROUTER_ENABLED=false` and
+`DEMO_PROVIDER_SOURCE=env`: the legacy single-provider path uses OpenAI
+`gpt-5.4-mini`. Enabling the router later could select OpenAI, Groq or Gemini and
+requires updating this disclosure.
+
+The gateway itself does not store prompt text. Its 17 inspected database migrations
+contain no prompt/response-content columns; they store hashed sessions,
+projects/origins, usage/token ledgers, route metadata and bounded error codes.
+Gateway documentation excludes prompts, authorization headers, API keys and upstream
+error bodies from logs/returned errors; documented error logs contain request ID,
+route and SQLSTATE only. The gateway forces upstream OpenAI `store: false`, asking
+OpenAI not to persist the response object. This is not a guarantee about all
+vendor retention or training. Limits include per-IP rate limiting, per-project daily
+token budgets resetting at midnight Asia/Singapore, and rejection of unknown fields.
+The gateway can accept images generally; this studio never sends images.
+
+**Not independently verified here:** current OpenAI retention/training terms,
+abuse-monitoring retention, processing location, reverse-proxy/Cloudflare logs and
+runtime log contents. No demo contract/DPA exists. No completed DPIA, parent-consent
+workflow, production authentication, incident response service or regulatory
+certification is claimed. Education-sector licensing/circular requirements remain
+unverified. Masked/fictional text only; never real child data. Real deployment needs
+independent legal, security and operational assessment.
 
 For breach-response obligations and preparation, see the
 [PDPC breach guide](https://www.pdpc.gov.sg/-/media/files/pdpc/pdf-files/other-guides/guide-on-managing-and-notifying-data-breaches-under-the-pdpa-15-mar-2021.pdf).

@@ -1,5 +1,5 @@
 // Request-local pseudonymisation, not anonymisation. No storage or network access.
-export const privacyNotice = 'Demo only. Pseudonymised (not anonymous) text goes to an external AI service. Photos are never sent. Gateway retention and training are not verified. Do not enter real children’s data in this public demo.';
+export const privacyNotice = 'Demo only. Pseudonymised (not anonymous) text goes to an external AI service via the demo gateway, or directly in BYOK mode. Photos are never sent. The gateway does not store prompt text; AI provider retention is not verified. Do not enter real children’s data in this public demo.';
 const failure = () => new Error('Privacy masking failed. No text was sent. Remove identifying or sensitive details and retry.');
 const patterns = [
   /data:[^\s"']+/giu,
