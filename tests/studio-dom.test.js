@@ -18,8 +18,16 @@ class Element {
     return (this.text ?? '') + this.children.map(child => child.textContent ?? child).join('');
   }
   append(...nodes) { this.children.push(...nodes); }
+  prepend(...nodes) { this.children.unshift(...nodes); }
+  insertBefore(node, before) {
+    this.children = this.children.filter(child => child !== node);
+    this.children.splice(this.children.indexOf(before), 0, node);
+  }
   replaceChildren(...nodes) { this.text = ''; this.children = nodes; }
-  setAttribute(name, value) { this.attributes[name] = value; }
+  setAttribute(name, value) {
+    assert.notEqual(name, 'style', 'Editor controls must remain compatible with strict CSP');
+    this.attributes[name] = value;
+  }
   addEventListener(name, fn) {
     const listeners = this.events.get(name) ?? new Set();
     listeners.add(fn);
@@ -47,6 +55,13 @@ function setup(t, route = {}) {
   doc.createElementNS = (_namespace, tag) => new Element(tag, doc);
   const before = Object.getOwnPropertyDescriptor(globalThis, 'document');
   Object.defineProperty(globalThis, 'document', { configurable: true, value: doc });
+  const media = Object.getOwnPropertyDescriptor(globalThis, 'matchMedia');
+  Object.defineProperty(globalThis, 'matchMedia', { configurable: true, value: () => ({
+    matches: false, addEventListener() {}, removeEventListener() {}
+  }) });
+  const history = Object.getOwnPropertyDescriptor(globalThis, 'history');
+  Object.defineProperty(globalThis, 'history', { configurable: true,
+    value: { replaceState() {} } });
   const data = new Map();
   const ctx = createContext({ storage: {
     getItem: key => data.get(key) ?? null, setItem: (key, value) => data.set(key, value)
@@ -56,6 +71,10 @@ function setup(t, route = {}) {
     ...route });
   const find = text => page.querySelectorAll('button').find(node => node.textContent === text);
   t.after(() => {
+    if (media) Object.defineProperty(globalThis, 'matchMedia', media);
+    else delete globalThis.matchMedia;
+    if (history) Object.defineProperty(globalThis, 'history', history);
+    else delete globalThis.history;
     page.dispose();
     ctx.persist();
     if (before) Object.defineProperty(globalThis, 'document', before);
@@ -181,8 +200,25 @@ test('domain columns retain accessible comparison, photo editing and narrative p
     'Fictional updated activity');
   const source = page.querySelectorAll('p')
     .find(node => node.className === 'chip narrative-source');
-  assert.equal(source.hidden, true);
+  assert.equal(source.textContent, 'No narrative');
   await find('Draft narrative').emit('click');
-  assert.equal(source.hidden, false);
   assert.equal(source.textContent, 'MOCK DRAFT (offline, not AI)');
+});
+
+test('review counts live narratives and clearing text restores empty provenance', async t => {
+  const { page } = setup(t, { domain: 'review' });
+  const sources = page.querySelectorAll('p')
+    .filter(node => node.className === 'chip narrative-source');
+  assert.deepEqual(sources.map(node => node.textContent), Array(4).fill('No narrative'));
+  const hint = page.querySelectorAll('p')
+    .find(node => node.className === 'hint editor-review-hint');
+  const input = page.querySelectorAll('textarea')[0];
+  input.value = 'Fictional teacher observation.';
+  await input.emit('input');
+  assert.match(hint.textContent, /1\/4 complete$/);
+  assert.notEqual(sources[0].textContent, 'No narrative');
+  input.value = '   ';
+  await input.emit('input');
+  assert.match(hint.textContent, /0\/4 complete$/);
+  assert.equal(sources[0].textContent, 'No narrative');
 });

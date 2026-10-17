@@ -64,6 +64,10 @@ test('editor keeps a single active tab, evidence readiness and missing S2 compar
   assert.equal(model.active, 'english');
   assert.equal(model.ready, 2);
   assert.equal(model.canReview, false);
+  assert.match(model.reviewHint, /0\/4 complete$/);
+  record.narratives.english = { text: 'Fictional observation.' };
+  record.narratives.chinese = { text: '   ' };
+  assert.match(editorModel(record).reviewHint, /1\/4 complete$/);
   assert.equal(model.tabs.filter(tab => tab.selected).length, 1);
   assert.equal(editorModel(record, ctx.get('C-05', '2026-S1'), 'review').active, 'review');
   assert.match(comparisonText(model.comparisons.find(row => row.domain === 'english')), /\(\+1\)/);
@@ -71,6 +75,18 @@ test('editor keeps a single active tab, evidence readiness and missing S2 compar
     /Not rated in Semester 2/);
   for (const domain of DOMAINS) record.narratives[domain.id] = { text: 'Reviewed evidence.' };
   assert.equal(editorModel(record, ctx.get('C-05', '2026-S1')).canReview, true);
+  assert.match(editorModel(record).reviewHint, /4\/4 complete$/);
+});
+
+test('tab selection preserves full domain labels and recovers from unknown domains', () => {
+  const ctx = createContext({ storage: storage() });
+  const record = ctx.get('C-05');
+  for (const domain of [...DOMAINS, { id: 'review', label: 'Review narratives' }]) {
+    const model = editorModel(record, undefined, domain.id);
+    assert.deepEqual(model.tabs.filter(tab => tab.selected),
+      [{ ...domain, selected: true }]);
+  }
+  assert.equal(editorModel(record, undefined, 'unknown').active, DOMAINS[0].id);
 });
 
 test('explicit flush saves edits and reset never persists provider credentials', () => {

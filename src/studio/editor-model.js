@@ -7,10 +7,12 @@ export const EDITOR_TABS = Object.freeze([
 
 export function editorModel(record, previousRecord, selected = DOMAINS[0].id) {
   const active = EDITOR_TABS.some(tab => tab.id === selected) ? selected : DOMAINS[0].id;
+  const complete = DOMAINS.filter(domain => record.narratives[domain.id]?.text.trim()).length;
   return {
     active,
     ready: DOMAINS.filter(domain => domainState(record.domains[domain.id]) === 'ready').length,
     canReview: DOMAINS.every(domain => record.narratives[domain.id]?.text.trim()),
+    reviewHint: `Add narratives for all four domains to mark reviewed - ${complete}/4 complete`,
     tabs: EDITOR_TABS.map(tab => ({ ...tab, selected: tab.id === active })),
     comparisons: progressComparison(previousRecord, record)
   };

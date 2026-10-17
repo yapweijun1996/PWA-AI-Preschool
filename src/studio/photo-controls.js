@@ -44,7 +44,10 @@ export function photoControls(ctx, record, id) {
 }
 
 function uploadControls(ctx, record, id, state, add) {
-  const root = el('div', undefined, 'editor-photo-actions');
+  const root = el('details', undefined, 'editor-photo-actions');
+  const compact = matchMedia('(max-width: 600px)');
+  root.open = !compact.matches;
+  root.append(el('summary', 'Add photo'));
   const label = el('label', 'Choose a local fictional image');
   const file = el('input');
   file.type = 'file';

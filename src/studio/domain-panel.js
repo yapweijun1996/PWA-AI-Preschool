@@ -6,19 +6,7 @@ import { narrativeControls } from './narrative-controls.js';
 
 export function domainPanel(ctx, child, record, domain) {
   const root = el('section', undefined, 'domain editor-domain');
-  const heading = el('header', undefined, 'editor-domain-heading');
-  const symbol = el('span', { english: 'EN', chinese: 'ZH', mathematics: '123',
-    'social-emotional': 'SE' }[domain.id], 'editor-domain-symbol');
-  symbol.setAttribute('aria-hidden', 'true');
-  const description = {
-    english: 'Listening, speaking, vocabulary and early literacy',
-    chinese: 'Listening, speaking and early Chinese literacy',
-    mathematics: 'Numbers, patterns, shapes and problem solving',
-    'social-emotional': 'Relationships, self-awareness and emotional development'
-  };
-  const title = el('div');
-  title.append(el('h2', domain.label), el('p', description[domain.id]));
-  heading.append(symbol, title);
+  const heading = domainHeading(domain);
   const columns = el('div', undefined, 'editor-domain-columns');
   const evidence = el('div', undefined, 'editor-evidence');
   root.append(heading, columns);
@@ -27,23 +15,10 @@ export function domainPanel(ctx, child, record, domain) {
   const comparison = el('section', undefined, 'editor-comparison');
   comparison.hidden = record.semester !== '2026-S2';
   const update = () => {
-    if (record.semester === '2026-S2') {
-      const row = editorModel(record, ctx.get(child.id, '2026-S1'))
-        .comparisons.find(item => item.domain === domain.id);
-      comparison.setAttribute('aria-label', comparisonText(row));
-      const before = el('div');
-      before.append(el('span', 'Semester 1'), row.previous === null
-        ? el('span', 'Not rated in Semester 1', 'chip') : ratingChip(row.previous));
-      const after = el('div');
-      after.append(el('span', 'Semester 2'), row.current === null
-        ? el('span', 'Not rated in Semester 2', 'chip') : ratingChip(row.current));
-      const change = row.change === null ? 'No comparison'
-        : row.change > 0 ? `+${row.change}` : String(row.change);
-      const track = el('div', undefined, 'editor-comparison-track');
-      track.append(before, el('span', '→', 'editor-comparison-arrow'), after,
-        el('strong', change, 'editor-comparison-change'));
-      comparison.replaceChildren(el('h3', 'Change from previous semester'), track);
-    }
+    if (record.semester !== '2026-S2') return;
+    const row = editorModel(record, ctx.get(child.id, '2026-S1'))
+      .comparisons.find(item => item.domain === domain.id);
+    updateComparison(comparison, row);
   };
   const change = () => {
     if (record.narratives[domain.id]) ctx.stale.add(key);
@@ -77,6 +52,45 @@ export function domainPanel(ctx, child, record, domain) {
   };
   update();
   return root;
+}
+
+function domainHeading(domain) {
+  const heading = el('header', undefined, 'editor-domain-heading');
+  const symbol = el('span', { english: 'EN', chinese: 'ZH', mathematics: '123',
+    'social-emotional': 'SE' }[domain.id], 'editor-domain-symbol');
+  symbol.setAttribute('aria-hidden', 'true');
+  const description = {
+    english: 'Listening, speaking, vocabulary and early literacy',
+    chinese: 'Listening, speaking and early Chinese literacy',
+    mathematics: 'Numbers, patterns, shapes and problem solving',
+    'social-emotional': 'Relationships, self-awareness and emotional development'
+  };
+  const summary = {
+    english: 'Listening and literacy', chinese: 'Chinese language and literacy',
+    mathematics: 'Numbers and patterns', 'social-emotional': 'Relationships and emotions'
+  };
+  const title = el('div');
+  title.append(el('h2', domain.label),
+    el('p', description[domain.id], 'editor-domain-description'),
+    el('p', summary[domain.id], 'editor-domain-summary'));
+  heading.append(symbol, title);
+  return heading;
+}
+
+function updateComparison(comparison, row) {
+  comparison.setAttribute('aria-label', comparisonText(row));
+  const before = el('div');
+  before.append(el('span', 'Semester 1'), row.previous === null
+    ? el('span', 'Not rated in Semester 1', 'chip') : ratingChip(row.previous));
+  const after = el('div');
+  after.append(el('span', 'Semester 2'), row.current === null
+    ? el('span', 'Not rated in Semester 2', 'chip') : ratingChip(row.current));
+  const change = row.change === null ? 'No comparison'
+    : row.change > 0 ? `+${row.change}` : String(row.change);
+  const track = el('div', undefined, 'editor-comparison-track');
+  track.append(before, el('span', '→', 'editor-comparison-arrow'), after,
+    el('strong', change, 'editor-comparison-change'));
+  comparison.replaceChildren(el('h3', 'Change from previous semester'), track);
 }
 
 function ratingControl(entry, id, change) {

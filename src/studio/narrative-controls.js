@@ -22,19 +22,17 @@ export function narrativeControls(ctx, child, record, id) {
       edited: old?.edited === true || narrative.value !== baseline };
     ctx.rejections.delete(key);
     ctx.change(record);
-    source.textContent = narrativeChip(record.narratives[id]);
     count.textContent = `${narrative.value.length} / 2000`;
   });
   const draft = button('Draft narrative', async () => {
     await ctx.runDraft(() => ctx.draft(child, record, [id]));
     narrative.value = record.narratives[id]?.text ?? '';
-    source.textContent = narrativeChip(record.narratives[id]);
     count.textContent = `${narrative.value.length} / 2000`;
   }, true);
   const offline = offlineState();
   const update = () => {
-    source.textContent = record.narratives[id] ? narrativeChip(record.narratives[id]) : '';
-    source.hidden = !record.narratives[id];
+    source.textContent = record.narratives[id]?.text.trim()
+      ? narrativeChip(record.narratives[id]) : 'No narrative';
     stale.hidden = !ctx.stale.has(key);
     const reason = ctx.rejections.get(key);
     rejected.replaceChildren();

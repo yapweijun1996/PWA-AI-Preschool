@@ -88,6 +88,24 @@ At 601–1023px main content is centred within 44rem. Bottom-tab clearance belon
 the content wrapper, after the About installation disclosure, rather than to both main and disclosure.
 Desktop shell and print media retain their existing presentation.
 
+### B2 compact child editor
+
+Below 1024px only the child identity/save/previous/next bar and the single-row,
+scroll-snapping domain tabs stay sticky. The right border cues horizontal tab scrolling.
+Status, Print / PDF, completion progress and provider/batch tools remain in normal flow
+after the active panel. Desktop retains its existing ordering.
+
+Phones use two-column rating choices, a short domain introduction, 8rem minimum narrative
+fields that grow with content, 16:9 photo previews and an Add photo disclosure.
+At 360px and below the comparison change occupies its own row.
+Empty domain and Review narratives show “No narrative”; Review explains its disabled
+action with the live completed-domain count. Native radios retain their original size.
+Domain selection updates the `domain` URL query without remounting the editor.
+
+Use the five editor routes with `--viewports 320x720,390x844,430x932,768x1024`
+and `--schemes light,dark` to verify the complete compact-editor matrix.
+Review has no rating choices, so its first-screen rating check remains explicitly skipped.
+
 ## Agent workflow and limitations
 
 Run the quick audit before proposing UI changes. Read metrics and inspect the linked full-page

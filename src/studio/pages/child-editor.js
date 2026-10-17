@@ -34,9 +34,11 @@ export function render(ctx, route) {
   const navigation = el('div', undefined, 'editor-navigation');
   navigation.append(header.root, header.progress, tabs.tabs);
   root.append(navigation, provider.root, tabs.panel);
+  const disposeLayout = responsiveLayout(root, header, navigation, provider, tabs);
   refresh();
   root.dispose = () => {
     header.dispose();
+    disposeLayout();
     tabs.dispose();
     unsubscribe();
     provider.dispose();
@@ -51,19 +53,9 @@ function childHeader(ctx, child, record) {
   save.setAttribute('role', 'status');
   const progress = el('section', undefined, 'editor-progress');
   progress.setAttribute('aria-label', 'Portfolio completion');
-  const identity = el('div', undefined, 'editor-identity');
-  const avatar = el('span', child.initials, 'avatar editor-avatar');
-  avatar.setAttribute('aria-hidden', 'true');
-  const name = el('div');
-  name.append(el('h1', child.name), el('p', `${child.id} · Class A (Sample)`));
-  identity.append(avatar, name);
-  const nav = el('nav', undefined, 'editor-child-nav');
-  nav.setAttribute('aria-label', 'Move between children');
-  nav.title = 'Alt+ArrowLeft: previous child. Alt+ArrowRight: next child.';
+  const identity = childIdentity(child);
   const move = direction => ctx.go(adjacentChildId(ctx.children, child.id, direction));
-  nav.append(button('Previous child', () => move('previous')),
-    el('strong', `${ctx.children.indexOf(child) + 1} / ${ctx.children.length}`),
-    button('Next child', () => move('next')));
+  const nav = childNavigation(ctx, child, move);
   const feedback = el('div', undefined, 'editor-feedback');
   feedback.append(status, save);
   const print = link('Print / PDF',
@@ -74,11 +66,7 @@ function childHeader(ctx, child, record) {
     progress.replaceChildren(progressBar(model.ready, 4, `${model.ready} / 4 domains ready`));
     status.textContent = statusChip(computeStatus(record)).textContent;
     status.dataset.status = computeStatus(record);
-    const failed = ctx.saveStatus.startsWith('Not saved');
-    save.dataset.state = failed ? 'unsaved' : ctx.saveStatus === 'Saving…' ? 'loading' : 'saved';
-    save.replaceChildren(icon(failed ? 'warning' : 'check'), el('span', failed
-      ? 'Not saved: storage unavailable. Your edits remain on this screen.' : ctx.saveStatus));
-    if (failed) save.append(button('Retry save', ctx.retrySave));
+    refreshSave(ctx, save);
     for (const node of nav.querySelectorAll('button')) node.disabled = ctx.busy;
   };
   const shortcut = event => {
@@ -91,10 +79,69 @@ function childHeader(ctx, child, record) {
   const unsubscribe = ctx.subscribe(refresh);
   root.append(identity, nav, feedback, print);
   refresh();
-  return { root, progress, dispose() {
+  const extras = el('div', undefined, 'editor-extras');
+  return { root, progress, status, print, feedback, extras, dispose() {
     unsubscribe();
     document.removeEventListener('keydown', shortcut);
   } };
+}
+
+function responsiveLayout(root, header, navigation, provider, tabs) {
+  const compact = matchMedia('(max-width: 1023px)');
+  const arrange = () => {
+    if (compact.matches) {
+      header.extras.append(header.status, header.print, header.progress);
+      root.append(header.extras, provider.root);
+    } else if (header.extras.children.length) {
+      header.feedback.prepend(header.status);
+      header.root.append(header.print);
+      navigation.insertBefore(header.progress, tabs.tabs);
+      root.insertBefore(provider.root, tabs.panel);
+      header.extras.remove();
+    }
+  };
+  compact.addEventListener('change', arrange);
+  arrange();
+  return () => compact.removeEventListener('change', arrange);
+}
+
+function childIdentity(child) {
+  const identity = el('div', undefined, 'editor-identity');
+  const avatar = el('span', child.initials, 'avatar editor-avatar');
+  avatar.setAttribute('aria-hidden', 'true');
+  const name = el('div');
+  name.append(el('h1', child.name), el('p', `${child.id} · Class A (Sample)`));
+  identity.append(avatar, name);
+  return identity;
+}
+
+function childNavigation(ctx, child, move) {
+  const nav = el('nav', undefined, 'editor-child-nav');
+  nav.setAttribute('aria-label', 'Move between children');
+  nav.title = 'Alt+ArrowLeft: previous child. Alt+ArrowRight: next child.';
+  const previous = button('Previous child', () => move('previous'));
+  const next = button('Next child', () => move('next'));
+  previous.setAttribute('aria-label', 'Previous child');
+  next.setAttribute('aria-label', 'Next child');
+  previous.append(el('span', '‹', 'editor-nav-short'));
+  next.append(el('span', '›', 'editor-nav-short'));
+  nav.append(previous, el('strong', `${ctx.children.indexOf(child) + 1} / ${ctx.children.length}`),
+    next);
+  return nav;
+}
+
+function refreshSave(ctx, save) {
+  const failed = ctx.saveStatus.startsWith('Not saved');
+  save.dataset.state = failed ? 'unsaved' : ctx.saveStatus === 'Saving…' ? 'loading' : 'saved';
+  const message = failed
+    ? 'Not saved: storage unavailable. Your edits remain on this screen.' : ctx.saveStatus;
+  save.title = message;
+  save.setAttribute('aria-label', message);
+  save.replaceChildren(icon(failed ? 'warning' : 'check'),
+    el('span', message, 'editor-save-full'),
+    el('span', failed ? 'Unsaved' : ctx.saveStatus === 'Saving…' ? 'Saving' : 'Saved',
+      'editor-save-short'));
+  if (failed) save.append(button('Retry save', ctx.retrySave));
 }
 
 function compactProvider(ctx) {
@@ -137,6 +184,9 @@ function editorTabs(ctx, child, record, initialDomain) {
     for (const tab of model.tabs) {
       const select = id => {
         selected = id;
+        history.replaceState(null, '', buildRoute('child-editor', {
+          childId: child.id, semester: ctx.semester, domain: id
+        }));
         show(true);
       };
       const control = button(tab.label, () => select(tab.id));
@@ -153,6 +203,10 @@ function editorTabs(ctx, child, record, initialDomain) {
     panel.replaceChildren(content);
     panel.setAttribute('aria-labelledby', `tab-${selected}`);
     if (focus) tabs.querySelector('[aria-selected="true"]').focus();
+    globalThis.requestAnimationFrame?.(() => {
+      if (!disposed) tabs.querySelector('[aria-selected="true"]')
+        .scrollIntoView({ block: 'nearest', inline: 'start' });
+    });
   };
   show();
   return { tabs, panel, refresh: show, dispose() {
@@ -194,15 +248,19 @@ function reviewPanel(ctx, child, record) {
     ctx.markReviewed(record);
     ctx.go(nextChildNeedingWork(ctx.children, ctx.records, ctx.semester, child.id));
   }, true);
+  const hint = el('p', undefined, 'hint editor-review-hint');
   const update = () => {
-    review.disabled = ctx.busy || !editorModel(record, ctx.get(child.id, '2026-S1')).canReview;
+    const model = editorModel(record, ctx.get(child.id, '2026-S1'));
+    review.disabled = ctx.busy || !model.canReview;
+    hint.textContent = model.reviewHint;
+    hint.hidden = model.canReview;
   };
   const unsubscribe = ctx.subscribe(update);
   root.dispose = () => {
     unsubscribe();
     for (const panel of narratives) panel.dispose();
   };
-  root.append(list, review);
+  root.append(list, hint, review);
   update();
   return root;
 }

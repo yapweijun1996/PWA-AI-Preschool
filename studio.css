@@ -718,6 +718,73 @@ h1 + p { color: var(--color-muted); margin-bottom: var(--space-6); }
   .child-editor .editor-review-grid { grid-template-columns: minmax(0, 1fr); }
   .child-editor .editor-panel { scroll-margin-top: 24rem; }
 }
+.editor-nav-short, .editor-save-short,
+.child-editor .editor-domain-summary { display: none; }
+.child-editor .editor-photo-actions > summary { display: none; }
+@media screen and (max-width: 1023px) {
+  .child-editor .editor-navigation { gap: 0; padding: 0; }
+  .child-editor .editor-rating-control { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .child-editor .child-header {
+    display: flex; gap: var(--space-1); padding: var(--space-1);
+    min-height: 56px; max-height: 64px;
+  }
+  .child-editor .editor-identity { flex: 1; min-width: 0; gap: var(--space-1); }
+  .child-editor .editor-identity > div { min-width: 0; }
+  .child-editor .editor-identity h1 {
+    font-size: var(--text-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .child-editor .editor-identity p { display: none; }
+  .child-editor .editor-avatar { width: 24px; height: 24px; font-size: var(--text-xs); }
+  .child-editor .editor-child-nav { gap: var(--space-1); }
+  .child-editor .editor-child-nav button {
+    font-size: 0; padding: 0; min-width: 44px; min-height: 44px;
+  }
+  .child-editor .editor-nav-short { display: inline; font-size: var(--text-xl); }
+  .child-editor .editor-child-nav strong { font-size: var(--text-xs); }
+  .child-editor .editor-save { flex-wrap: nowrap; gap: var(--space-1); }
+  .child-editor .editor-save span { max-width: 42px; }
+  .child-editor .editor-save-full { display: none; }
+  .child-editor .editor-save-short { display: inline; }
+  .child-editor .editor-save .icon { width: 12px; height: 12px; }
+  .child-editor .domain-tabs {
+    display: flex; flex-wrap: nowrap; min-width: 0; overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    border-right: 4px solid var(--color-primary); padding-block: var(--space-1);
+  }
+  .child-editor .domain-tabs button {
+    flex: 0 0 auto; white-space: nowrap; min-height: 44px; scroll-snap-align: start;
+  }
+  .child-editor .editor-extras {
+    display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2);
+    min-width: 0;
+    margin-top: var(--space-2);
+  }
+  .child-editor .editor-progress { flex: 1; padding: var(--space-1); border: 0; }
+  .child-editor .editor-progress progress { min-width: 0; width: 3rem; flex: 1; }
+  .child-editor .editor-progress .progress { display: flex; gap: var(--space-2); }
+  .child-editor .editor-progress p { font-size: var(--text-xs); }
+  .child-editor .editor-domain-heading { padding: var(--space-2); }
+  .child-editor .editor-domain-heading h2 { font-size: var(--text-lg); }
+  .child-editor .editor-domain-heading .editor-domain-description { display: none; }
+  .child-editor .editor-domain-heading .editor-domain-summary { display: block; }
+  .child-editor .editor-domain-symbol { width: 32px; height: 32px; }
+  .child-editor .editor-panel { scroll-margin-top: 120px; }
+}
+@media screen and (max-width: 600px) {
+  .child-editor .editor-photo-actions > summary {
+    display: list-item; min-height: 44px; align-content: center; cursor: pointer;
+  }
+  .child-editor .editor-narrative-label textarea { min-height: 8rem; field-sizing: content; }
+  .child-editor .editor-photos img { aspect-ratio: 16 / 9; }
+  .child-editor .editor-comparison-track { padding: var(--space-1); }
+}
+@media screen and (max-width: 360px) {
+  .child-editor .editor-comparison-track {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  }
+  .child-editor .editor-comparison-change { grid-column: 1 / -1; }
+  .child-editor .editor-comparison-track .chip { overflow-wrap: normal; }
+}
 @media (max-height: 650px) and (max-width: 767px) {
   .child-editor .editor-navigation { position: static; }
 }
