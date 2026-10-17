@@ -2,6 +2,16 @@
 
 Historical entries below are Git-based history, not a list of production releases; current unreleased changes record their local verification separately. Dates and abbreviated commits in the historical sections came from checkout history inspected on 2026-10-17 through `12bf3a0`. `package.json` reports `0.3.0`; this document does not infer release tags from that value. The [numbered changelog](20-changelog.md) retains detailed historical QA claims and must be read at the revision each entry describes.
 
+## Unreleased — Malay narrative grounding and original-language evidence
+
+- Allow bounded Malay curriculum/rating vocabulary and common sentence starts in Malay narratives only; retain name, quantity, photo and Chinese-script guards. Provider prompts require fully Malay sentences rather than English sentences spliced with Malay rating labels.
+- Malay offline mock drafts separate the Malay rating sentence from a quoted verbatim teacher comment, explicitly marked as shown in its original language. Existing saved narratives are not translated or rewritten.
+- Capitalisation rejections identify the safe category (sentence-start word or name/mid-sentence word) in all three interface languages, never echoing potentially identifying provider words.
+- Sample illustration alt text and captions reuse the three language catalogs, including print report language and live interface switching; teacher-edited and uploaded descriptions remain verbatim.
+- Local Chromium smoke: Malay interface and report language, C-05 English-domain offline drafting; observed the fully Malay comparison sentence, original English comment marker/quote, mock provenance, and translated planting-scene caption and alt. Live Gateway/provider and deployed-site behavior were not exercised.
+- `npm run check && npm test && npm run build` passed: **273 tests**, zero failures/cancelled/skipped/todo, **97 precached routes**, build `b023853069b64b34`. `npm run ui:audit -- --quick`: **0/180 failed**, report `artifacts/ui-audit/2026-10-17T13-03-39-133Z/summary.md`.
+- Full `npm run ui:audit`: **0/450 failed**, report `artifacts/ui-audit/2026-10-17T13-04-23-138Z/summary.md`.
+
 ## Unreleased — internationalisation foundation
 
 - Add implemented `en`/`ms`/`zh-Hans` UI catalogs with named-parameter `t`, English fallback, development missing-key detection and `Intl` date/number/plural formatting. Native-name selectors live in the desktop top bar/mobile More; English is the default without autodetection, and guarded `localStorage` remembers explicit choices.

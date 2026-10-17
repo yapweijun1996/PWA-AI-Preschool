@@ -1,20 +1,22 @@
-export const ILLUSTRATION_CAPTION = 'AI-generated illustration, not a real child';
-export const UPLOAD_CAPTION = 'Uploaded in this browser';
-export const STORED_DEMO_CAPTION = 'Demo image stored in this browser';
+import { t } from './i18n/index.js';
 
-const sceneDescriptions = [
-  'Fictional children building a tower with wooden blocks',
-  'A fictional teacher reading a picture book with children',
-  'Fictional children threading colourful beads at a table',
-  'Fictional children painting flowers and a tree together',
-  'Fictional children sharing fruit and snacks at a table',
-  'Fictional children building sandcastles outdoors',
-  'Fictional children playing musical instruments in a circle',
-  'Fictional children sorting colourful shapes into trays',
-  'Fictional children planting seedlings in flowerpots',
-  'Fictional children assembling a large woodland puzzle',
-  'Fictional children playing with a ball in a playground',
-  'Fictional children drawing wavy lines on a classroom board'
+export const ILLUSTRATION_CAPTION = t('ui.demo.illustration', {}, 'en');
+export const UPLOAD_CAPTION = t('ui.demo.upload', {}, 'en');
+export const STORED_DEMO_CAPTION = t('ui.demo.storedImage', {}, 'en');
+
+const sceneDescriptionKeys = [
+  'ui.media.sceneOne',
+  'ui.media.sceneTwo',
+  'ui.media.sceneThree',
+  'ui.media.sceneFour',
+  'ui.media.sceneFive',
+  'ui.media.sceneSix',
+  'ui.media.sceneSeven',
+  'ui.media.sceneEight',
+  'ui.media.sceneNine',
+  'ui.media.sceneTen',
+  'ui.media.sceneEleven',
+  'ui.media.sceneTwelve'
 ];
 
 export function avatarSource(childId) {
@@ -28,15 +30,22 @@ export function samplePhoto(seed) {
   for (const character of String(seed)) {
     hash = Math.imul(hash ^ character.codePointAt(0), 16777619) >>> 0;
   }
-  const index = hash % sceneDescriptions.length;
+  const index = hash % sceneDescriptionKeys.length;
   return {
     src: `assets/demo/scene-${String(index + 1).padStart(2, '0')}.webp`,
-    alt: sceneDescriptions[index]
+    alt: t(sceneDescriptionKeys[index], {}, 'en')
   };
 }
 
-export function photoProvenance(src) {
-  if (src.startsWith('data:image/svg+xml,')) return STORED_DEMO_CAPTION;
-  return /^assets\/demo\/scene-\d{2}\.webp$/.test(src)
-    ? ILLUSTRATION_CAPTION : UPLOAD_CAPTION;
+export function samplePhotoDescriptionKey(photo) {
+  const match = /^assets\/demo\/scene-(\d{2})\.webp$/.exec(photo.src);
+  const key = match && sceneDescriptionKeys[Number(match[1]) - 1];
+  // An edited description is teacher evidence, not interface copy.
+  return key && photo.alt === t(key, {}, 'en') ? key : null;
+}
+
+export function photoProvenance(src, language = 'en') {
+  const key = src.startsWith('data:image/svg+xml,') ? 'ui.demo.storedImage'
+    : /^assets\/demo\/scene-\d{2}\.webp$/.test(src) ? 'ui.demo.illustration' : 'ui.demo.upload';
+  return t(key, {}, language);
 }

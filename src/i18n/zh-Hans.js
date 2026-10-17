@@ -510,6 +510,8 @@ export default Object.freeze({
   "ui.reason.previousRating": "学期比较需要上一学期的评级",
   "ui.reason.number": "不受支持的数字或数词",
   "ui.reason.capitalised": "不受支持的首字母大写词或姓名",
+  "ui.reason.capitalisedSentenceStart": "不受支持的首字母大写词或姓名：句首词语",
+  "ui.reason.capitalisedName": "不受支持的首字母大写词或姓名：姓名或句中词语",
   "ui.reason.firstName": "儿童名字必须与所提供的拼写和文字体系完全一致",
   "ui.reason.photo": "提及照片但未记录照片",
   "ui.reason.chineseLatin": "华语叙述除儿童名字外不得包含拉丁字母词语",

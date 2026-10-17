@@ -40,8 +40,9 @@ export function mockNarrative(domainInput, { previousRating = domainInput?.previ
       text += ` 与上学期相比，评级由${chineseRatingLabel(previousRating)}变为${chineseRatingLabel(rating)}。`;
   } else if (language === "ms") {
     text = changed
-      ? `${comment} Penilaian berubah daripada ${malayRatingLabel(previousRating)} kepada ${malayRatingLabel(rating)} sejak Semester 1.`
-      : `Penilaian: ${malayRatingLabel(rating)}. ${comment}`;
+      ? `Penilaian berubah daripada ${malayRatingLabel(previousRating)} kepada ${malayRatingLabel(rating)} sejak Semester 1.`
+      : `Penilaian: ${malayRatingLabel(rating)}.`;
+    text += ` Ulasan guru ditunjukkan dalam bahasa asal: “${comment}”`;
   } else {
     text = changed
       ? `${comment} Rating moved from ${previousLabel} to ${currentLabel} since Semester 1.`
@@ -101,6 +102,7 @@ function buildMaskedNarrativePrompt(childInput) {
     "Use ONLY the supplied rating label, teacher comment and previousRating. Mention a change only when current and previous ratings exist and differ.",
     "For English domains, keep each rating word consistent with the supplied ratingLabel.",
     "For Malay narratives, use ratingLabelMs and previousRatingLabelMs. Use the neutral Malay pronoun 'dia' if needed; never infer gender or use gendered words such as lelaki or perempuan. Keep the first name exactly as supplied, including Chinese characters. Do not translate or rewrite teacher-comment quantities: preserve number tokens exactly, including satu, dua, tiga, sekali and setiap.",
+    "Write Malay narrative sentences fully in Malay, including when the teacher comment is in another language. Do not splice an English sentence together with a Malay rating label.",
     "Avoid rephrasing quantities in the teacher comment: copy numbers and counting phrases such as 'once' or 'each' as written rather than rewording them into new number expressions.",
     "Never invent activities, names, dates, numbers, places, photos, diagnoses or comparisons with other children.",
     "Never use gendered pronouns or gendered words for the child: he, she, him, her, his, hers, himself, herself, boy, girl; 他, 她, 男孩, 女孩. Neutral they is not allowed either. Use the child's first name, 'the child', omit the subject, or restructure the sentence.",
@@ -138,6 +140,9 @@ const numberWords = new Set((
 ).split(" "));
 const malayNumberWords = new Set(("sifar kosong satu dua tiga empat lima enam tujuh lapan sembilan sepuluh sebelas belas puluh seratus ratus seribu ribu juta bilion pertama kedua ketiga keempat kelima keenam ketujuh kelapan kesembilan kesepuluh kesebelas sekali setiap separuh setengah suku sepasang seorang sebuah sebiji seekor sehelai sekeping sebatang segelas sepotong").split(" "));
 const sentenceStarters = new Set(("a an the he she they his her their this that these those it its in with learning no there during as evidence rating dia anak kanak murid pembelajaran penilaian belum pada dalam dengan menunjukkan berkongsi menunggu mengenal menyusun boleh dapat sedang permulaan kukuh lanjutan").split(" "));
+// Bounded Malay vocabulary, not a blanket exemption for sentence-initial names.
+const malayCurriculumWords = new Set(("mula berkembang sedang permulaan kukuh lanjutan bahasa inggeris melayu matematik sosial emosi").split(" "));
+const malaySentenceStarters = new Set(("dia anak murid pembelajaran penilaian ulasan kemahiran perkembangan pencapaian berdasarkan melalui secara selain namun juga ini untuk apabila semasa selepas sebelum aktiviti mengenali memahami menggunakan membaca menulis mengira mendengar bertutur berinteraksi bekerjasama bermain mampu semakin terus telah sudah masih suka gemar yakin berusaha mendapat memberi menerima mengikuti mengambil melibatkan memberi").split(" "));
 const latinWords = text => text.match(/[a-z]+/gi) ?? [];
 // Ignore these non-numeric compounds before scanning Chinese numeral claims.
 const nonNumericChineseCompounds = /不一定|一起|一些|一直|一定|一般|一样|一下|一边|一旦|一再|一同|统一|同一|万一|十分|百般|千万|万物/g;
@@ -149,6 +154,7 @@ const numberTokens = text => [
 
 export function checkGrounding(domainInput, text) {
   const input = domainInput ?? {}, reasons = [];
+  let unsupportedWordKind;
   if (typeof text !== "string" || !text.trim())
     return { ok: false, reasons: ["narrative is empty"] };
   // Character matching intentionally also rejects 他人: a small conservative false-positive risk.
@@ -180,8 +186,10 @@ export function checkGrounding(domainInput, text) {
   for (const match of text.matchAll(/[A-Z][a-zA-Z]*/g)) {
     const word = match[0].toLowerCase(), before = text.slice(0, match.index).trimEnd();
     const initial = before === "" || /[.!?。！？]["'”’)]?$/.test(before);
-    if (!allowedWords.has(word) && !(initial && sentenceStarters.has(word))) {
+    if (!allowedWords.has(word) && !(initial && sentenceStarters.has(word)) &&
+        !(language === "ms" && (malayCurriculumWords.has(word) || (initial && malaySentenceStarters.has(word))))) {
       reasons.push("unsupported capitalised word or name");
+      unsupportedWordKind = initial ? "sentence-start word" : "name or mid-sentence word";
       break;
     }
   }
@@ -204,7 +212,7 @@ export function checkGrounding(domainInput, text) {
     if (/[學習認語說讀寫數與為這個們會來時體發現觀錄證據評穩華簡單親師進從於畫圖樂歡獨讓點動實練舉]/u.test(text))
       reasons.push("Chinese narrative contains Traditional Chinese characters");
   }
-  return { ok: reasons.length === 0, reasons };
+  return { ok: reasons.length === 0, reasons, ...(unsupportedWordKind ? { unsupportedWordKind } : {}) };
 }
 
 export async function generateNarrativesWithProvider({
@@ -245,7 +253,7 @@ export async function generateNarrativesWithProvider({
       });
       const maskedCheck = checkGrounding(domainInput(maskedInput, mask.input.firstName), parsed[id]);
       if (!maskedCheck.ok) {
-        rejected[id] = { reasons: maskedCheck.reasons };
+        rejected[id] = { reasons: maskedCheck.reasons, ...(maskedCheck.unsupportedWordKind ? { unsupportedWordKind: maskedCheck.unsupportedWordKind } : {}) };
         continue;
       }
       const restored = mask.restore(parsed[id]);
@@ -254,7 +262,7 @@ export async function generateNarrativesWithProvider({
         continue;
       }
       const restoredCheck = checkGrounding(domainInput(originalInput, childInput?.firstName), restored);
-      if (!restoredCheck.ok) rejected[id] = { reasons: restoredCheck.reasons };
+      if (!restoredCheck.ok) rejected[id] = { reasons: restoredCheck.reasons, ...(restoredCheck.unsupportedWordKind ? { unsupportedWordKind: restoredCheck.unsupportedWordKind } : {}) };
       else accepted[id] = { text: restored, source: "ai", edited: false, provider, model: chosenModel,
         language: narrativeLanguage(id, childInput?.reportLanguage) };
     }

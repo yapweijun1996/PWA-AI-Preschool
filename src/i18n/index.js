@@ -93,7 +93,7 @@ export function plural(value, forms) {
 // Remember source text per node so switching languages never translates a translation.
 export function localizeDocument(root = document.body) {
   const textSources = new WeakMap(), attributeSources = new WeakMap();
-  const excluded = 'script, style, textarea, input, [data-i18n="off"], .identity-text, .narrative-text, .evidence-text, .photo-description, .avatar-initials, .privacy-prompt, [lang]:not(html)';
+  const excluded = 'script, style, textarea, input, [data-i18n="off"], .identity-text, .narrative-text, .evidence-text, .avatar-initials, .privacy-prompt, [lang]:not(html)';
   const attributes = ['aria-label', 'aria-valuetext', 'title', 'placeholder', 'alt', 'data-label'];
   function translateNode(node) {
     if (node.nodeType === 3) {

@@ -120,6 +120,27 @@ test('dynamic English labels have specific templates without translating child n
   ]) assert.ok(sourceValues.has(sentence), sentence);
 });
 
+test('capitalised-word rejection details localize fully in every UI language', () => {
+  for (const [locale, catalog] of Object.entries({ en, ms, 'zh-Hans': zhHans })) {
+    for (const [kind, key] of [
+      ['sentence-start word', 'ui.reason.capitalisedSentenceStart'],
+      ['name or mid-sentence word', 'ui.reason.capitalisedName']
+    ]) {
+      const reason = `unsupported capitalised word or name: ${kind}`;
+      assert.equal(translateText(reason, locale), catalog[key], `${locale}: ${kind}`);
+      const rejection = `Draft rejected: ${reason}; unsupported number or number word. Retry or write it yourself.`;
+      const translated = translateText(rejection, locale);
+      assert.ok(translated.includes(catalog[key]), `${locale}: ${kind} detail`);
+      assert.ok(translated.includes(catalog['ui.reason.number']), `${locale}: number reason`);
+      if (locale !== 'en') {
+        assert.ok(!translated.includes('unsupported capitalised word or name'));
+        assert.ok(!translated.includes(kind));
+        assert.ok(!translated.includes('Retry or write it yourself'));
+      }
+    }
+  }
+});
+
 function parseCsv(csv) {
   const rows = [];
   let row = [], value = '', quoted = false;

@@ -49,11 +49,11 @@ test('Malay offline mock uses every rating and comparison template while preserv
   for (let rating = 1; rating <= 4; rating++) {
     const input = { id: 'english', rating, comment: '  Berkongsi dua idea.\n' };
     const same = mockNarrative(input, { reportLanguage: 'ms', previousRating: rating });
-    assert.equal(same.text, `Penilaian: ${labels[rating - 1]}. ${input.comment}`);
+    assert.equal(same.text, `Penilaian: ${labels[rating - 1]}. Ulasan guru ditunjukkan dalam bahasa asal: “${input.comment}”`);
     for (let previousRating = 1; previousRating <= 4; previousRating++) {
       if (previousRating === rating) continue;
       const draft = mockNarrative(input, { reportLanguage: 'ms', previousRating });
-      assert.equal(draft.text, `${input.comment} Penilaian berubah daripada ${labels[previousRating - 1]} kepada ${labels[rating - 1]} sejak Semester 1.`);
+      assert.equal(draft.text, `Penilaian berubah daripada ${labels[previousRating - 1]} kepada ${labels[rating - 1]} sejak Semester 1. Ulasan guru ditunjukkan dalam bahasa asal: “${input.comment}”`);
     }
   }
   assert.equal(mockNarrative({}, { reportLanguage: 'ms' }).text, noEvidenceMalayText);
@@ -100,6 +100,36 @@ test('Malay grounding permits neutral dia and supplied quantities but rejects in
   assert.equal(checkGrounding({ ...input, noEvidence: true }, noEvidenceMalayText + ' Dia berkongsi.').ok, false);
   for (const word of ['lelaki', 'perempuan', 'jantan', 'betina'])
     assert.ok(checkGrounding(input, `Avery ${word} berkongsi idea.`).reasons.includes('gendered pronoun or word not supported by the record'));
+});
+
+test('Malay provider accepts curriculum capitals and sentence starts through masking and restoration', async () => {
+  const childInput = { firstName: 'Avery', reportLanguage: 'ms', domains: Object.fromEntries(
+    DOMAINS.map(({ id }) => [id, { rating: 2, comment: id === 'chinese' ? '愿意分享想法。' : 'Berkongsi dua idea.' }])) };
+  for (const label of ['Mula berkembang', 'Berkembang', 'Kukuh', 'Lanjutan']) {
+    const result = await generateNarrativesWithProvider({ provider: 'gateway', childInput,
+      requestText: async ({ prompt }) => {
+        assert.ok(!prompt.includes('Avery'));
+        const { firstName } = JSON.parse(prompt.split('Evidence:\n')[1]);
+        return JSON.stringify(Object.fromEntries(DOMAINS.map(({ id }) => [id, id === 'chinese'
+          ? `${firstName}愿意分享想法。`
+          : `${firstName} berkongsi dua idea dalam Bahasa Inggeris dan Matematik. Kemahiran dia berkembang. Penilaian: ${label}.`])));
+      } });
+    assert.deepEqual(result.rejected, {});
+    assert.match(result.accepted.english.text, /^Avery /);
+  }
+  const input = { ...childInput.domains.english, id: 'english', reportLanguage: 'ms' };
+  for (const text of ['Nerali berkongsi dua idea.', 'Dia berkongsi tiga idea.', 'Gambar menunjukkan dia.'])
+    assert.equal(checkGrounding(input, text).ok, false, text);
+  assert.equal(checkGrounding({ ...input, reportLanguage: 'en' }, 'Kemahiran berkembang.').ok, false);
+  assert.equal(checkGrounding({ ...input, id: 'chinese' }, 'Bahasa Inggeris').ok, false);
+});
+
+test('Malay mock separates original-language comments from fully Malay rating sentences', () => {
+  for (const comment of ['Shares ideas clearly.', '愿意分享想法。']) {
+    const draft = mockNarrative({ id: 'english', rating: 2, comment }, { reportLanguage: 'ms' });
+    assert.equal(draft.text, `Penilaian: Sedang berkembang. Ulasan guru ditunjukkan dalam bahasa asal: “${comment}”`);
+    assert.ok(!draft.text.includes('at the Sedang berkembang stage'));
+  }
 });
 
 test('Malay remote response is restored exactly, grounded and stamped without mock fallback on failure', async () => {

@@ -1,7 +1,7 @@
 import { RATINGS } from '../portfolio-model.js';
 import { STATUS_LABELS } from '../class-view.js';
-import { avatarSource, ILLUSTRATION_CAPTION, photoProvenance } from '../demo-media.js';
-import { translateText } from '../i18n/index.js';
+import { avatarSource, ILLUSTRATION_CAPTION, photoProvenance, samplePhotoDescriptionKey } from '../demo-media.js';
+import { t, translateText } from '../i18n/index.js';
 
 export function avatar(child, className = 'avatar', language) {
   const label = text => language ? translateText(text, language) : text;
@@ -39,11 +39,13 @@ export function avatar(child, className = 'avatar', language) {
   return root;
 }
 
-export function photoFigure(photo, className = 'photo') {
+export function photoFigure(photo, className = 'photo', language = 'en') {
   const figure = el('figure', undefined, className);
   const image = el('img');
-  image.alt = photo.alt;
-  image.dataset.i18n = 'off';
+  const descriptionKey = samplePhotoDescriptionKey(photo);
+  const description = descriptionKey ? t(descriptionKey, {}, language) : photo.alt;
+  image.alt = description;
+  if (!descriptionKey) image.dataset.i18n = 'off';
   image.width = 720;
   image.height = 480;
   image.loading = 'lazy';
@@ -55,8 +57,10 @@ export function photoFigure(photo, className = 'photo') {
   picture.append(image);
   image.src = photo.src;
   const caption = el('figcaption');
-  caption.append(el('span', photo.alt, 'photo-description'),
-    el('span', photoProvenance(photo.src), 'photo-provenance'));
+  const descriptionLabel = el('span', description, 'photo-description');
+  if (!descriptionKey) descriptionLabel.dataset.i18n = 'off';
+  caption.append(descriptionLabel,
+    el('span', photoProvenance(photo.src, language), 'photo-provenance'));
   figure.dataset.provenance = photoProvenance(photo.src) === ILLUSTRATION_CAPTION
     ? 'illustration' : photo.src.startsWith('data:image/svg+xml,') ? 'stored-demo' : 'browser-upload';
   figure.append(picture, caption);

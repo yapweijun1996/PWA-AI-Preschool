@@ -76,6 +76,34 @@ test('retry replaces one domain; rejection reasons never persist', async () => {
   assert.equal(restored.rejections.size, 0);
 });
 
+test('grounding rejection detail uses only allowlisted word kinds and stays session-only', async () => {
+  const reason = 'unsupported capitalised word or name';
+  const privateText = 'PrivateProviderIdentifier';
+  for (const [unsupportedWordKind, expected] of [
+    ['sentence-start word', `${reason}: sentence-start word`],
+    ['name or mid-sentence word', `${reason}: name or mid-sentence word`],
+    [undefined, reason],
+    [privateText, reason]
+  ]) {
+    const rejection = { reasons: [reason, 'unsupported number or number word'],
+      unsupportedWordKind, text: privateText };
+    const { ctx, writes } = context({ generateAI: async () => ({
+      accepted: {}, rejected: { english: rejection }
+    }) });
+    ctx.provider.id = 'gateway';
+    const record = ctx.get('C-01');
+    const before = structuredClone(record);
+    await ctx.runDraft(() => ctx.draft(ctx.children[0], record, ['english']));
+    assert.equal(ctx.rejections.get('C-01:2026-S2:english'),
+      `Draft rejected: ${expected}; unsupported number or number word. Retry or write it yourself.`);
+    assert.deepEqual(rejection.reasons, [reason, 'unsupported number or number word']);
+    assert.deepEqual(record, before);
+    assert.ok(!JSON.stringify([...ctx.rejections]).includes(privateText));
+    assert.ok(!JSON.stringify(writes).includes('Draft rejected:'));
+    assert.ok(!JSON.stringify(writes).includes(privateText));
+  }
+});
+
 test('report completeness follows child, semester and class without invented evidence', () => {
   const { ctx } = context();
   const selected = { childId: 'C-05', semester: '2026-S2' };
