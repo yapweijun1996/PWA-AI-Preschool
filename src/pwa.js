@@ -4,7 +4,7 @@ const UPDATE_TIMEOUT = 15000;
 const VERSION_TIMEOUT = 4000;
 const RESET_WARNING = `Updating reloads ${APP_NAME}. All session-only drafts, review approvals, added observations, provider selections and disposable API keys will be reset. Nothing is saved. Continue?`;
 
-export function initPwa({isBusy = () => false} = {}) {
+export function initPwa({isBusy = () => false, updateWarning = RESET_WARNING} = {}) {
   const buildId = document.body.dataset.buildId;
   const create = (tag, className, text, id) => {
     const node = document.createElement(tag);
@@ -34,7 +34,7 @@ export function initPwa({isBusy = () => false} = {}) {
   const dialog = create('dialog', 'pwa-dialog modal', '', 'pwa-update-dialog');
   const heading = create('h2', '', `Update ${APP_NAME}`, 'pwa-update-heading');
   dialog.setAttribute('aria-labelledby', heading.id);
-  const warning = create('p', '', RESET_WARNING, 'pwa-update-warning');
+  const warning = create('p', '', updateWarning, 'pwa-update-warning');
   dialog.setAttribute('aria-describedby', warning.id);
   const message = create('p', 'pwa-notice', '', 'pwa-update-message');
   message.setAttribute('role', 'status');

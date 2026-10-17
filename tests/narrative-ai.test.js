@@ -261,7 +261,7 @@ test('class CSP limits connections exactly and class controller contains no cred
   assert.deepEqual(policy.match(/(?:^|;)\s*connect-src\s+([^;]+)/)[1].trim().split(/\s+/), [
     "'self'", 'https://gpt.yapweijun1996.com', 'https://api.openai.com', 'https://generativelanguage.googleapis.com'
   ]);
-  const source = await readFile(new URL('../src/class-app.js', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../src/studio/context.js', import.meta.url), 'utf8');
   assert.doesNotMatch(source, /(?:localStorage|sessionStorage)\s*(?:\.|\[['"])[\s\S]{0,40}setItem\s*\([^)]*(?:key|token|secret)/i);
 });
 
@@ -270,116 +270,88 @@ function memoryStorage() {
   return { getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) };
 }
 
-// A small DOM surface exercises controller state/storage, not layout or browser networking.
-class Node {
-  constructor(tag) { this.tag = tag; this.children = []; this.dataset = {}; this.events = new Map(); this.attributes = {}; this.value = ''; this.disabled = false; }
-  set textContent(text) { this.text = text; this.children = []; }
-  get textContent() { return (this.text ?? '') + this.children.map(node => node.textContent).join(''); }
-  append(...nodes) { this.children.push(...nodes); }
-  prepend(...nodes) { this.children.unshift(...nodes); }
-  replaceChildren(...nodes) { this.children = nodes; }
-  setAttribute(name, value) { this.attributes[name] = value; }
-  addEventListener(type, callback) { const list = this.events.get(type) ?? []; list.push(callback); this.events.set(type, list); }
-  async emit(type) { for (const callback of this.events.get(type) ?? []) await callback({ preventDefault() {} }); }
-  querySelectorAll(selector) {
-    const matches = node => selector === '[data-draft]' ? node.dataset.draft !== undefined
-      : selector.split(',').map(tag => tag.trim()).includes(node.tag);
-    return this.children.flatMap(child => [...(matches(child) ? [child] : []), ...child.querySelectorAll(selector)]);
-  }
-  querySelector(selector) { return this.querySelectorAll(selector)[0] ?? null; }
-  focus() {}
-}
-
-async function controller(t, { records = [readyRecord()], hash = '#/child/C-01?sem=2026-S2', generateAI } = {}) {
-  const main = new Node('main'), status = new Node('p'), save = new Node('p'), storage = memoryStorage();
+async function controller({ records = [readyRecord()], generateAI, offline = false } = {}) {
+  const { createContext } = await import('../src/studio/context.js');
+  const storage = memoryStorage();
   createStore(storage).save(records);
-  const window = new Node('window'); window.localStorage = storage;
-  const document = new Node('document');
-  document.createElement = tag => new Node(tag);
-  document.getElementById = id => id === 'main' ? main : id === 'status' ? status : id === 'save-status' ? save
-    : [main, ...main.querySelectorAll('section, p, input, select')].find(node => node.id === id);
-  for (const [name, value] of Object.entries({ window, document, location: { hash }, navigator: { onLine: true } })) {
-    const descriptor = Object.getOwnPropertyDescriptor(globalThis, name);
-    Object.defineProperty(globalThis, name, { configurable: true, writable: true, value });
-    t.after(() => { if (descriptor) Object.defineProperty(globalThis, name, descriptor); else delete globalThis[name]; });
-  }
-  const { startClassApp } = await import('../src/class-app.js');
   let mockCalls = 0;
-  startClassApp({ generateAI, generateNarrative: () => { mockCalls++; throw new Error('Unexpected mock fallback'); } });
-  const findButton = text => main.querySelectorAll('button').find(node => node.textContent.startsWith(text));
-  async function selectProvider(value) {
-    const select = main.querySelector('select'); select.value = value; await select.emit('change');
-    const password = main.querySelectorAll('input').find(node => node.type === 'password');
-    if (password) { password.value = key; await password.emit('input'); }
-  }
-  return { main, status, storage, window, document, findButton, selectProvider, mockCalls: () => mockCalls };
+  const ctx = createContext({ storage, generateAI, isOffline: () => offline,
+    generateNarrative: () => { mockCalls++; throw new Error('Unexpected mock fallback'); } });
+  ctx.provider.id = 'gateway';
+  ctx.provider.key = key;
+  return { ctx, storage, mockCalls: () => mockCalls };
 }
 
-test('failed real drafting leaves the stored and visible narrative unchanged, never falling back to mock', async t => {
+test('failed real drafting preserves stored narrative and provenance with no mock fallback', async () => {
   const record = readyRecord();
   record.narratives.english = { text: 'Existing teacher narrative.', source: 'teacher', edited: true };
-  const ui = await controller(t, { records: [record], generateAI: options => generateNarrativesWithProvider({ ...options,
-    requestText: async () => { throw new Error(`${key} PRIVATE_PROVIDER_BODY`); } }) });
+  const ui = await controller({ records: [record],
+    generateAI: options => generateNarrativesWithProvider({ ...options,
+      requestText: async () => { throw new Error(`${key} PRIVATE_PROVIDER_BODY`); } }) });
   const before = ui.storage.getItem('ai-preschool-portfolios-v2');
-  await ui.selectProvider('openai');
-  assert.equal(ui.main.querySelectorAll('input').find(node => node.type === 'password').value, key);
-  await ui.findButton('Draft narrative').emit('click');
+  const result = await ui.ctx.runDraft(() => ui.ctx.draft(
+    { id: 'C-01', name: 'Avery' }, ui.ctx.current('C-01'), ['english']));
+  assert.equal(result, false);
   assert.equal(ui.storage.getItem('ai-preschool-portfolios-v2'), before);
-  assert.equal(ui.main.querySelectorAll('textarea').find(node => node.id === 'narrative-english').value, record.narratives.english.text);
-  assert.match(ui.document.getElementById('connection-status').textContent, /^failed:/);
-  assert.ok(!ui.status.textContent.includes(key));
-  assert.ok(!ui.status.textContent.includes('PRIVATE_PROVIDER_BODY'));
+  assert.deepEqual(ui.ctx.get('C-01').narratives.english, record.narratives.english);
+  assert.equal(ui.ctx.provider.status, 'failed');
+  assert.ok(!ui.ctx.message.includes(key));
+  assert.ok(!ui.ctx.message.includes('PRIVATE_PROVIDER_BODY'));
   assert.equal(ui.mockCalls(), 0);
   assert.ok(!before.includes(key));
 });
 
-test('bulk drafting is sequential, reports progress, and stops at the first error without changing later children', async t => {
-  let calls = 0, active = 0, ui;
-  ui = await controller(t, { hash: '#/', records: ['C-01', 'C-02', 'C-03'].map(id => readyRecord(id)),
+test('bulk drafting is sequential and stops at the first error without changing later children', async () => {
+  const { draftReadyChildren } = await import('../src/studio/bulk-draft.js');
+  let calls = 0;
+  let active = 0;
+  let ui;
+  const children = ['C-01', 'C-02', 'C-03'].map(id => ({ id, name: 'Avery' }));
+  ui = await controller({ records: children.map(child => readyRecord(child.id)),
     generateAI: options => generateNarrativesWithProvider({ ...options, requestText: async () => {
-      calls++; active++;
+      calls++;
+      active++;
       assert.equal(active, 1);
-      assert.equal(ui.document.getElementById('connection-status').textContent, `drafting: ${calls} of 3`);
+      assert.equal(ui.ctx.provider.status, `drafting: ${calls} of 3`);
       await Promise.resolve();
       active--;
       if (calls === 2) throw new Error(key);
       return JSON.stringify(faithful());
     } }) });
-  await ui.selectProvider('gateway');
-  await ui.findButton('Draft narratives for all ready children').emit('click');
+  await ui.ctx.runDraft(() => draftReadyChildren(ui.ctx, children));
   const saved = createStore(ui.storage).load();
   assert.equal(calls, 2);
   assert.equal(saved[0].narratives.english.source, 'ai');
   assert.equal(saved[0].narratives.english.provider, 'gateway');
   assert.deepEqual(saved[1], validateRecord(readyRecord('C-02')));
   assert.deepEqual(saved[2], validateRecord(readyRecord('C-03')));
-  assert.match(ui.status.textContent, /Stopped at 2 of 3; 1 children drafted/);
+  assert.match(ui.ctx.message, /Stopped at 2 of 3; 1 children drafted/);
   assert.equal(ui.mockCalls(), 0);
 });
 
-test('partial drafting preserves rejected narratives and displays retry guidance without mock fallback', async t => {
+test('partial drafting preserves rejected narratives and provides retry guidance', async () => {
   const record = readyRecord();
   record.narratives.chinese = { text: '老师保留的评语。', source: 'teacher', edited: true };
-  const ui = await controller(t, { records: [record],
+  const ui = await controller({ records: [record],
     generateAI: options => generateNarrativesWithProvider({ ...options, requestText: async () =>
       JSON.stringify({ ...faithful(), chinese: '星禾在中文学习中处于Developing阶段。' }) }) });
-  await ui.selectProvider('gateway');
-  await ui.findButton('Draft all four').emit('click');
+  await ui.ctx.runDraft(() => ui.ctx.draft({ id: 'C-01', name: 'Avery' },
+    ui.ctx.current('C-01'), DOMAINS.map(domain => domain.id)));
   const saved = createStore(ui.storage).load()[0];
   assert.deepEqual(saved.narratives.chinese, record.narratives.chinese);
   assert.equal(saved.narratives.english.source, 'ai');
-  assert.match(ui.status.textContent, /Chinese draft rejected:.*press Draft narrative to retry or write it yourself/);
-  assert.ok(ui.main.querySelectorAll('p').some(node => /Chinese draft rejected:/.test(node.textContent)));
+  assert.match(ui.ctx.rejections.get('C-01:2026-S2:chinese'), /Draft rejected:.*Retry or write/);
   assert.equal(ui.mockCalls(), 0);
 });
 
-test('bulk partial acceptance counts only fully accepted children and continues', async t => {
-  const ui = await controller(t, { hash: '#/', records: ['C-01', 'C-02'].map(id => readyRecord(id)),
+test('bulk partial acceptance counts only fully accepted children and continues', async () => {
+  const { draftReadyChildren } = await import('../src/studio/bulk-draft.js');
+  const children = ['C-01', 'C-02'].map(id => ({ id, name: 'Avery' }));
+  const ui = await controller({ records: children.map(child => readyRecord(child.id)),
     generateAI: options => generateNarrativesWithProvider({ ...options, requestText: async () =>
       JSON.stringify({ ...faithful(), chinese: '中文学习处于Developing阶段。' }) }) });
-  await ui.selectProvider('gateway');
-  await ui.findButton('Draft narratives for all ready children').emit('click');
-  assert.equal(ui.status.textContent, '0 of 2 children fully drafted; 2 domains need attention.');
+  await ui.ctx.runDraft(() => draftReadyChildren(ui.ctx, children));
+  assert.equal(ui.ctx.message, '0 of 2 children fully drafted; 2 domains need attention.');
   for (const record of createStore(ui.storage).load()) {
     assert.equal(record.narratives.chinese, null);
     assert.equal(record.narratives.mathematics.source, 'ai');
@@ -387,13 +359,13 @@ test('bulk partial acceptance counts only fully accepted children and continues'
   assert.equal(ui.mockCalls(), 0);
 });
 
-test('remote drafting is disabled offline while explicitly selected mock remains available', async t => {
-  const ui = await controller(t);
-  await ui.selectProvider('gateway');
-  navigator.onLine = false;
-  await ui.window.emit('offline');
-  assert.equal(ui.findButton('Draft all four').disabled, true);
-  assert.equal(ui.document.getElementById('provider-offline').hidden, false);
-  await ui.selectProvider('mock');
-  assert.equal(ui.findButton('Draft all four').disabled, false);
+test('offline remote draft is blocked; explicitly selected mock is permitted', async () => {
+  let calls = 0;
+  const ui = await controller({ offline: true });
+  assert.equal(await ui.ctx.runDraft(async () => { calls++; }), false);
+  assert.equal(calls, 0);
+  assert.match(ui.ctx.message, /Offline: select Offline mock/);
+  ui.ctx.provider.id = 'mock';
+  assert.equal(await ui.ctx.runDraft(async () => { calls++; }), true);
+  assert.equal(calls, 1);
 });

@@ -8,7 +8,15 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 const output = path.join(root, 'dist');
 const assets = [
   'index.html', 'styles.css', 'favicon.svg',
-  'class.html', 'class.css', 'src/class-app.js', 'src/class-view.js',
+  'class.html', 'studio.css', 'src/class-view.js',
+  'src/studio/tokens.css', 'src/studio/app.js', 'src/studio/router.js',
+  'src/studio/context.js', 'src/studio/ui.js', 'src/studio/shell.js',
+  'src/studio/provider-card.js', 'src/studio/bulk-draft.js', 'src/studio/editor-model.js',
+  'src/studio/domain-panel.js', 'src/studio/photo-controls.js', 'src/studio/narrative-controls.js',
+  'src/studio/pages/home.js', 'src/studio/pages/classes.js', 'src/studio/pages/child-editor.js',
+  'src/studio/pages/students.js', 'src/studio/pages/student-profile.js',
+  'src/studio/pages/evidence.js', 'src/studio/pages/drafts.js', 'src/studio/pages/reports.js',
+  'src/studio/pages/print.js', 'src/studio/pages/ai-settings.js', 'src/studio/pages/about.js',
   'src/report-model.js', 'src/report-view.js',
   'src/narrative.js', 'src/photo.js', 'src/portfolio-model.js', 'src/portfolio-seed.js', 'src/portfolio-store.js',
   'src/app.js', 'src/config.js', 'src/data.js', 'src/providers.js', 'src/pwa.js',
