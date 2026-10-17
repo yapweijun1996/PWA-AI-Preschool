@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { localizeDocument, setLocale } from '../src/i18n/index.js';
+import en from '../src/i18n/en.js';
+import ms from '../src/i18n/ms.js';
+import zhHans from '../src/i18n/zh-Hans.js';
 
 // Minimal DOM protocol: exercise source preservation and mutation handling without dependencies.
 class Node {
@@ -54,6 +57,15 @@ test('live locale changes preserve evidence, names, narrative language and Engli
   const narrative = new Node('p', undefined, { lang: 'zh-Hans' });
   const prose = new Node(null, 'Fictional demo data'); narrative.append(prose);
   body.append(label, action, evidence, name, narrative);
+  const scene = new Node('img', undefined, { alt: en['ui.media.sceneNine'] });
+  const caption = new Node('span', undefined, { class: 'photo-description' });
+  const sceneText = new Node(null, en['ui.media.sceneNine']); caption.append(sceneText);
+  const teacherCaption = new Node('span', undefined,
+    { class: 'photo-description', 'data-i18n': 'off' });
+  const teacherText = new Node(null, en['ui.media.sceneNine']); teacherCaption.append(teacherText);
+  const teacherImage = new Node('img', undefined,
+    { alt: en['ui.media.sceneNine'], 'data-i18n': 'off' });
+  body.append(scene, caption, teacherCaption, teacherImage);
   setLocale('en', storage);
   const dispose = localizeDocument(body);
   setLocale('ms', storage);
@@ -63,12 +75,20 @@ test('live locale changes preserve evidence, names, narrative language and Engli
   assert.equal(nameText.nodeValue, 'English');
   assert.equal(prose.nodeValue, 'Fictional demo data');
   const malay = text.nodeValue;
+  assert.equal(scene.getAttribute('alt'), ms['ui.media.sceneNine']);
+  assert.equal(sceneText.nodeValue, ms['ui.media.sceneNine']);
+  assert.equal(teacherText.nodeValue, en['ui.media.sceneNine']);
+  assert.equal(teacherImage.getAttribute('alt'), en['ui.media.sceneNine']);
   setLocale('zh-Hans', storage);
   assert.notEqual(text.nodeValue, malay);
   assert.notEqual(text.nodeValue, 'Fictional demo data');
+  assert.equal(scene.getAttribute('alt'), zhHans['ui.media.sceneNine']);
+  assert.equal(sceneText.nodeValue, zhHans['ui.media.sceneNine']);
   setLocale('en', storage);
   assert.equal(text.nodeValue, 'Fictional demo data');
   assert.equal(action.getAttribute('aria-label'), 'Fictional demo data');
+  assert.equal(scene.getAttribute('alt'), en['ui.media.sceneNine']);
+  assert.equal(sceneText.nodeValue, en['ui.media.sceneNine']);
   const inserted = new Node('span');
   const insertedText = new Node(null, 'Fictional demo data'); inserted.append(insertedText); body.append(inserted);
   setLocale('ms', storage);

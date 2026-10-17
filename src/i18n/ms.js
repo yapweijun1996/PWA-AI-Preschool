@@ -508,6 +508,8 @@ export default Object.freeze({
   "ui.reason.previousRating": "perbandingan semester memerlukan penilaian sebelumnya",
   "ui.reason.number": "nombor atau perkataan nombor tidak disokong",
   "ui.reason.capitalised": "perkataan berhuruf besar atau nama tidak disokong",
+  "ui.reason.capitalisedSentenceStart": "perkataan berhuruf besar atau nama tidak disokong: perkataan pada awal ayat",
+  "ui.reason.capitalisedName": "perkataan berhuruf besar atau nama tidak disokong: nama atau perkataan di tengah ayat",
   "ui.reason.firstName": "nama pertama kanak-kanak mesti sepadan tepat dengan ejaan dan sistem tulisan yang diberikan",
   "ui.reason.photo": "dakwaan foto tanpa foto yang direkodkan",
   "ui.reason.chineseLatin": "naratif bahasa Cina tidak boleh mengandungi perkataan Latin selain nama pertama kanak-kanak",

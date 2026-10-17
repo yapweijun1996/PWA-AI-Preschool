@@ -71,10 +71,8 @@ export function renderReport(report) {
     else section.append(el('p', 'Narrative not drafted.'));
     const photos = el('div', undefined, 'report-photos');
     for (const photo of row.photos) {
-      const figure = photoFigure(photo);
+      const figure = photoFigure(photo, 'photo', report.language ?? 'en');
       language(figure.querySelector('figcaption').querySelector('span'));
-      const provenance = figure.querySelector('figcaption').querySelectorAll('span')[1];
-      provenance.textContent = translate(provenance.textContent);
       photos.append(figure);
     }
     section.append(photos);

@@ -508,6 +508,8 @@ export default Object.freeze({
   "ui.reason.previousRating": "semester comparison requires a previous rating",
   "ui.reason.number": "unsupported number or number word",
   "ui.reason.capitalised": "unsupported capitalised word or name",
+  "ui.reason.capitalisedSentenceStart": "unsupported capitalised word or name: sentence-start word",
+  "ui.reason.capitalisedName": "unsupported capitalised word or name: name or mid-sentence word",
   "ui.reason.firstName": "child first name must match the supplied spelling and script exactly",
   "ui.reason.photo": "photo claim without a recorded photo",
   "ui.reason.chineseLatin": "Chinese narrative must not contain Latin words other than the child's first name",

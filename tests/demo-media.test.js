@@ -1,13 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, stat } from 'node:fs/promises';
-import { avatarSource, samplePhoto, photoProvenance, ILLUSTRATION_CAPTION, UPLOAD_CAPTION } from '../src/demo-media.js';
+import { avatarSource, samplePhoto, samplePhotoDescriptionKey, photoProvenance, ILLUSTRATION_CAPTION, UPLOAD_CAPTION } from '../src/demo-media.js';
 import { avatar, photoFigure } from '../src/studio/ui.js';
 import { emptyRecord, validateRecord } from '../src/portfolio-model.js';
 import { photoControls } from '../src/studio/photo-controls.js';
 import { buildReport } from '../src/report-model.js';
 import { renderReport } from '../src/report-view.js';
 import { CHILDREN, seedRecords } from '../src/portfolio-seed.js';
+import en from '../src/i18n/en.js';
+import ms from '../src/i18n/ms.js';
+import zhHans from '../src/i18n/zh-Hans.js';
 
 class Node {
   constructor(tag) { this.tag = tag; this.children = []; this.attributes = {}; this.dataset = {}; this.events = new Map(); }
@@ -108,6 +111,78 @@ test('scene figures and browser uploads have visible, distinct provenance and ex
   }
 });
 
+test('all twelve sample scenes use catalog descriptions in each report language', t => {
+  dom(t);
+  const catalogs = { en, ms, 'zh-Hans': zhHans };
+  const scenes = new Map();
+  for (let seed = 0; seed < 200; seed++) {
+    const photo = samplePhoto(seed);
+    scenes.set(photo.src, photo);
+  }
+  assert.equal(scenes.size, 12);
+  for (const photo of scenes.values()) {
+    const key = samplePhotoDescriptionKey(photo);
+    assert.match(key, /^ui\.media\.scene/);
+    assert.equal(photo.alt, en[key]);
+    for (const [language, catalog] of Object.entries(catalogs)) {
+      const figure = photoFigure(photo, 'photo', language);
+      const image = figure.querySelector('img');
+      const [description, provenance] = figure.querySelector('figcaption').querySelectorAll('span');
+      assert.equal(image.alt, catalog[key]);
+      assert.equal(description.textContent, catalog[key]);
+      assert.equal(provenance.textContent, catalog['ui.demo.illustration']);
+      assert.equal(image.dataset.i18n, undefined);
+      assert.equal(description.dataset.i18n, undefined);
+      assert.equal(figure.dataset.provenance, 'illustration');
+    }
+  }
+  const planting = scenes.get('assets/demo/scene-09.webp');
+  assert.equal(photoFigure(planting, 'photo', 'ms').querySelector('img').alt,
+    'Kanak-kanak rekaan menanam anak benih dalam pasu bunga');
+});
+
+test('uploaded, legacy and teacher-edited scene descriptions remain verbatim in every language', t => {
+  dom(t);
+  const edited = { ...samplePhoto('edited'), alt: 'English teacher-authored fictional scene details' };
+  const upload = { src: 'data:image/png;base64,AA==', alt: en['ui.media.sceneNine'] };
+  const legacy = { src: 'data:image/svg+xml,%3Csvg%3E', alt: 'Legacy fictional shapes' };
+  for (const photo of [edited, upload, legacy]) {
+    assert.equal(samplePhotoDescriptionKey(photo), null);
+    for (const language of ['en', 'ms', 'zh-Hans']) {
+      const figure = photoFigure(photo, 'photo', language);
+      const image = figure.querySelector('img');
+      const description = figure.querySelector('figcaption').querySelector('span');
+      assert.equal(image.alt, photo.alt);
+      assert.equal(description.textContent, photo.alt);
+      assert.equal(image.dataset.i18n, 'off');
+      assert.equal(description.dataset.i18n, 'off');
+    }
+  }
+});
+
+test('editing a sample description protects the new teacher text from interface translation', t => {
+  dom(t);
+  const oldMatchMedia = globalThis.matchMedia;
+  globalThis.matchMedia = () => ({ matches: false });
+  t.after(() => { if (oldMatchMedia) globalThis.matchMedia = oldMatchMedia; else delete globalThis.matchMedia; });
+  const record = emptyRecord('C-01', '2026-S1');
+  record.domains.english.photos.push({ id: 'fictional-photo', ...samplePhoto('edited') });
+  let changed = 0;
+  const root = photoControls({ busy: false, subscribe: () => () => {}, change() { changed++; } },
+    record, 'english');
+  const input = root.querySelectorAll('input').find(node => node.type !== 'file');
+  input.setCustomValidity = () => {};
+  input.value = 'Fictional demo data';
+  input.events.get('change')();
+  const figure = root.querySelector('figure');
+  assert.equal(record.domains.english.photos[0].alt, input.value);
+  assert.equal(figure.querySelector('img').alt, input.value);
+  assert.equal(figure.querySelector('img').dataset.i18n, 'off');
+  assert.equal(figure.querySelector('figcaption').querySelector('span').dataset.i18n, 'off');
+  assert.equal(changed, 1);
+  root.dispose();
+});
+
 test('upload chooser explains demo-only use and browser storage before selection', t => {
   dom(t);
   const oldMatchMedia = globalThis.matchMedia;
@@ -165,4 +240,20 @@ test('print reports retain the child avatar, scene descriptions and visible illu
   assert.ok(images.every(image => image.alt && image.width && image.height && image.loading === 'lazy'));
   assert.ok(report.textContent.includes(ILLUSTRATION_CAPTION));
   assert.ok(report.querySelectorAll('figcaption').every(caption => caption.textContent.includes(ILLUSTRATION_CAPTION)));
+});
+
+test('Malay print reports translate planting scene alt and caption independently of the interface', t => {
+  dom(t);
+  const child = CHILDREN[0];
+  const record = emptyRecord(child.id, '2026-S1');
+  record.domains.english.photos.push({
+    id: 'fictional-planting', src: 'assets/demo/scene-09.webp', alt: en['ui.media.sceneNine']
+  });
+  const report = renderReport(buildReport({ child, record, language: 'ms' }));
+  const figure = report.querySelector('figure');
+  assert.equal(figure.querySelector('img').alt, ms['ui.media.sceneNine']);
+  const [description, provenance] = figure.querySelector('figcaption').querySelectorAll('span');
+  assert.equal(description.textContent, ms['ui.media.sceneNine']);
+  assert.equal(provenance.textContent, ms['ui.demo.illustration']);
+  assert.equal(record.domains.english.photos[0].alt, en['ui.media.sceneNine']);
 });

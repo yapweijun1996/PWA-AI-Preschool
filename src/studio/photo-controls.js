@@ -117,6 +117,7 @@ function savedPhoto(photo, remove, changed) {
       return;
     }
     photo.alt = alt.value.trim();
+    image.dataset.i18n = caption.dataset.i18n = 'off';
     image.alt = photo.alt;
     caption.textContent = photo.alt;
     changed();

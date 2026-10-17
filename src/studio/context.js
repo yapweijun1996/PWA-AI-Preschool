@@ -266,6 +266,13 @@ async function draft(ctx, child, record, ids, generateNarrative, generateAI) {
   return acceptDrafts(ctx, child, record, ids, result);
 }
 
+function groundingRejectionReasons({ reasons, unsupportedWordKind }) {
+  const detail = unsupportedWordKind === 'sentence-start word' ? 'sentence-start word'
+    : unsupportedWordKind === 'name or mid-sentence word' ? 'name or mid-sentence word' : '';
+  return reasons.map(reason => reason === 'unsupported capitalised word or name' && detail
+    ? `${reason}: ${detail}` : reason).join('; ');
+}
+
 function acceptDrafts(ctx, child, record, ids, result) {
   const drafts = {};
   const rejected = {};
@@ -280,7 +287,7 @@ function acceptDrafts(ctx, child, record, ids, result) {
     const key = `${child.id}:${record.semester}:${id}`;
     if (drafts[id]) ctx.stale.delete(key);
     if (rejected[id]) ctx.rejections.set(key,
-      `Draft rejected: ${rejected[id].reasons.join('; ')}. Retry or write it yourself.`);
+      `Draft rejected: ${groundingRejectionReasons(rejected[id])}. Retry or write it yourself.`);
     else ctx.rejections.delete(key);
   }
   if (Object.keys(drafts).length) {
