@@ -133,6 +133,42 @@ test('review is distinct, requires all narratives and advances only after explic
   assert.equal(ctx.destination, 'C-06');
 });
 
+for (const size of [20, 3]) {
+  test(`last review completes a ${size}-child class without null navigation`, async t => {
+    const { ctx, page, find } = setup(t, { domain: 'review' });
+    if (size !== 20) ctx.children = ctx.children.filter(child =>
+      ['C-04', 'C-05', 'C-06'].includes(child.id));
+    await find('Draft all four').emit('click');
+    const template = ctx.get('C-05');
+    for (const child of ctx.children) {
+      if (child.id === 'C-05') continue;
+      const record = ctx.current(child.id);
+      record.domains = structuredClone(template.domains);
+      record.narratives = structuredClone(template.narratives);
+      ctx.markReviewed(record);
+    }
+    const review = find('Mark reviewed and go to next child');
+    assert.equal(review.disabled, false);
+    await review.emit('click');
+    assert.equal(ctx.destination, undefined);
+    assert.equal(ctx.get('C-05').reviewed, true);
+    assert.equal(review.hidden, true);
+    const completed = page.querySelectorAll('section').find(node =>
+      node.attributes.role === 'status' && node.querySelectorAll('h2')
+        .some(heading => heading.textContent === `All ${size} children reviewed`));
+    assert.equal(completed.hidden, false);
+    assert.match(completed.textContent, new RegExp(`All ${size} children reviewed`));
+    const links = completed.querySelectorAll('a');
+    assert.equal(links.find(node => node.textContent === 'Drafts').href,
+      '#/drafts');
+    assert.equal(links.find(node => node.textContent === 'Print class report').href,
+      '#/print-class?sem=2026-S2');
+    ctx.change(ctx.get('C-05'));
+    assert.equal(completed.hidden, true);
+    assert.equal(review.hidden, false);
+  });
+}
+
 test('draft review deep links open the Review step and retain quick provider settings access', t => {
   const { page } = setup(t, { domain: 'review' });
   assert.equal(page.querySelectorAll('h2')[0].textContent, 'Review narratives');
@@ -144,19 +180,6 @@ test('draft review deep links open the Review step and retain quick provider set
   assert.equal(page.querySelectorAll('select').length, 0);
 });
 
-test('editor puts child context before tabs and compact drafting tools', t => {
-  const { page } = setup(t);
-  const [navigation, tools, panel] = page.children;
-  assert.equal(navigation.className, 'editor-navigation');
-  assert.deepEqual(navigation.children.map(node => node.className),
-    ['child-header', 'editor-progress', 'domain-tabs']);
-  assert.equal(tools.className, 'editor-provider-line');
-  assert.equal(tools.attributes['aria-label'], 'Narrative drafting tools');
-  assert.equal(tools.querySelectorAll('button')[0].textContent, 'Draft all four');
-  assert.equal(panel.attributes.role, 'tabpanel');
-  assert.equal(page.querySelectorAll('a').some(link => link.textContent === 'Back to class'),
-    false);
-});
 
 test('editor keeps one compact child header and reactive provider settings access', t => {
   const { page, ctx } = setup(t);
@@ -241,7 +264,7 @@ test('editor binds masked disclosure to its child and refreshes comments without
   assert.equal(page.querySelectorAll('select').length, 0);
 });
 
-test('sticky header provides a labelled free-form name editor with keyboard save and cancellation', async t => {
+test('name panel stays outside sticky navigation and returns focus after keyboard save', async t => {
   const { page, ctx, doc } = setup(t);
   const input = page.querySelectorAll('input').find(node => node.id === 'child-name-C-05');
   const form = page.querySelectorAll('form').find(node => node.className === 'editor-name-form');
@@ -252,6 +275,8 @@ test('sticky header provides a labelled free-form name editor with keyboard save
   assert.equal(disclosure.open, false);
   assert.equal(disclosure.querySelector('summary').textContent, 'Edit child name');
   assert.ok(disclosure.querySelectorAll('form').includes(form));
+  const navigation = page.querySelectorAll('div').find(node => node.className === 'editor-navigation');
+  assert.equal(navigation.querySelectorAll('form').length, 0);
   disclosure.open = true;
   assert.match(label.textContent, /Child name/);
   assert.equal(input.type, 'text');
@@ -263,10 +288,11 @@ test('sticky header provides a labelled free-form name editor with keyboard save
   await form.emit('submit');
   assert.equal(input.value, 'Élodie Vale');
   assert.equal(page.querySelector('h1').textContent, 'Élodie Vale');
-  assert.equal(doc.activeElement, input);
+  assert.equal(doc.activeElement, disclosure.querySelector('summary'));
+  assert.equal(disclosure.open, false);
   assert.equal(ctx.children[4].name, 'Élodie Vale');
   assert.equal(page.querySelectorAll('img')[0].alt.startsWith('Élodie Vale:'), true);
-  assert.match(feedback.textContent, /review names/);
+  assert.equal(feedback.textContent, '');
   input.value = 'Unsaved edit';
   await input.emit('keydown', { key: 'Escape' });
   assert.equal(input.value, 'Élodie Vale');
@@ -300,4 +326,19 @@ test('name validation rejects controls and long names, permits duplicates and lo
   ctx.notify();
   assert.equal(input.disabled, true);
   assert.equal(page.querySelectorAll('button').find(node => node.textContent === 'Save name').disabled, true);
+});
+
+test('old-name replacement refreshes editable narratives without losing teacher prose', async t => {
+  const { ctx, page, find } = setup(t, { domain: 'review' });
+  const record = ctx.get('C-05');
+  record.narratives.english = { text: 'Ellis B. shares ideas. Teacher detail retained.', source: 'teacher', edited: true };
+  ctx.notify();
+  ctx.renameChild('C-05', 'Sample Learner');
+  const replace = find('Replace old name in narratives');
+  assert.equal(replace.disabled, false);
+  await replace.emit('click');
+  assert.equal(record.narratives.english.text, 'Sample Learner shares ideas. Teacher detail retained.');
+  assert.ok(page.querySelectorAll('textarea').some(node =>
+    node.value === 'Sample Learner shares ideas. Teacher detail retained.'));
+  assert.deepEqual(ctx.oldNarrativeNames('C-05'), []);
 });

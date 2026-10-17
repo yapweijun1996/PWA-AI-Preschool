@@ -20,6 +20,7 @@ export function createContext({ storage = null, generateNarrative = mockNarrativ
       const name = store.childNames[child.id] ?? child.name;
       return { ...child, name, initials: childInitials(name) };
     }), semester: '2026-S2',
+    childNameHistory: store.childNameHistory,
     provider: { id: 'mock', key: '', status: 'not tested' },
     rejections: new Map(), stale: new Set(), busy: false, message: '', saveStatus: '', isOffline,
     batch: null, draftError: '', retryDraft: null, route: '', failures: [],
@@ -83,7 +84,7 @@ function persistence(ctx) {
       clearTimeout(timer);
       if (!dirty) return;
       const names = Object.fromEntries(ctx.children.map(child => [child.id, child.name]));
-      const result = ctx.store.save(ctx.records, names);
+      const result = ctx.store.save(ctx.records, names, ctx.childNameHistory);
       dirty = !result.ok;
       ctx.saveStatus = result.ok ? 'Saved in this browser' : 'Not saved: storage unavailable';
       ctx.notify();
@@ -94,21 +95,29 @@ function persistence(ctx) {
       if (!child) throw new Error('Child not found.');
       const name = normalizeChildName(value);
       if (name !== child.name) {
+        ctx.childNameHistory[id] = [...new Set([...(ctx.childNameHistory[id] ?? []), child.name])];
         child.name = name;
         child.initials = childInitials(name);
-        for (const record of ctx.records.filter(record => record.childId === id)) {
-          for (const { id: domainId } of DOMAINS) {
-            if (record.narratives[domainId])
-              ctx.stale.add(`${id}:${record.semester}:${domainId}`);
-          }
-          ctx.change(record);
-        }
         dirty = true;
         ctx.persist();
       }
       const duplicate = ctx.children.some(member => member.id !== id &&
         member.name.toLocaleLowerCase('en') === name.toLocaleLowerCase('en'));
       return { name, duplicate };
+    },
+    oldNarrativeNames(id) {
+      return narrativeNameChanges(ctx, id).names;
+    },
+    replaceOldNarrativeNames(id) {
+      if (ctx.busy) throw new Error('Wait for drafting to finish before replacing old names.');
+      const { record, updates } = narrativeNameChanges(ctx, id);
+      const count = Object.keys(updates).length;
+      if (!count) return 0;
+      validateRecord({ ...record, narratives: { ...record.narratives, ...updates } });
+      Object.assign(record.narratives, updates);
+      ctx.change(record);
+      ctx.persist();
+      return count;
     },
     change(record) {
       record.reviewed = false;
@@ -128,6 +137,7 @@ function persistence(ctx) {
     reset() {
       ctx.records = seedRecords();
       ctx.children = CHILDREN.map(child => ({ ...child }));
+      ctx.childNameHistory = {};
       ctx.stale.clear();
       ctx.rejections.clear();
       ctx.batch = null;
@@ -139,6 +149,48 @@ function persistence(ctx) {
       ctx.announce('Sample data restored.');
     }
   };
+}
+
+function narrativeNameChanges(ctx, id) {
+  const child = ctx.children.find(member => member.id === id);
+  if (!child) throw new Error('Child not found.');
+  const record = ctx.get(id);
+  const previousNames = [...new Set([
+    ...(ctx.childNameHistory[id] ?? []),
+    CHILDREN.find(member => member.id === id)?.name
+  ])].filter(name => name && name !== child.name);
+  const firstName = name => narrativeInputFor({ name }, record).firstName;
+  const replacements = new Map();
+  for (const name of previousNames) {
+    for (const from of [name, firstName(name)]) {
+      if (from === child.name) continue;
+      if (!replacements.has(from)) replacements.set(from, { to: child.name, names: new Set() });
+      replacements.get(from).names.add(name);
+    }
+  }
+  // Protect the current full name from shorter historical-name matches.
+  replacements.set(child.name, { to: child.name, names: new Set() });
+  const alternatives = [...replacements.keys()].sort((a, b) => b.length - a.length)
+    .map(name => {
+      const literal = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const boundary = /\p{Script=Han}/u.test(name) ? ''
+        : /\p{Script=Latin}/u.test(name) ? '\\p{Script=Latin}\\p{M}\\p{N}_'
+          : '\\p{L}\\p{M}\\p{N}_';
+      return boundary ? `(?<![${boundary}])${literal}(?![${boundary}])` : literal;
+    });
+  const matcher = new RegExp(alternatives.join('|'), 'gu');
+  const remaining = new Set(), updates = {};
+  for (const { id: domainId } of DOMAINS) {
+    const narrative = record.narratives[domainId];
+    if (!narrative) continue;
+    const text = narrative.text.replace(matcher, match => {
+      const replacement = replacements.get(match);
+      for (const name of replacement.names) remaining.add(name);
+      return replacement.to;
+    });
+    if (text !== narrative.text) updates[domainId] = { ...narrative, text, edited: true };
+  }
+  return { record, names: previousNames.filter(name => remaining.has(name)), updates };
 }
 
 async function runDraft(ctx, action) {

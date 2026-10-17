@@ -91,18 +91,25 @@ function actions(ctx, model) {
   const panel = el('section', undefined, 'card home-actions');
   panel.append(el('h2', 'Quick actions'));
   const group = el('div', undefined, 'home-action-group');
-  const next = button('Continue with next unfinished child', () => ctx.go(model.next), true);
-  next.disabled = !model.next || ctx.busy;
+  const allReviewed = ctx.children.length > 0 && model.totals.statuses.reviewed === ctx.children.length;
+  const next = allReviewed
+    ? el('p', `All ${ctx.children.length} children reviewed`, 'notice')
+    : button('Continue with next unfinished child', () => {
+      if (model.next) ctx.go(model.next);
+    }, true);
+  if (allReviewed) next.setAttribute('role', 'status');
+  else next.disabled = !model.next || ctx.busy;
   const draft = button(`Draft narratives for all ready children (${model.ready.length})`,
     () => ctx.runDraft(() => draftReadyChildren(ctx, model.ready)));
   draft.disabled = ctx.busy || !model.ready.length
     || (ctx.provider.id !== 'mock' && ctx.isOffline());
   const print = link('Print class report', buildRoute('reports', { semester: ctx.semester }));
-  next.replaceChildren(icon('arrow'), 'Continue with next unfinished child');
+  if (!allReviewed) next.replaceChildren(icon('arrow'), 'Continue with next unfinished child');
   draft.replaceChildren(icon('pencil'),
     `Draft narratives for all ready children (${model.ready.length})`);
   print.replaceChildren(icon('file'), 'Print class report');
   group.append(next, draft, print);
+  if (allReviewed) group.append(link('Drafts', buildRoute('drafts', { semester: ctx.semester })));
   panel.append(group);
   return panel;
 }

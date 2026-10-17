@@ -1,5 +1,14 @@
 # 20 — Documentation and Project Changelog
 
+## Teacher workflow friction fixes — 2026-10-17
+
+- Moved name editing below sticky navigation; successful Enter/save closes the panel, focuses its trigger and announces “Name updated”. Validation and duplicate warnings remain.
+- Pure renames preserve evidence freshness and review status. Persisted prior names support an explicit four-domain replacement action only when old-name prose remains; teacher edits and provenance are preserved.
+- Avatar initials appear only for missing/failed images, not during loading. Neutral loading surfaces preserve avatar and photo dimensions.
+- Final review displays the dynamic class completion count with Drafts and class-print links. Home shows completion instead of an unusable Continue action.
+- Verification: `npm run check && npm test && npm run build` passed, 237/237 tests and 91 precached routes. Quick audit: 0/60 failures (`artifacts/ui-audit/2026-10-17T11-08-20-438Z/summary.md`). Full audit: 0/150 failures (`artifacts/ui-audit/2026-10-17T11-09-41-141Z/summary.md`).
+- Actual Chromium QA at 390×844 confirmed the sticky navigation remains 108px closed/open, Enter saves and restores summary focus with “Name updated”, and final-child review/Home show “All 20 children reviewed”. Inspected the audit's mobile Review screenshot. Interactive screenshot capture timed out; live Gateway, physical devices and physical printing were not tested.
+
 ## Free-form names and watermarked demo pictures — 2026-10-17
 
 - All 20 fictional seed identities now default to English names, retaining C-01–C-20, ratings, comments and semester progress.

@@ -31,6 +31,9 @@ export function narrativeControls(ctx, child, record, id) {
   }, true);
   const offline = offlineState();
   const update = () => {
+    const text = record.narratives[id]?.text ?? '';
+    if (narrative.value !== text) narrative.value = text;
+    count.textContent = `${text.length} / 2000`;
     source.textContent = record.narratives[id]?.text.trim()
       ? narrativeChip(record.narratives[id]) : 'No narrative';
     stale.hidden = !ctx.stale.has(key);

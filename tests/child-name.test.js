@@ -43,25 +43,35 @@ test('the existing v2 envelope loads old records and round-trips names through s
   const ctx = createContext({ storage: disk });
   const old = JSON.parse(disk.getItem('ai-preschool-portfolios-v2'));
   delete old.childNames;
+  delete old.childNameHistory;
   disk.setItem('ai-preschool-portfolios-v2', JSON.stringify(old));
   const store = createStore(disk);
   assert.equal(store.load().length, 40);
   assert.deepEqual(store.childNames, {});
-  assert.deepEqual(store.save(ctx.records, { 'C-05': '  E\u0301lodie Vale  ' }), { ok: true });
+  assert.deepEqual(store.childNameHistory, {});
+  assert.deepEqual(store.save(ctx.records, { 'C-05': '  E\u0301lodie Vale  ' },
+    { 'C-05': ['Ellis B.', '林小雨'] }), { ok: true });
   assert.deepEqual(store.childNames, { 'C-05': 'Élodie Vale' });
   store.upsert(store.get('C-05', '2026-S2'));
   const copy = createStore(storage());
   assert.deepEqual(copy.importJson(store.exportJson()), { ok: true });
   assert.deepEqual(copy.childNames, store.childNames);
+  assert.deepEqual(copy.childNameHistory, { 'C-05': ['Ellis B.', '林小雨'] });
+  const history = copy.childNameHistory;
+  history['C-05'].push('Detached');
+  assert.deepEqual(copy.childNameHistory, store.childNameHistory);
   const detached = copy.childNames;
   detached['C-05'] = 'Changed';
   assert.equal(copy.childNames['C-05'], 'Élodie Vale');
   const before = store.exportJson();
   assert.equal(store.save(ctx.records, { 'C-05': '\u0000' }).ok, false);
   assert.equal(store.save(ctx.records, { unknown: 'Fictional' }).ok, false);
+  assert.equal(store.save(ctx.records, store.childNames, { unknown: [] }).ok, false);
+  assert.equal(store.save(ctx.records, store.childNames, { 'C-05': ['\u0000'] }).ok, false);
   assert.equal(store.exportJson(), before);
   store.reset();
   assert.deepEqual(store.childNames, {});
+  assert.deepEqual(store.childNameHistory, {});
 });
 
 test('rename updates identity-based lists, evidence, reports and subsequent sessions without changing IDs or prose', () => {
@@ -71,14 +81,15 @@ test('rename updates identity-based lists, evidence, reports and subsequent sess
   record.narratives.english = { text: 'Ellis shares ideas with Beck.', source: 'teacher', edited: true };
   record.reviewed = true;
   const evidence = record.domains.english.comment;
+  ctx.stale.add('C-05:2026-S2:chinese');
   assert.deepEqual(ctx.renameChild(child.id, '  E\u0301lodie Vale '),
     { name: 'Élodie Vale', duplicate: false });
   assert.equal(child.id, 'C-05');
   assert.equal(child.initials, 'ÉV');
   assert.equal(record.domains.english.comment, evidence);
   assert.equal(record.narratives.english.text, 'Ellis shares ideas with Beck.');
-  assert.equal(record.reviewed, false);
-  assert.ok(ctx.stale.has('C-05:2026-S2:english'));
+  assert.equal(record.reviewed, true);
+  assert.deepEqual([...ctx.stale], ['C-05:2026-S2:chinese']);
   assert.equal(classesModel(ctx, { query: 'Élodie' }).children[0].name, child.name);
   assert.equal(studentsModel(ctx.children, ctx.records, ctx.semester, { query: 'Élodie' })[0].child.name, child.name);
   assert.ok(evidenceModel(ctx.children, ctx.records, { childId: child.id })
@@ -91,6 +102,86 @@ test('rename updates identity-based lists, evidence, reports and subsequent sess
   assert.notEqual(ctx.children, CHILDREN);
   ctx.reset();
   assert.deepEqual(ctx.children, CHILDREN);
+});
+
+test('explicit old-name replacement preserves teacher prose, provenance and evidence staleness in all four domains', () => {
+  const ctx = createContext({ storage: storage() }), child = ctx.children[4];
+  const record = ctx.current(child.id), previous = ctx.current(child.id, '2026-S1');
+  const source = 'Ellis B. shares ideas. Ellis’s own wording; Ellis愿意分享。 Ellison and preEllis stay.';
+  for (const { id } of DOMAINS) record.narratives[id] = {
+    text: source, source: 'ai', provider: 'gateway', model: 'example-model', edited: true
+  };
+  previous.narratives.english = { text: 'Ellis B. in the previous semester.', source: 'teacher', edited: true };
+  record.reviewed = true;
+  const evidence = JSON.stringify(record.domains);
+  ctx.stale.add(`${child.id}:2026-S2:english`);
+  ctx.renameChild(child.id, 'Élodie Vale');
+  assert.deepEqual(ctx.oldNarrativeNames(child.id), ['Ellis B.']);
+  assert.equal(ctx.replaceOldNarrativeNames(child.id), 4);
+  for (const { id } of DOMAINS) assert.deepEqual(record.narratives[id], {
+    text: 'Élodie Vale shares ideas. Élodie Vale’s own wording; Élodie Vale愿意分享。 Ellison and preEllis stay.',
+    source: 'ai', provider: 'gateway', model: 'example-model', edited: true
+  });
+  assert.equal(record.reviewed, false);
+  assert.equal(JSON.stringify(record.domains), evidence);
+  assert.deepEqual([...ctx.stale], [`${child.id}:2026-S2:english`]);
+  assert.equal(previous.narratives.english.text, 'Ellis B. in the previous semester.');
+  assert.deepEqual(ctx.oldNarrativeNames(child.id), []);
+  assert.equal(ctx.replaceOldNarrativeNames(child.id), 0);
+  ctx.semester = '2026-S1';
+  assert.deepEqual(ctx.oldNarrativeNames(child.id), ['Ellis B.']);
+});
+
+test('old-name history survives repeated renames, reload, export/import and resets', () => {
+  const disk = storage(), ctx = createContext({ storage: disk }), id = 'C-05';
+  ctx.renameChild(id, '陈星禾');
+  ctx.current(id).narratives.chinese = { text: '陈星禾愿意分享。星禾保留自己的话。',
+    source: 'teacher', edited: true };
+  ctx.renameChild(id, 'Mira Noor');
+  ctx.current(id).narratives.english = { text: 'Mira Noor and Ellis B. share. Mira listens.',
+    source: 'teacher', edited: false };
+  ctx.renameChild(id, 'New Learner');
+  const restored = createContext({ storage: disk });
+  assert.deepEqual(restored.oldNarrativeNames(id), ['Ellis B.', '陈星禾', 'Mira Noor']);
+  const importedDisk = storage(), store = createStore(importedDisk);
+  assert.equal(store.importJson(restored.store.exportJson()).ok, true);
+  const imported = createContext({ storage: importedDisk });
+  assert.deepEqual(imported.oldNarrativeNames(id), restored.oldNarrativeNames(id));
+  assert.equal(imported.replaceOldNarrativeNames(id), 2);
+  assert.equal(imported.get(id).narratives.chinese.text, 'New Learner愿意分享。New Learner保留自己的话。');
+  assert.equal(imported.get(id).narratives.english.text, 'New Learner and New Learner share. New Learner listens.');
+  assert.equal(imported.get(id).narratives.english.edited, true);
+  assert.deepEqual(createContext({ storage: importedDisk }).oldNarrativeNames(id), []);
+  imported.reset();
+  assert.deepEqual(imported.store.childNameHistory, {});
+  assert.deepEqual(imported.oldNarrativeNames(id), []);
+});
+
+test('old-name replacement is literal, non-cascading and respects Unicode Latin name boundaries', () => {
+  const ctx = createContext({ storage: storage() }), id = 'C-05', record = ctx.current(id);
+  ctx.renameChild(id, 'Ann (A.)');
+  record.narratives.english = { text: 'Ann (A.) Ann Annette JoAnn Ann2 Ann_ Ann\u0301 ANN',
+    source: 'teacher', edited: true };
+  ctx.renameChild(id, 'Ellis B.');
+  assert.deepEqual(ctx.oldNarrativeNames(id), ['Ann (A.)']);
+  ctx.replaceOldNarrativeNames(id);
+  assert.equal(record.narratives.english.text,
+    'Ellis B. Ellis B. Annette JoAnn Ann2 Ann_ Ann\u0301 ANN');
+  for (const name of ['கனிமொழி', 'Оля', '𐐨 Vale', '👩🏽 Vale']) {
+    ctx.renameChild(id, name);
+    record.narratives.english.text = `${name} shares.`;
+    ctx.renameChild(id, 'New Learner');
+    assert.deepEqual(ctx.oldNarrativeNames(id), [name]);
+    ctx.replaceOldNarrativeNames(id);
+    assert.equal(record.narratives.english.text, 'New Learner shares.');
+  }
+  ctx.renameChild(id, 'New');
+  record.narratives.english.text = 'New Learner shares.';
+  ctx.renameChild(id, 'New Learner');
+  assert.deepEqual(ctx.oldNarrativeNames(id), []);
+  assert.equal(ctx.replaceOldNarrativeNames(id), 0);
+  ctx.busy = true;
+  assert.throws(() => ctx.replaceOldNarrativeNames(id), /drafting/);
 });
 
 test('duplicates are allowed, invalid names never commit, busy drafts lock identity and failed writes are retryable', () => {

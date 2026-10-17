@@ -25,6 +25,16 @@ function validateChildNames(names = {}) {
   }));
 }
 
+function validateChildNameHistory(history = {}) {
+  if (!history || typeof history !== 'object' || Array.isArray(history))
+    throw new Error('Child name history must be an object.');
+  return Object.fromEntries(Object.entries(history).map(([id, names]) => {
+    if (!/^C-(?:0[1-9]|1[0-9]|20)$/.test(id)) throw new Error('Unknown child name history identity.');
+    if (!Array.isArray(names)) throw new Error('Child name history must contain arrays.');
+    return [id, [...new Set(names.map(normalizeChildName))]];
+  }));
+}
+
 function parseEnvelope(text) {
   const envelope = JSON.parse(text);
   if (!envelope || typeof envelope !== 'object' || Array.isArray(envelope))
@@ -33,7 +43,8 @@ function parseEnvelope(text) {
   if (typeof envelope.savedAt !== 'string' || !Number.isFinite(Date.parse(envelope.savedAt)))
     throw new Error('Invalid portfolio savedAt timestamp.');
   return { version: 2, savedAt: envelope.savedAt, records: validateRecords(envelope.records),
-    childNames: validateChildNames(envelope.childNames) };
+    childNames: validateChildNames(envelope.childNames),
+    childNameHistory: validateChildNameHistory(envelope.childNameHistory) };
 }
 
 // Construction loads immediately; load() explicitly reloads storage and returns a
@@ -42,7 +53,8 @@ function parseEnvelope(text) {
 // reset() persists an empty v2 envelope. Import replaces, rather than merges,
 // records, rejects duplicate identities, and stamps a fresh local savedAt.
 export function createStore(storage, key = DEFAULT_KEY) {
-  let records = [], childNames = {}, savedAt = new Date().toISOString(), lastError = null;
+  let records = [], childNames = {}, childNameHistory = {},
+    savedAt = new Date().toISOString(), lastError = null;
 
   function fail(error) {
     lastError = errorMessage(error);
@@ -57,35 +69,40 @@ export function createStore(storage, key = DEFAULT_KEY) {
       if (text === null) {
         records = [];
         childNames = {};
+        childNameHistory = {};
         savedAt = new Date().toISOString();
       } else {
         const envelope = parseEnvelope(text);
         records = envelope.records;
         childNames = envelope.childNames;
+        childNameHistory = envelope.childNameHistory;
         savedAt = envelope.savedAt;
       }
       lastError = null;
     } catch (error) {
       records = [];
       childNames = {};
+      childNameHistory = {};
       savedAt = new Date().toISOString();
       fail(error);
     }
     return copyRecords(records);
   }
 
-  function save(nextRecords, nextChildNames = childNames) {
+  function save(nextRecords, nextChildNames = childNames, nextChildNameHistory = childNameHistory) {
     try {
       const next = validateRecords(nextRecords);
       const names = validateChildNames(nextChildNames);
+      const history = validateChildNameHistory(nextChildNameHistory);
       const timestamp = new Date().toISOString();
       const serialized = JSON.stringify({ version: 2, savedAt: timestamp, records: next,
-        childNames: names });
+        childNames: names, childNameHistory: history });
       if (!storage || typeof storage.setItem !== 'function')
         throw new Error('Portfolio storage is unavailable.');
       storage.setItem(key, serialized);
       records = next;
       childNames = names;
+      childNameHistory = history;
       savedAt = timestamp;
       lastError = null;
       return { ok: true };
@@ -114,13 +131,13 @@ export function createStore(storage, key = DEFAULT_KEY) {
   }
 
   function exportJson() {
-    return JSON.stringify({ version: 2, savedAt, records, childNames }, null, 2);
+    return JSON.stringify({ version: 2, savedAt, records, childNames, childNameHistory }, null, 2);
   }
 
   function importJson(text) {
     try {
       const envelope = parseEnvelope(text);
-      return save(envelope.records, envelope.childNames);
+      return save(envelope.records, envelope.childNames, envelope.childNameHistory);
     } catch (error) {
       return fail(error);
     }
@@ -128,8 +145,11 @@ export function createStore(storage, key = DEFAULT_KEY) {
 
   load();
   return {
-    load, save, upsert, get, reset: () => save([], {}), exportJson, importJson,
+    load, save, upsert, get, reset: () => save([], {}, {}), exportJson, importJson,
     get childNames() { return { ...childNames }; },
+    get childNameHistory() {
+      return Object.fromEntries(Object.entries(childNameHistory).map(([id, names]) => [id, [...names]]));
+    },
     get lastError() {
       return lastError
     }

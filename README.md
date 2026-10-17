@@ -19,7 +19,7 @@ Start with **Offline mock**, which is explicitly simulated. Gateway, OpenAI and 
 
 Records, photos and narrative provenance persist in this browser's `localStorage`. Keys and transient rejection history do not. Clearing browser storage loses records; there is no server sync or backup. PWA offline readiness requires successful initial static caching. Current-root offline, update, deployment and device acceptance must be verified independently; historical evidence is not a new cutover pass.
 
-All 20 sample children have English default display names. In a child portfolio, expand **Edit child name** to save a fictional name in any script (trimmed, NFC-normalised, 1–60 Unicode characters, no controls). Duplicate names are allowed with a warning; child IDs stay distinct. Renaming preserves existing prose but makes narratives require review again.
+All 20 sample children have English default display names. Below the child portfolio's sticky navigation, expand **Edit child name** to save a fictional name in any script (trimmed, NFC-normalised, 1–60 Unicode characters, no controls). Duplicate names are allowed with a warning; child IDs stay distinct. Renaming preserves prose and evidence freshness. When old names remain, **Replace old name in narratives** updates name occurrences while preserving teacher prose; review the result before sharing.
 
 Sample avatars and evidence pictures are watermarked AI-generated cartoons, not real children. Uploaded fictional pictures are labelled **Uploaded in this browser** and remain in browser storage. The image-only CSP permits local `blob:` URLs for temporary upload decoding; scripts and styles remain self-only. No real child data belongs in this demo.
 

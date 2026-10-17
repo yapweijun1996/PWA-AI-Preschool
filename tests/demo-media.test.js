@@ -16,6 +16,7 @@ class Node {
   append(...nodes) { this.children.push(...nodes); }
   replaceChildren(...nodes) { this.children = nodes; }
   setAttribute(key, value) { this.attributes[key] = value; }
+  removeAttribute(key) { delete this.attributes[key]; }
   addEventListener(key, fn) { this.events.set(key, fn); }
   querySelectorAll(tag) { return this.children.flatMap(node => [...(node.tag === tag ? [node] : []), ...node.querySelectorAll(tag)]); }
   querySelector(tag) { return this.querySelectorAll(tag)[0]; }
@@ -38,11 +39,41 @@ test('every seeded child has a distinct bounded avatar; failed images expose ini
   assert.equal(image.loading, 'lazy');
   assert.equal(image.width, 48);
   assert.equal(image.height, 48);
+  assert.equal(root.dataset.imageState, 'loading');
+  assert.equal(root.querySelector('span').hidden, true);
+  assert.equal(root.attributes['aria-label'], undefined);
   image.events.get('error')();
   assert.equal(image.hidden, true);
+  assert.equal(root.dataset.imageState, 'error');
+  assert.equal(root.querySelector('span').hidden, false);
   assert.match(root.attributes['aria-label'], /Sample Learner initials: SL/);
   assert.equal(root.querySelector('span').textContent, 'SL');
-  assert.equal(avatar({ id: 'unknown', name: 'Unknown', initials: 'U' }).querySelector('img'), undefined);
+  const unknown = avatar({ id: 'unknown', name: 'Unknown', initials: 'U' });
+  assert.equal(unknown.querySelector('img'), undefined);
+  assert.equal(unknown.querySelector('span').hidden, false);
+  assert.equal(unknown.attributes['aria-label'], 'Unknown initials: U');
+});
+
+test('successful avatar loads never reveal initials, including after an earlier failure', t => {
+  dom(t);
+  const root = avatar({ id: 'C-02', name: 'Fictional Learner', initials: 'FL' });
+  const image = root.querySelector('img');
+  const initials = root.querySelector('span');
+  assert.equal(initials.hidden, true);
+  image.events.get('load')();
+  assert.equal(root.dataset.imageState, 'loaded');
+  assert.equal(initials.hidden, true);
+  assert.equal(image.hidden, false);
+  assert.equal(root.attributes['aria-label'], undefined);
+  image.events.get('error')();
+  assert.equal(initials.hidden, false);
+  image.events.get('load')();
+  assert.equal(initials.hidden, true);
+  assert.equal(image.hidden, false);
+  assert.equal(root.attributes['aria-label'], undefined);
+  assert.equal(image.width, 48);
+  assert.equal(image.height, 48);
+  assert.equal(image.loading, 'lazy');
 });
 
 test('scene figures and browser uploads have visible, distinct provenance and explicit dimensions', t => {
@@ -62,6 +93,18 @@ test('scene figures and browser uploads have visible, distinct provenance and ex
     assert.equal(image.loading, 'lazy');
     assert.equal(image.width, 720);
     assert.equal(image.height, 480);
+    const picture = figure.children[0];
+    assert.equal(picture.className, 'photo-picture');
+    assert.equal(picture.dataset.imageState, 'loading');
+    assert.equal(picture.textContent, '');
+    image.events.get('load')();
+    assert.equal(picture.dataset.imageState, 'loaded');
+    image.events.get('error')();
+    assert.equal(picture.dataset.imageState, 'error');
+    assert.equal(image.width, 720);
+    assert.equal(image.height, 480);
+    assert.equal(image.loading, 'lazy');
+    assert.ok(figure.querySelector('figcaption').textContent.includes(caption));
   }
 });
 

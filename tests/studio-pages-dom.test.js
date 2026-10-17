@@ -120,6 +120,33 @@ test('home counts refresh from edits and Continue uses the next unfinished child
   assert.equal(ctx.destination, 'C-01');
 });
 
+for (const size of [20, 3]) {
+  test(`Home shows an explicit done state for ${size} reviewed children`, async t => {
+    const { page, ctx } = mount(t, home);
+    const template = ctx.get('C-05');
+    await ctx.draft(ctx.children.find(child => child.id === 'C-05'), template,
+      Object.keys(template.domains));
+    ctx.children = ctx.children.slice(0, size);
+    for (const child of ctx.children) {
+      const record = ctx.current(child.id);
+      record.domains = structuredClone(template.domains);
+      record.narratives = structuredClone(template.narratives);
+      ctx.markReviewed(record);
+    }
+    assert.match(page.textContent, new RegExp(`All ${size} children reviewed`));
+    assert.equal(control(page, 'Continue with next unfinished child'), undefined);
+    assert.equal(ctx.destination, undefined);
+    const done = page.querySelectorAll('p').find(node => node.attributes.role === 'status');
+    assert.equal(done.textContent, `All ${size} children reviewed`);
+    assert.equal(page.querySelectorAll('a').find(node => node.textContent === 'Drafts').href,
+      '#/drafts');
+    assert.equal(page.querySelectorAll('a').find(node =>
+      node.textContent.includes('Print class report')).href, '#/reports?sem=2026-S2');
+    ctx.change(ctx.get(ctx.children[0].id));
+    assert.ok(control(page, 'Continue with next unfinished child'));
+  });
+}
+
 test('class cards retain domain comparisons, matching open routes and accurate filtered counts', async t => {
   const { page } = mount(t, classes);
   assert.equal(page.querySelectorAll('article').length, 20);

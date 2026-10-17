@@ -35,7 +35,7 @@ export function render(ctx, route) {
   const unsubscribe = ctx.subscribe(refresh);
   const navigation = el('div', undefined, 'editor-navigation');
   navigation.append(header.root, header.progress, tabs.tabs);
-  root.append(navigation, provider.root, tabs.panel);
+  root.append(navigation, header.namePanel, provider.root, tabs.panel);
   const disposeLayout = responsiveLayout(root, header, navigation, provider, tabs);
   refresh();
   root.dispose = () => {
@@ -82,7 +82,7 @@ function childHeader(ctx, child, record) {
   root.append(identity, nav, feedback, print);
   refresh();
   const extras = el('div', undefined, 'editor-extras');
-  return { root, progress, status, print, feedback, extras, dispose() {
+  return { root, namePanel: identity.namePanel, progress, status, print, feedback, extras, dispose() {
     unsubscribe();
     identity.dispose();
     document.removeEventListener('keydown', shortcut);
@@ -157,7 +157,10 @@ function childIdentity(ctx, child) {
       input.setAttribute('aria-invalid', 'false');
       feedback.textContent = result.duplicate
         ? 'Another child has this name. Name updated as a separate child; use the child ID to distinguish records.'
-        : 'Child name updated. Existing narrative text is unchanged; review names before sharing.';
+        : '';
+      disclosure.open = false;
+      disclosure.querySelector('summary').focus();
+      ctx.announce('Name updated');
     } catch (error) {
       input.setCustomValidity(error.message);
       input.setAttribute('aria-invalid', 'true');
@@ -165,6 +168,13 @@ function childIdentity(ctx, child) {
       input.reportValidity();
     }
   });
+  const oldNames = el('div', undefined, 'notice');
+  const oldNameHint = el('p', 'Existing narratives still contain an old name; review names before sharing.');
+  const replaceNames = button('Replace old name in narratives', () => {
+    ctx.replaceOldNarrativeNames(child.id);
+    ctx.announce('Names replaced in narratives');
+  });
+  oldNames.append(oldNameHint, replaceNames);
   let displayed = null;
   const refresh = () => {
     if (displayed !== child.name) {
@@ -175,12 +185,17 @@ function childIdentity(ctx, child) {
     }
     input.disabled = ctx.busy;
     save.disabled = ctx.busy;
+    oldNames.hidden = !ctx.oldNarrativeNames(child.id).length;
+    replaceNames.disabled = ctx.busy;
   };
   const unsubscribe = ctx.subscribe(refresh);
   identity.dispose = unsubscribe;
   form.append(label, save, hint, feedback);
   disclosure.append(form);
-  name.append(heading, el('p', `${child.id} · Class A (Sample)`), disclosure);
+  const namePanel = el('section', undefined, 'editor-name-panel');
+  namePanel.append(disclosure, oldNames);
+  identity.namePanel = namePanel;
+  name.append(heading, el('p', `${child.id} · Class A (Sample)`));
   identity.append(picture, name);
   refresh();
   return identity;
@@ -316,11 +331,23 @@ function reviewPanel(ctx, child, record) {
   const narratives = addNarratives();
   const review = button('Mark reviewed and go to next child', () => {
     ctx.markReviewed(record);
-    ctx.go(nextChildNeedingWork(ctx.children, ctx.records, ctx.semester, child.id));
+    const next = nextChildNeedingWork(ctx.children, ctx.records, ctx.semester, child.id);
+    if (next) ctx.go(next);
   }, true);
   const hint = el('p', undefined, 'hint editor-review-hint');
+  const completion = el('section');
+  completion.setAttribute('role', 'status');
+  const completed = el('h2');
+  completion.append(completed,
+    link('Drafts', buildRoute('drafts', { semester: ctx.semester })),
+    link('Print class report', buildRoute('print-class', { semester: ctx.semester })));
   const update = () => {
     const model = editorModel(record, ctx.get(child.id, '2026-S1'));
+    const allReviewed = ctx.children.length > 0 && ctx.children.every(member =>
+      computeStatus(ctx.get(member.id)) === 'reviewed');
+    completion.hidden = !allReviewed;
+    completed.textContent = `All ${ctx.children.length} children reviewed`;
+    review.hidden = allReviewed;
     review.disabled = ctx.busy || !model.canReview;
     hint.textContent = model.reviewHint;
     hint.hidden = model.canReview;
@@ -330,7 +357,7 @@ function reviewPanel(ctx, child, record) {
     unsubscribe();
     for (const panel of narratives) panel.dispose();
   };
-  root.append(list, hint, review);
+  root.append(list, hint, review, completion);
   update();
   return root;
 }

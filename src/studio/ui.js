@@ -6,39 +6,57 @@ export function avatar(child, className = 'avatar') {
   const root = el('span', '', avatarClass(child.initials || '?', className));
   const fallback = el('span', child.initials || '?', 'avatar-initials');
   fallback.setAttribute('aria-hidden', 'true');
+  fallback.hidden = true;
   root.append(fallback);
   const src = avatarSource(child.id);
   if (src) {
+    root.dataset.imageState = 'loading';
     const image = el('img');
-    image.src = src;
     image.alt = `${child.name}: ${ILLUSTRATION_CAPTION}`;
     image.width = image.height = 48;
     image.loading = 'lazy';
     image.decoding = 'async';
+    image.addEventListener('load', () => {
+      root.dataset.imageState = 'loaded';
+      image.hidden = false;
+      fallback.hidden = true;
+      root.removeAttribute('aria-label');
+    });
     image.addEventListener('error', () => {
       image.hidden = true;
+      root.dataset.imageState = 'error';
+      fallback.hidden = false;
       root.setAttribute('aria-label', `${child.name} initials: ${child.initials || '?'}`);
     });
     root.append(image);
-  } else root.setAttribute('aria-label', `${child.name} initials: ${child.initials || '?'}`);
+    image.src = src;
+  } else {
+    fallback.hidden = false;
+    root.setAttribute('aria-label', `${child.name} initials: ${child.initials || '?'}`);
+  }
   return root;
 }
 
 export function photoFigure(photo, className = 'photo') {
   const figure = el('figure', undefined, className);
   const image = el('img');
-  image.src = photo.src;
   image.alt = photo.alt;
   image.width = 720;
   image.height = 480;
   image.loading = 'lazy';
   image.decoding = 'async';
+  const picture = el('span', undefined, 'photo-picture');
+  picture.dataset.imageState = 'loading';
+  image.addEventListener('load', () => { picture.dataset.imageState = 'loaded'; });
+  image.addEventListener('error', () => { picture.dataset.imageState = 'error'; });
+  picture.append(image);
+  image.src = photo.src;
   const caption = el('figcaption');
   caption.append(el('span', photo.alt, 'photo-description'),
     el('span', photoProvenance(photo.src), 'photo-provenance'));
   figure.dataset.provenance = photoProvenance(photo.src) === ILLUSTRATION_CAPTION
     ? 'illustration' : photo.src.startsWith('data:image/svg+xml,') ? 'stored-demo' : 'browser-upload';
-  figure.append(image, caption);
+  figure.append(picture, caption);
   return figure;
 }
 
