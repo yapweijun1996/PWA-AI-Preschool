@@ -52,8 +52,7 @@ function childHeader(ctx, child, record) {
   const progress = el('section', undefined, 'editor-progress');
   progress.setAttribute('aria-label', 'Portfolio completion');
   const identity = el('div', undefined, 'editor-identity');
-  const avatar = el('span', child.name.trim().split(/\s+/).map(part => [...part][0])
-    .join('').slice(0, 2), 'avatar editor-avatar');
+  const avatar = el('span', child.initials, 'avatar editor-avatar');
   avatar.setAttribute('aria-hidden', 'true');
   const name = el('div');
   name.append(el('h1', child.name), el('p', `${child.id} · Class A (Sample)`));

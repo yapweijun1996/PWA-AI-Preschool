@@ -63,7 +63,7 @@ function roster(rows) {
     const tr = el('tr', undefined, 'student-row');
     const name = el('th', undefined, 'student-name');
     name.scope = 'row';
-    const avatar = el('span', Array.from(row.child.name)[0], 'avatar');
+    const avatar = el('span', row.child.initials, 'avatar');
     avatar.setAttribute('aria-hidden', 'true');
     name.append(avatar, el('span', row.child.name));
     const ratings = el('td', undefined, 'student-ratings');

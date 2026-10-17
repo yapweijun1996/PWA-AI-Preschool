@@ -5,6 +5,20 @@ import { classesModel } from '../src/studio/pages/classes.js';
 import { editorModel, comparisonText } from '../src/studio/editor-model.js';
 import { printModel } from '../src/studio/pages/print.js';
 import { DOMAINS } from '../src/portfolio-model.js';
+import { avatarClass } from '../src/studio/ui.js';
+import { CHILDREN } from '../src/portfolio-seed.js';
+
+test('three-letter Latin initials stay compact, including Chinese sample names', () => {
+  for (const initials of ['CXH', 'WYQ', 'LYN']) {
+    assert.equal(avatarClass(initials), 'avatar avatar-compact');
+  }
+  const child = CHILDREN.find(item => item.id === 'C-01');
+  assert.equal(child.initials, 'LYN');
+  assert.equal(avatarClass(child.initials, 'avatar editor-avatar'),
+    'avatar editor-avatar avatar-compact');
+  assert.equal(avatarClass('AB'), 'avatar');
+  assert.equal(avatarClass('A'), 'avatar');
+});
 
 function storage() {
   const values = new Map();

@@ -62,7 +62,7 @@ function reviewQueue(root, queue) {
   for (const item of queue) {
     const row = el('article', undefined, 'work-row');
     const identity = el('div', undefined, 'draft-identity');
-    const avatar = el('span', Array.from(item.child.name)[0], 'avatar');
+    const avatar = el('span', item.child.initials, 'avatar');
     avatar.setAttribute('aria-hidden', 'true');
     identity.append(avatar, el('h3', item.child.name));
     const sources = el('div', undefined, 'draft-sources');

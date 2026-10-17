@@ -1,10 +1,17 @@
 import { RATINGS } from '../portfolio-model.js';
 import { STATUS_LABELS } from '../class-view.js';
 
+export function avatarClass(initials, className = 'avatar') {
+  return Array.from(initials).length >= 3 ? `${className} avatar-compact` : className;
+}
+
 export function el(tag, text, className) {
   const node = document.createElement(tag);
   if (text !== undefined) node.textContent = text;
-  if (className) node.className = className;
+  if (className) {
+    node.className = className.split(/\s+/).includes('avatar')
+      ? avatarClass(text, className) : className;
+  }
   return node;
 }
 

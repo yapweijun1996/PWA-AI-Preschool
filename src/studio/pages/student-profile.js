@@ -14,7 +14,7 @@ export function render(ctx, route) {
   }
   const heading = el('header', undefined, 'page-header profile-header');
   const identity = el('div', undefined, 'profile-identity');
-  const avatar = el('span', Array.from(child.name)[0], 'avatar profile-avatar');
+  const avatar = el('span', child.initials, 'avatar profile-avatar');
   avatar.setAttribute('aria-hidden', 'true');
   const title = el('div');
   title.append(el('h1', child.name),

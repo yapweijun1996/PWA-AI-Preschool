@@ -78,6 +78,12 @@ label { display: grid; gap: var(--space-2); min-width: 0; }
   place-items: center;
   width: var(--space-12);
   height: var(--space-12);
+  min-width: var(--space-10);
+  min-height: var(--space-10);
+  flex: none;
+  white-space: nowrap;
+  line-height: var(--line-tight);
+  text-align: center;
   border-radius: var(--radius-pill);
   background: var(--color-surface-soft);
 }
@@ -998,14 +1004,14 @@ h1:focus { outline: none; }
   .class-child-card {
     position: relative;
     display: block;
-    padding: var(--space-3);
+    padding: var(--space-2) var(--space-3);
     margin: 0;
   }
-  .class-child-heading { gap: var(--space-2); }
+  .class-child-heading { gap: var(--space-2); margin-bottom: var(--space-2); }
   .class-child-heading .avatar {
-    width: var(--space-8);
-    height: var(--space-8);
-    flex-shrink: 0;
+    width: var(--space-10);
+    height: var(--space-10);
+    flex: none;
   }
   .class-child-identity {
     display: flex;
@@ -1116,4 +1122,9 @@ h1:focus { outline: none; }
   }
   .evidence-page .library-evidence-card figcaption { margin: 0; }
   .evidence-page .library-evidence-card > a { font-size: var(--text-xs); }
+}
+
+/* Keep three-letter initials inside every avatar, including compact mobile rows. */
+:root .avatar.avatar-compact {
+  font-size: var(--text-sm);
 }

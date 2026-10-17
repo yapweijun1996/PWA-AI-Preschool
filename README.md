@@ -6,6 +6,13 @@ A browser-first, GitHub Pages–ready demonstration of evidence-grounded prescho
 
 > **Hard restriction:** This public project is **not** a school records platform. Never input real child identities, images, audio, observations, staff records or company-only documents. Teacher access is simulated client-side. The app does not provide production authentication, tenant isolation or a compliant data-processing service.
 
+Studio avatars reuse the fictional seed's Latin initials, including Chinese sample names.
+Three-letter initials use compact typography without wrapping; circles remain at least
+40 px and do not shrink in flex rows. Mobile class cards use tighter vertical padding.
+Responsive DOM QA in light mode at 390, 430 and 1440 px confirmed contained, centred
+avatar text. At 390 × 844, document heights were Classes 4,884 px, Students 4,358 px
+and Evidence 5,241 px. Browser screenshot capture timed out; visual QA remains unverified.
+
 ## Quick start
 
 ```bash
