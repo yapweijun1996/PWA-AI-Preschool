@@ -1487,3 +1487,25 @@ h1:focus { outline: none; }
 .topbar .status-chips .chip[data-tone="ready"] { background: var(--status-ready-bg); color: var(--status-ready-fg); }
 .topbar .status-chips .chip[data-tone="warn"] { background: var(--color-warning-bg); color: var(--color-warning-ink); }
 .topbar .status-chips .chip[data-tone="neutral"] { background: var(--status-not-started-bg); color: var(--status-not-started-fg); }
+
+/* Wide desktops keep the whole top bar on one row; short chip labels still expose the full text via aria-label/title. */
+@media screen and (min-width: 1280px) {
+  .topbar { flex-wrap: nowrap; }
+  .topbar .breadcrumb { flex: 1 1 0; min-width: 0; overflow: hidden; white-space: nowrap; }
+  .topbar .language-selector { flex: 0 0 auto; }
+  .topbar { gap: var(--space-2); }
+  .topbar .status-chips { flex: 0 0 auto; flex-wrap: nowrap; gap: var(--space-1); }
+  .topbar .status-chips a > .icon:last-child { display: none; }
+  .topbar .status-chips .chip { white-space: nowrap; }
+  .topbar .provider-full { display: none; }
+  .topbar .provider-short { display: inline; }
+  .topbar .language-selector select { max-width: 7rem; }
+}
+@media screen and (min-width: 1680px) {
+  .topbar { gap: var(--space-3); }
+  .topbar .status-chips { gap: var(--space-2); }
+  .topbar .status-chips a > .icon:last-child { display: inline; }
+  .topbar .language-selector select { max-width: 10rem; }
+  .topbar .provider-full { display: inline; }
+  .topbar .provider-short { display: none; }
+}
