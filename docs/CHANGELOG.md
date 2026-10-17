@@ -2,6 +2,16 @@
 
 Historical entries below are Git-based history, not a list of production releases; current unreleased changes record their local verification separately. Dates and abbreviated commits in the historical sections came from checkout history inspected on 2026-10-17 through `12bf3a0`. `package.json` reports `0.3.0`; this document does not infer release tags from that value. The [numbered changelog](20-changelog.md) retains detailed historical QA claims and must be read at the revision each entry describes.
 
+## Unreleased — P10 wireframe alignment and one-row desktop top bar
+
+- AI provider settings: provider cards show their descriptions and the Default marker at every width (the duplicate collapsed "Provider descriptions" block is removed); cards at 601px and above gain the wireframe icon badges (image, squares-and-dot, hexagon, triangle) with the radio on the right. Radios are custom-drawn so unselected state is visible on dark surfaces.
+- The disposable-key panel gains a title, an eye toggle that switches the field between masked and plain text (`aria-pressed`, "Show key"/"Hide key" in all three languages) and an amber warning notice with icon. Keys remain page-memory only; nothing is stored.
+- The data disclosure is now a shield-icon card (its previously unapplied `.provider-data-disclosure` styles are used). The text is still the pseudonymisation notice, not the wireframe's "Sends only the child's first name…" line, which would overstate the privacy model.
+- Top status chips share one pill shape with `data-tone` ready/warn/neutral; the Connection status chip gains a dot.
+- At 1280px and wider the top bar stays on one row: the breadcrumb takes leftover space, chips use their short labels (full labels from 1680px) and the language selector stays inline. Below 1280px the previous wrapping is unchanged.
+- Verification: `npm run check && npm test` passed (273 tests after merging the Malay grounding commit). Local Chromium at 1280, 1440 and 1680px in English, Malay and Simplified Chinese measured a single-row top bar and no page overflow on six routes; 390px layout checked and unchanged. Provider cards, key toggle, disclosure and connection card were inspected at 390 and 1440px in light mode.
+- Not run or not verified: `npm run ui:audit`, dark-mode visual review (the Gateway/Gemini icon colours are fixed hues), widths between 1024 and 1279px (top bar still wraps to two rows), live Gateway/OpenAI/Gemini, physical devices.
+
 ## Unreleased — Malay narrative grounding and original-language evidence
 
 - Allow bounded Malay curriculum/rating vocabulary and common sentence starts in Malay narratives only; retain name, quantity, photo and Chinese-script guards. Provider prompts require fully Malay sentences rather than English sentences spliced with Malay rating labels.
