@@ -1,10 +1,30 @@
 {
+  "firstScreenSelectors": {
+    "#/": [{"selector": "main button,main a", "text": "Continue with next unfinished child"}],
+    "#/classes": [{"selector": "main article:has(a[href*=\"/children/\"])"}],
+    "#/students": [{"selector": "main tbody tr:has(a[href*=\"/students/\"])"}],
+    "#/evidence": [{"selector": "main article:has(a[href*=\"/children/\"])"}],
+    "#/classes/class-a/children/": [
+      {"selector": "main label:has(input[type=\"radio\"])", "all": true, "count": 4}
+    ],
+    "#/drafts": [
+      {"selector": "main button", "text": "Draft"},
+      {"selector": "main h2", "text": "Drafts awaiting review"}
+    ],
+    "#/reports": [
+      {"selector": "main a", "text": "Print / Save as PDF"},
+      {"selector": "main section:has(> div > h2)", "text": "Completeness"}
+    ],
+    "#/settings/ai": [
+      {"selector": "main label:has(input[type=\"radio\"]) strong", "all": true, "count": 4}
+    ]
+  },
   "budgets": [
     {"id": "viewportWidth", "metric": "innerWidth", "severity": "fail", "equalsContext": "width"},
     {"id": "horizontalOverflow", "metric": "horizontalOverflow", "severity": "fail", "max": 0},
     {
       "id": "headerHeight", "metric": "headerHeight", "severity": "fail", "max": null,
-      "overrides": [{"maxWidth": 600, "max": 130}]
+      "overrides": [{"maxWidth": 1023, "max": 130}]
     },
     {
       "id": "noticeHeight", "metric": "noticeHeight", "severity": "warn", "max": null,
@@ -20,14 +40,34 @@
     {"id": "controlNames", "metric": "unnamedControls", "severity": "fail", "max": 0},
     {"id": "h1Count", "metric": "h1Count", "severity": "fail", "equals": 1},
     {"id": "focusOnH1", "metric": "focusOnH1", "severity": "warn", "equals": true},
+    {"id": "brokenWords", "metric": "brokenWords", "severity": "fail", "max": 0},
+    {"id": "labelOverflow", "metric": "labelOverflow", "severity": "fail", "max": 0},
+    {
+      "id": "stickyTopHeight", "metric": "stickyTopHeight", "severity": "fail", "max": null,
+      "overrides": [{"maxWidth": 1023, "max": 200}]
+    },
+    {
+      "id": "tabletColumns", "metric": "tabletColumns", "severity": "fail", "max": null,
+      "overrides": [{"minWidth": 601, "maxWidth": 1023, "max": 0}]
+    },
+    {
+      "id": "firstScreen", "metric": "firstScreen.offenders", "severity": "fail", "max": null,
+      "overrides": [
+        {"width": 320, "height": 720, "max": 0},
+        {"width": 390, "height": 844, "max": 0},
+        {"width": 430, "height": 932, "max": 0}
+      ]
+    },
     {
       "id": "documentHeight", "metric": "documentHeight", "severity": "fail", "max": null,
       "overrides": [
-        {"width": 390, "route": "#/classes", "max": 5000},
-        {"width": 390, "route": "#/students", "max": 4500},
-        {"width": 390, "route": "#/evidence", "max": 5500}
+        {"width": 390, "route": "#/classes", "max": 4200},
+        {"width": 390, "route": "#/students", "max": 4200},
+        {"width": 390, "route": "#/evidence", "max": 5000}
       ]
     },
-    {"id": "consoleErrors", "metric": "consoleErrors", "severity": "fail", "max": 0}
+    {"id": "consoleErrors", "metric": "consoleErrors", "severity": "fail", "max": 0},
+    {"id": "bottomCoverage", "metric": "bottomCoverage.covered",
+      "severity": "fail", "equals": false}
   ]
 }

@@ -54,6 +54,11 @@ export function evaluateBudgets(metrics, context, budgets) {
     }
     if (rule.max === null && rule.min == null && !('equals' in rule)
       && !('equalsContext' in rule)) continue;
+    if (rule.id === 'firstScreen' && metrics.firstScreen?.skipped) {
+      rows.push({budget: rule.id, severity: 'warn', passed: false, skipped: true,
+        actual: null, limit: rule.max, offenders: [], reason: metrics.firstScreen.reason});
+      continue;
+    }
     const {actual, offenders} = measurement(metrics, rule);
     const {limit, passed} = comparison(actual, rule, context);
     rows.push({budget: rule.id, severity: rule.severity, passed, actual, limit,

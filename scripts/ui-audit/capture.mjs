@@ -4,6 +4,11 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { connect, evaluate } from './cdp.mjs';
 import { collectMetrics } from './metrics.mjs';
 import { routeSlug } from './options.mjs';
+import { readFile } from 'node:fs/promises';
+
+const { firstScreenSelectors } = JSON.parse(await readFile(
+  new URL('../ui-audit.budgets.json', import.meta.url), 'utf8'
+));
 
 async function ready(cdp) {
   for (let attempt = 0; attempt < 150; attempt++) {
@@ -72,7 +77,8 @@ export async function capture(endpoint, base, context, options) {
     await prepare(cdp, base, context);
     await cdp.send('Page.navigate', { url: `${base.replace(/#.*$/, '')}${route}` });
     await ready(cdp);
-    const metrics = await evaluate(cdp, `(${collectMetrics.toString()})()`);
+    const metrics = await evaluate(cdp,
+      `(${collectMetrics.toString()})(${JSON.stringify(firstScreenSelectors)})`);
     if (metrics.innerWidth !== width) {
       throw new Error(`Emulation self-check failed: innerWidth ${metrics.innerWidth} != ${width}`);
     }

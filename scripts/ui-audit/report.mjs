@@ -16,7 +16,9 @@ export async function writeReport(out, results) {
     const links = row.screenshots.map(image =>
       `[${image.file}](${row.directory}/${image.file})`).join(' ');
     lines.push(`| ${row.route} | ${row.width}x${row.height} | ${row.scheme} | ${status} | `
-      + `${violations.map(b => `${b.severity}: ${b.budget}`).join('; ')} | ${links} |`);
+      + `${violations.map(b => `${b.severity}: ${b.budget}`
+        + (b.skipped ? ` SKIPPED (${b.reason})` : ` (${b.actual} / ${b.limit})`))
+        .join('; ')} | ${links} |`);
   }
   lines.push('', '## Top offenders', '');
   const offenders = new Map();

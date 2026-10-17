@@ -43,6 +43,41 @@ The report lists results per combination and recurring offender selectors with s
 `npm run check` recursively syntax-checks every harness `.mjs`; `npm test` includes pure
 math/budget/options and traversal tests without Chrome.
 
+### RC0 geometry rules and new regression locks
+
+Native radio/checkbox targets use an associated label's box when it is at least 44x44.
+Their own label is not an overlapping control. Fixed elements (including descendants of
+fixed bars) are excluded from overlap pairs: transient scroll occlusion is expected.
+The end-of-page `bottomCoverage` check still fails if the last content is covered.
+Local horizontal scrollers are not page-overflow offenders; document overflow still fails.
+Intentional 1px `clip`/`clip-path` screen-reader patterns and explicit CSS line clamps
+are excluded from accidental clipping. Ordinary overflow-hidden text is still checked.
+
+New fail-level metrics:
+
+- `brokenWords`: single-word text with multiple Range line positions; words whose natural
+  measured width exceeds their container are ignored, as required by the triage.
+- `stickyTopHeight`: union of top-stuck sticky/fixed regions after a 400px scroll,
+  excluding bottom navigation. Maximum 200px through width 1023.
+- `headerHeight`: maximum 130px through width 1023, including tablet.
+- `labelOverflow`: button/tab/chip/link scroll width exceeds client width by more than 1px.
+- `tabletColumns`: multi-column text cards below 280px at widths 601–1023.
+- `firstScreen`: configured route content must be fully above fixed bottom navigation
+  at 320x720, 390x844 and 430x932. Alternatives are OR; each all/count group is AND.
+  The JSON selector map uses semantic elements, link destinations and action text.
+  Unresolved selectors (including Review, which has no rating choices) are explicitly
+  **SKIPPED / warn**, never a pass; routes without a configured requirement also warn.
+
+At 390px, height limits are Classes 4200px, Students 4200px and Evidence 5000px.
+These intentionally fail until the later UI batches. No app layout is changed by RC0.
+
+Read `summary.md` by combination: FAIL means a fail-level regression lock fired;
+WARN can include unresolved/skipped coverage and is not proof of compliance.
+Violated numeric budgets show actual/limit; array metrics show offender counts.
+Use `summary.json` and per-route `metrics.json` for rectangles and selector details,
+then open the linked viewport images to distinguish visible defects from heuristics.
+Sticky measurement restores the initial scroll position before screenshot capture.
+
 ## Agent workflow and limitations
 
 Run the quick audit before proposing UI changes. Read metrics and inspect the linked full-page

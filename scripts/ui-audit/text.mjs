@@ -92,6 +92,7 @@ export function measureClipping(ctx, texts) {
       current = current.parentElement) {
       if (seen.has(current)) continue;
       const style = ctx.style(current);
+      if (intentionalClip(style, current.getBoundingClientRect())) break;
       const x = ['hidden', 'clip'].includes(style.overflowX)
         && current.scrollWidth > current.clientWidth + 1;
       const y = ['hidden', 'clip'].includes(style.overflowY)

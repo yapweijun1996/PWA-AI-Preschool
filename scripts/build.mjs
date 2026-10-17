@@ -6,6 +6,7 @@ import { STUDIO_CONFIG } from '../src/config.js';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const output = path.join(root, 'dist');
+// Audit-only helpers in scripts/ui-audit stay local; never ship them as runtime assets.
 const assets = [
   'index.html', 'styles.css', 'favicon.svg',
   'class.html', 'studio.css', 'src/class-view.js',

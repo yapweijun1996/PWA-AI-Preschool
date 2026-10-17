@@ -12,7 +12,7 @@ export function measureOverflow(ctx) {
   const scrollWidth = Math.max(root.scrollWidth, document.body.scrollWidth);
   const overflowElements = ctx.nodes.filter(node => {
     const box = node.getBoundingClientRect();
-    return (box.right > innerWidth + 1 || box.left < -1) && !horizontalScroller(node, ctx);
+    return overflowOffender(box, innerWidth, Boolean(horizontalScroller(node, ctx)));
   }).map(ctx.describe);
   return { innerWidth, innerHeight, scrollWidth, clientWidth: root.clientWidth,
     horizontalOverflow: Math.max(0, scrollWidth - root.clientWidth), overflowElements,
@@ -36,8 +36,9 @@ export function measureTargets(ctx) {
   const inlineLinks = [];
   const smallTapTargets = [];
   for (const node of ctx.nodes.filter(node => node.matches(ctx.interactive))) {
-    const box = ctx.rect(node);
-    const record = { ...ctx.describe(node), width: box.width, height: box.height };
+    const target = labelledTarget(node, ctx);
+    const box = ctx.rect(target);
+    const record = { ...ctx.describe(target), width: box.width, height: box.height };
     const prose = node.closest('p,li,dd,dt,figcaption,blockquote,td,th,label');
     const surrounding = prose ? ctx.text(prose).replace(ctx.text(node), '').trim() : '';
     const inline = node.matches('a[href]') && ctx.style(node).display === 'inline'
@@ -59,9 +60,8 @@ export function measureOverlaps(ctx) {
     for (let second = first + 1; second < targets.length; second += 1) {
       const a = targets[first];
       const b = targets[second];
-      if (a.contains(b) || b.contains(a)) continue;
-      if (scrollY > 0 && fixedAncestor(a, ctx) !== fixedAncestor(b, ctx)
-        && (fixedAncestor(a, ctx) || fixedAncestor(b, ctx))) continue;
+      if (exemptOverlap(a.contains(b) || b.contains(a), ownLabelPair(a, b),
+        Boolean(fixedAncestor(a, ctx) || fixedAncestor(b, ctx)))) continue;
       const ar = a.getBoundingClientRect();
       const br = b.getBoundingClientRect();
       const area = Math.max(0, Math.min(ar.right, br.right) - Math.max(ar.left, br.left))

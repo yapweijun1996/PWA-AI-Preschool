@@ -10,6 +10,10 @@ import {
 import {startServer} from '../scripts/ui-audit/server.mjs';
 import {evaluateBudgets} from '../scripts/ui-audit/budgets.mjs';
 import {relativeLuminance, contrastRatio} from '../scripts/ui-audit/metrics.mjs';
+import { countLines, unionHeight, insideFirstScreen } from '../scripts/ui-audit/layout.mjs';
+import {
+  largeTarget, labelledTarget, ownLabelPair, exemptOverlap, intentionalClip, overflowOffender
+} from '../scripts/ui-audit/exemptions.mjs';
 
 const budgets = JSON.parse(await readFile(
   new URL('../scripts/ui-audit.budgets.json', import.meta.url), 'utf8'
@@ -19,7 +23,9 @@ const baseline = () => ({
   innerWidth: 390, horizontalOverflow: 0, overflowElements: [], headerHeight: 130,
   noticeHeight: 90, minFontSize: 12, smallText: [], smallTapTargets: [], inlineLinks: [],
   contrastFailures: [], unknownContrast: [], clippedText: [], overlaps: [], unnamedControls: [],
-  h1Count: 1, focusOnH1: true, documentHeight: 5000, consoleErrors: 0
+  h1Count: 1, focusOnH1: true, documentHeight: 4200, consoleErrors: 0,
+  brokenWords: [], labelOverflow: [], tabletColumns: [], stickyTopHeight: 200,
+  firstScreen: { offenders: [] }, bottomCoverage: { covered: false }
 });
 const evaluate = (metrics, target = context, config = budgets) =>
   evaluateBudgets(metrics, target, config);
@@ -197,10 +203,10 @@ test('viewport and route overrides apply only to their exact scopes', () => {
   const desktop = {...context, width: 1440, height: 900};
   assert.equal(row(evaluate(baseline(), desktop), 'headerHeight'), undefined);
   assert.equal(row(evaluate(baseline(), {...context, width: 600}), 'headerHeight').limit, 130);
-  assert.equal(row(evaluate(baseline(), {...context, width: 601}), 'headerHeight'), undefined);
+  assert.equal(row(evaluate(baseline(), {...context, width: 601}), 'headerHeight').limit, 130);
   assert.equal(row(evaluate({...baseline(), documentHeight: 5001}),
     'documentHeight').passed, false);
-  for (const [route, limit] of [['#/classes', 5000], ['#/students', 4500], ['#/evidence', 5500]]) {
+  for (const [route, limit] of [['#/classes', 4200], ['#/students', 4200], ['#/evidence', 5000]]) {
     assert.equal(row(evaluate(baseline(), {...context, route}), 'documentHeight').limit, limit);
   }
   assert.equal(row(evaluate(baseline(), {...context, route: '#/about'}),
@@ -243,4 +249,52 @@ test('static server rejects traversal, encoded traversal and escaping symlinks',
   }
   assert.equal((await fetchRaw(server.url, '/%252e%252e/secret.txt')).status, 404);
   assert.equal((await fetchRaw(server.url, '/escape.txt')).status, 403);
+});
+test('effective native targets use large associated labels only', () => {
+  const label = {};
+  const input = { matches: () => true, labels: [label] };
+  assert.equal(labelledTarget(input, { rect: () => ({width: 44, height: 44}) }), label);
+  assert.equal(labelledTarget(input, { rect: () => ({width: 43, height: 44}) }), input);
+  assert.equal(largeTarget({width: 44, height: 43}), false);
+  assert.equal(ownLabelPair(input, label), true);
+  assert.equal(ownLabelPair(input, {}), false);
+});
+
+test('overlap exemptions preserve genuine sibling collisions', () => {
+  for (const flags of [[true, false, false], [false, true, false], [false, false, true]]) {
+    assert.equal(exemptOverlap(...flags), true);
+  }
+  assert.equal(exemptOverlap(false, false, false), false);
+});
+
+test('intentional clips and local scrollers do not hide accidental clipping or overflow', () => {
+  assert.equal(intentionalClip({clip: 'rect(0px, 0px, 0px, 0px)'}, {width: 1, height: 1}), true);
+  assert.equal(intentionalClip({clipPath: 'inset(50%)'}, {width: 1, height: 1}), true);
+  assert.equal(intentionalClip({webkitLineClamp: '2'}, {width: 100, height: 40}), true);
+  assert.equal(intentionalClip({clip: 'auto', clipPath: 'none'}, {width: 1, height: 1}), false);
+  assert.equal(overflowOffender({left: 0, right: 500}, 390, true), false);
+  assert.equal(overflowOffender({left: 0, right: 500}, 390, false), true);
+});
+
+test('line counting, sticky union and first-screen boundaries reflect rendered geometry', () => {
+  assert.equal(countLines([{top: 1, width: 10, height: 12},
+    {top: 1.5, width: 5, height: 12}, {top: 14, width: 10, height: 12}]), 2);
+  assert.equal(unionHeight([[0, 80], [40, 100], [120, 140]]), 120);
+  assert.equal(insideFirstScreen({left: 0, right: 390, top: 0, bottom: 777}, 390, 777), true);
+  assert.equal(insideFirstScreen({left: 0, right: 390, top: 0, bottom: 778}, 390, 777), false);
+});
+
+test('new budgets fail at violations and unresolved first-screen selectors warn as skipped', () => {
+  for (const id of ['brokenWords', 'labelOverflow', 'tabletColumns']) {
+    const target = id === 'tabletColumns' ? {...context, width: 768} : context;
+    assert.equal(row(evaluate({...baseline(), [id]: [{selector: '#bad'}]}, target), id).passed,
+      false);
+  }
+  assert.equal(row(evaluate({...baseline(), stickyTopHeight: 201}), 'stickyTopHeight').passed,
+    false);
+  assert.equal(row(evaluate({...baseline(), firstScreen: {offenders: [{}]}}),
+    'firstScreen').passed, false);
+  const skipped = row(evaluate({...baseline(), firstScreen: {skipped: true}}), 'firstScreen');
+  assert.equal(skipped.skipped, true);
+  assert.equal(skipped.severity, 'warn');
 });
