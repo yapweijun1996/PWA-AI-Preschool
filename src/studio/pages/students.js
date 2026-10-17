@@ -71,6 +71,10 @@ function roster(rows) {
     for (const domain of row.ratings) {
       const value = el('div', undefined, 'rating-line');
       value.append(el('span', domain.label), ratingChip(domain.value));
+      const short = el('span', ['EN', 'ZH', 'MA', 'SE'][row.ratings.indexOf(domain)],
+        'compact-domain-label');
+      short.setAttribute('aria-hidden', 'true');
+      value.append(short);
       ratings.append(value);
     }
     const status = el('td', undefined, 'student-status');

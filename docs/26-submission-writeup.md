@@ -97,22 +97,20 @@ Mobile uses a chip row and five fixed bottom tabs; print routes hide app navigat
 
 ## Verification evidence
 
-Browser/PDF observations below were supplied by the owner for 2026-10-17; they were not rerun
-in this documentation-only stage. Earlier-release Gateway session/CORS evidence is explicitly
-separated from new-build deployment acceptance.
+Earlier browser/PDF observations below were supplied by the owner for 2026-10-17.
+Compact-mobile measurements and command results were rerun locally on 2026-10-17.
+Earlier-release Gateway evidence remains separate from new-build deployment acceptance.
 
 ### Commands and counts
 
-This task prohibits shell execution. No current command result, test count, build ID or
-`git rev-parse --short HEAD` value was measured here. Earlier-release counts and hashes are
-not substituted for current results.
+Current local command results for the compact-mobile regression fix:
 
 | Command | Current result |
 |---|---|
-| `npm run check` | Not run in this edit-only stage |
-| `npm test` | Not run; current pass/fail counts unverified |
-| `npm run build` | Not run; current build ID unverified |
-| `git rev-parse --short HEAD` | Not run; current HEAD unverified |
+| `npm run check` | Passed, including syntax and static CSP checks |
+| `npm test` | 176 tests passed; 0 failed, cancelled, skipped or todo |
+| `npm run build` | Passed; build ID `02c029b342966ece`; 56 precached routes |
+| Final commit | see git log |
 
 ### Browser QA
 
@@ -128,6 +126,22 @@ Owner-supplied built-in browser QA, served from `dist`, light scheme:
 | Key handling | Empty field with “Paste a disposable test key”, autocomplete off; fake key absent from localStorage, sessionStorage, URL and page |
 | Failed provider request | Fake OpenAI key produced sanitized “AI request failed ... No narratives were changed.”; narratives unchanged, no mock label |
 | Route recovery | Legacy redirect and unknown-hash Home notice verified |
+
+Locally measured compact-mobile regression fix, built `dist`, light scheme, seeded S2 data:
+
+| Route | Before, 390 × 844 | After, 390 × 844 | After, 430 px wide |
+|---|---|---|---|
+| `#/classes` | 8,480 px | 4,884 px | 4,766 px |
+| `#/students` | 8,750 px | 4,198 px | 4,198 px |
+| `#/evidence` | 8,695 px | 5,241 px | 5,006 px |
+
+Heights are `document.documentElement.scrollHeight`, including shell and bottom padding.
+The lists retain 20 children and 24 seeded S2 evidence items. All three routes had no
+horizontal overflow at 390/430 px; final 390 px checks found no undersized visible controls
+or overflowing card text. Whole-card pointer navigation opened C-01's editor/profile.
+At 1440 px, Classes retained four 274 px columns. Screenshot capture timed out; visual
+wireframe matching is not claimed. Complete comments wrap rather than being clipped to
+two lines; required mobile provider/PWA labels and actual seed counts remain present.
 
 ### PDF
 

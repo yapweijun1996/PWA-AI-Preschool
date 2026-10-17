@@ -990,3 +990,130 @@ h1:focus { outline: none; }
   .child-editor .editor-save { display: inline-flex; }
 }
 @media print { .pwa-details { display: none !important; } }
+
+.compact-domain-label, .compact-domain-change { display: none; }
+@media (max-width: 600px) {
+  .students-page .chips button { min-width: var(--control-min-height); }
+  .classes-grid { gap: var(--space-2); }
+  .class-child-card {
+    position: relative;
+    display: block;
+    padding: var(--space-3);
+    margin: 0;
+  }
+  .class-child-heading { gap: var(--space-2); }
+  .class-child-heading .avatar {
+    width: var(--space-8);
+    height: var(--space-8);
+    flex-shrink: 0;
+  }
+  .class-child-identity {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+  }
+  .class-child-identity h2 { margin: 0; font-size: var(--text-sm); }
+  .class-child-identity .chip { margin: 0; }
+  .class-child-open, .students-page .student-action a {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    opacity: 0;
+    margin: 0;
+  }
+  .class-child-card:focus-within, .students-page .student-row:focus-within {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 3px;
+  }
+  .class-domain-list {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-1);
+    margin: var(--space-2) 0 0;
+  }
+  .class-domain-list .class-domain-row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+  }
+  .class-domain-label, .class-domain-change,
+  .students-page .rating-line > span:first-child {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .compact-domain-label, .compact-domain-change {
+    display: block;
+    font-size: var(--text-xs);
+  }
+  .class-domain-row .chip {
+    margin: 0;
+    padding: var(--space-1);
+    font-size: var(--text-xs);
+    text-align: center;
+  }
+  .class-domain-readiness { font-size: var(--text-xs); }
+  .students-page .student-roster tbody { gap: var(--space-2); }
+  .students-page .student-row {
+    position: relative;
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: var(--space-3);
+    gap: var(--space-1);
+  }
+  .students-page .student-roster .student-status { grid-column: 2; grid-row: 1; }
+  .students-page .student-roster .student-status .chip { margin: 0; }
+  .students-page .student-name { font-size: var(--text-sm); }
+  .students-page .student-name .avatar {
+    width: var(--space-8);
+    height: var(--space-8);
+    margin-right: var(--space-1);
+  }
+  .students-page .student-roster .student-ratings {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-1);
+    padding: var(--space-1) 0 0;
+  }
+  .students-page .student-ratings .rating-line { gap: var(--space-1); }
+  .students-page .rating-line .compact-domain-label { order: -1; }
+  .students-page .rating-line .chip { padding: var(--space-1); }
+  .students-page .student-roster .student-action { position: static; }
+  .evidence-page .evidence-listing { padding: var(--space-3); }
+  .evidence-page .evidence-grid { gap: var(--space-2); }
+  .evidence-page .library-evidence-card {
+    position: relative;
+    display: block;
+    padding: var(--space-2);
+  }
+  .evidence-page .library-evidence-card h3 { font-size: var(--text-sm); }
+  .evidence-page .library-evidence-card .evidence-type {
+    float: right;
+    margin: 0 0 var(--space-1) var(--space-2);
+    padding: 0;
+    border: 0;
+  }
+  .evidence-page .library-evidence-card .evidence-text {
+    padding: 0;
+    margin: var(--space-1) 0;
+    background: none;
+    line-height: var(--line-normal);
+  }
+  .evidence-page .library-evidence-card .photo {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+  }
+  .evidence-page .library-evidence-card img {
+    width: var(--space-12);
+    height: var(--space-12);
+  }
+  .evidence-page .library-evidence-card figcaption { margin: 0; }
+  .evidence-page .library-evidence-card > a { font-size: var(--text-xs); }
+}

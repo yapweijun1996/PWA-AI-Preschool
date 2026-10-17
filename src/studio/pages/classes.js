@@ -37,6 +37,10 @@ function childCard(ctx, child) {
     const dot = domainDot(record.domains[domain.id]);
     const row = el('li', undefined, 'class-domain-row');
     const label = el('span', domain.label, 'class-domain-label');
+    const short = el('span', ['EN', 'ZH', 'MA', 'SE'][DOMAINS.indexOf(domain)],
+      'compact-domain-label');
+    short.setAttribute('aria-hidden', 'true');
+    row.append(short);
     const rating = ratingChip(record.domains[domain.id].rating);
     rating.title = dot.state;
     row.append(label, rating, el('span', dot.state, 'class-domain-readiness'));
@@ -45,6 +49,10 @@ function childCard(ctx, child) {
       const comparison = el('span', change === null ? 'No comparison'
         : `Change: ${change > 0 ? '+' : ''}${change}`, 'class-domain-change');
       if (change > 0) comparison.className += ' positive';
+      const arrow = el('span', change === null ? 'S1 → S2: —'
+        : `S1 → S2: ${change > 0 ? '+' : ''}${change}`, 'compact-domain-change');
+      arrow.setAttribute('aria-hidden', 'true');
+      row.append(arrow);
       row.append(comparison);
     }
     const rejection = ctx.rejections.get(`${child.id}:${ctx.semester}:${domain.id}`);
