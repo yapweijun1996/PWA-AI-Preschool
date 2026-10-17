@@ -10,7 +10,7 @@ export function navigationModel(name) {
 
 export function providerChipModel(provider) {
   const labels = {
-    mock: 'Offline mock', gateway: 'GPT Demo Gateway',
+    mock: 'Mock - not AI', gateway: 'Gateway',
     openai: 'OpenAI key', gemini: 'Gemini key'
   };
   const suffix = ['failed', 'ok'].includes(provider.status) ? ` · ${provider.status}` : '';
@@ -32,7 +32,7 @@ export function mountShell(ctx) {
     notice.append(el('span', text));
   }
   notice.append(el('p',
-    'Fictional demo data | Stored only in this browser | '
+    'Fictional demo data. Stored only in this browser. '
       + 'NOT IMPLEMENTED: real login / server / database', 'mobile-notice'));
   const feedback = el('div', undefined, 'session-feedback');
   const actionFeedback = el('div', undefined, 'action-feedback');

@@ -78,6 +78,16 @@ Use `summary.json` and per-route `metrics.json` for rectangles and selector deta
 then open the linked viewport images to distinguish visible defects from heuristics.
 Sticky measurement restores the initial scroll position before screenshot capture.
 
+### B1 compact shell
+
+The sidebar starts at 1024px. Below that, the shell uses bottom tabs and the More sheet,
+with a wrapping, non-scrolling status row and an explicit “Mock - not AI” label.
+Full provider/status disclosure remains in the accessible name and title.
+The compact notice uses sentences rather than wrapping dividers; its header demo badge is neutral.
+At 601–1023px main content is centred within 44rem. Bottom-tab clearance belongs to
+the content wrapper, after the About installation disclosure, rather than to both main and disclosure.
+Desktop shell and print media retain their existing presentation.
+
 ## Agent workflow and limitations
 
 Run the quick audit before proposing UI changes. Read metrics and inspect the linked full-page

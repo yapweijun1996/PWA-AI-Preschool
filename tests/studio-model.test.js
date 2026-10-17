@@ -11,7 +11,7 @@ import { providerChipModel } from '../src/studio/shell.js';
 
 test('provider chip keeps full disclosure and only emphasizes failed or ok states', () => {
   const labels = {
-    mock: 'Offline mock', gateway: 'GPT Demo Gateway',
+    mock: 'Mock - not AI', gateway: 'Gateway',
     openai: 'OpenAI key', gemini: 'Gemini key'
   };
   for (const [id, label] of Object.entries(labels)) {
