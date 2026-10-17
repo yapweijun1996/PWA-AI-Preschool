@@ -14,6 +14,7 @@ class Node {
   set textContent(value) { this.text = value; this.children = []; }
   get textContent() { return (this.text ?? '') + this.children.map(node => node.textContent ?? node).join(''); }
   append(...nodes) { this.children.push(...nodes); }
+  prepend(...nodes) { this.children.unshift(...nodes); }
   replaceChildren(...nodes) { this.text = ''; this.children = nodes; }
   setAttribute(key, value) { this.attributes[key] = value; }
   addEventListener(key, fn) { this.events.set(key, fn); }

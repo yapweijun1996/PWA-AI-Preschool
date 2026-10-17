@@ -1,4 +1,4 @@
-import { el, button, link, chip, errorState, loadingState, offlineState } from '../ui.js';
+import { el, button, link, chip, icon, errorState, loadingState, offlineState } from '../ui.js';
 import { createSettingsModel, PROVIDER_CHOICES, KEY_WARNING } from '../models/settings-model.js';
 import { privacyDisclosure } from '../privacy-disclosure.js';
 import { connectionProbePrompt } from '../../providers.js';
@@ -22,6 +22,8 @@ export function render(ctx) {
     else refresh();
   }, true);
   const disclosure = privacyDisclosure(ctx, { provider: () => model.state.id });
+  disclosure.className += ' provider-data-disclosure';
+  disclosure.prepend(icon('shield'));
   const probePreview = el('pre', undefined, 'privacy-prompt');
   probePreview.setAttribute('aria-label', 'Exact connection probe payload');
   const refresh = () => {
@@ -68,6 +70,8 @@ export function render(ctx) {
   return root;
 }
 
+const PROVIDER_ICONS = { mock: 'image', gateway: 'gateway', openai: 'hexagon', gemini: 'triangle' };
+
 function providerChoices(model) {
   const group = el('fieldset', undefined, 'provider-choices card');
   group.append(el('legend', 'Choose a provider'));
@@ -78,26 +82,23 @@ function providerChoices(model) {
     radio.name = 'narrative-provider';
     radio.value = choice.id;
     radio.addEventListener('change', () => model.choose(choice.id));
+    const badge = el('span', undefined, `provider-choice-icon provider-icon-${choice.id}`);
+    badge.setAttribute('aria-hidden', 'true');
+    badge.append(icon(PROVIDER_ICONS[choice.id]));
     const copy = el('div', undefined, 'provider-choice-copy');
     const title = el('div', undefined, 'provider-choice-title');
     title.append(el('strong', choice.label));
     if (choice.id === 'mock') title.append(chip('Default'));
     copy.append(title, el('p', choice.description));
-    label.append(radio, copy);
+    label.append(radio, badge, copy);
     group.append(label);
   }
-  const help = el('details', undefined, 'provider-choice-help');
-  help.append(el('summary', 'Provider descriptions'));
-  for (const choice of PROVIDER_CHOICES) {
-    help.append(el('p', `${choice.label}: ${choice.description}`));
-  }
-  group.append(help);
   return group;
 }
 
 function disposableKey(model) {
   const root = el('section', undefined, 'card disposable-key-panel');
-  const label = el('label', 'Disposable test API key');
+  const label = el('label', undefined, 'disposable-key-field');
   const input = el('input');
   input.type = 'password';
   input.autocomplete = 'off';
@@ -106,9 +107,24 @@ function disposableKey(model) {
   input.value = '';
   input.setAttribute('aria-describedby', 'disposable-key-warning');
   input.addEventListener('input', () => model.setKey(input.value));
-  const warning = el('p', KEY_WARNING, 'provider-warning');
+  const reveal = el('button', undefined, 'icon-button key-reveal');
+  reveal.type = 'button';
+  reveal.setAttribute('aria-label', 'Show key');
+  reveal.setAttribute('aria-pressed', 'false');
+  reveal.append(icon('eye'));
+  reveal.addEventListener('click', () => {
+    const shown = input.type === 'password';
+    input.type = shown ? 'text' : 'password';
+    reveal.setAttribute('aria-pressed', String(shown));
+    reveal.setAttribute('aria-label', shown ? 'Hide key' : 'Show key');
+    reveal.replaceChildren(icon(shown ? 'eyeOff' : 'eye'));
+  });
+  const control = el('div', undefined, 'key-control');
+  control.append(input, reveal);
+  label.append(el('span', 'Disposable test API key', 'disposable-key-title'), control);
+  const warning = el('p', undefined, 'provider-warning');
   warning.id = 'disposable-key-warning';
-  label.append(input);
+  warning.append(icon('warning'), el('span', KEY_WARNING));
   root.append(label, warning);
-  return { root, input };
+  return { root, input, reveal };
 }
