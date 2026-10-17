@@ -1465,3 +1465,25 @@ h1:focus { outline: none; }
     grid-template-columns: minmax(0, 1fr); padding-bottom: var(--space-2);
   }
 }
+
+/* P10 wireframe: provider icon badges (wider screens only; stacked cards stay compact on phones). */
+.ai-settings-page .provider-choice-icon { display: none; }
+@media screen and (min-width: 601px) {
+  .ai-settings-page .provider-choice { grid-template-columns: var(--space-12) minmax(0, 1fr) var(--space-6); }
+  .ai-settings-page .provider-choice input { grid-column: 3; grid-row: 1; }
+  .ai-settings-page .provider-choice-icon {
+    grid-column: 1; grid-row: 1; display: grid; place-items: center; width: var(--space-12); height: var(--space-12);
+    border-radius: var(--radius-pill); color: var(--status-ready-fg);
+    background: color-mix(in srgb, currentColor 16%, transparent);
+  }
+  .ai-settings-page .provider-choice-icon .icon { width: var(--space-6); height: var(--space-6); fill: currentColor; fill-opacity: .25; }
+  .ai-settings-page .provider-choice-copy { grid-column: 2; grid-row: 1; }
+  .ai-settings-page .provider-icon-gateway { color: #7c4dcc; }
+  .ai-settings-page .provider-icon-gemini { color: #2b6fd6; }
+}
+
+/* Top status chips share one pill shape; tone carries meaning, text carries the state. */
+.topbar .status-chips .chip { display: inline-flex; align-items: center; gap: var(--space-2); border-radius: var(--radius-pill); border: 1px solid transparent; text-decoration: none; font-weight: 600; }
+.topbar .status-chips .chip[data-tone="ready"] { background: var(--status-ready-bg); color: var(--status-ready-fg); }
+.topbar .status-chips .chip[data-tone="warn"] { background: var(--color-warning-bg); color: var(--color-warning-ink); }
+.topbar .status-chips .chip[data-tone="neutral"] { background: var(--status-not-started-bg); color: var(--status-not-started-fg); }

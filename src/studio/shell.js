@@ -83,9 +83,12 @@ function topbar(ctx) {
   semester.addEventListener('change', () => ctx.setSemester(semester.value));
   const provider = link('', '#/settings/ai');
   provider.className = 'chip';
+  provider.setAttribute('data-tone', 'ready');
   const pwaChip = el('span');
+  const demoChip = chip('Fictional demo data');
+  demoChip.setAttribute('data-tone', 'warn');
   const chips = el('div', undefined, 'status-chips');
-  chips.append(provider, chip('Fictional demo data'), pwaChip);
+  chips.append(provider, demoChip, pwaChip);
   const pwa = el('details', undefined, 'pwa-details');
   const host = el('div');
   host.id = 'pwa-controls-host';
@@ -105,6 +108,7 @@ function topbar(ctx) {
     const pwaStatus = pwaStatusChip(ctx.pwa);
     const short = ctx.pwa?.updateAvailable ? 'Update available'
       : ctx.pwa?.cacheReady ? 'Offline ready' : 'Not verified';
+    pwaStatus.setAttribute('data-tone', ctx.pwa?.cacheReady || ctx.pwa?.updateAvailable ? 'ready' : 'neutral');
     pwaStatus.setAttribute('aria-label', pwaStatus.textContent);
     pwaStatus.title = pwaStatus.textContent;
     pwaStatus.replaceChildren(el('span', pwaStatus.textContent, 'provider-full'),

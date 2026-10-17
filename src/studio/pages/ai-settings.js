@@ -70,6 +70,8 @@ export function render(ctx) {
   return root;
 }
 
+const PROVIDER_ICONS = { mock: 'image', gateway: 'gateway', openai: 'hexagon', gemini: 'triangle' };
+
 function providerChoices(model) {
   const group = el('fieldset', undefined, 'provider-choices card');
   group.append(el('legend', 'Choose a provider'));
@@ -80,12 +82,15 @@ function providerChoices(model) {
     radio.name = 'narrative-provider';
     radio.value = choice.id;
     radio.addEventListener('change', () => model.choose(choice.id));
+    const badge = el('span', undefined, `provider-choice-icon provider-icon-${choice.id}`);
+    badge.setAttribute('aria-hidden', 'true');
+    badge.append(icon(PROVIDER_ICONS[choice.id]));
     const copy = el('div', undefined, 'provider-choice-copy');
     const title = el('div', undefined, 'provider-choice-title');
     title.append(el('strong', choice.label));
     if (choice.id === 'mock') title.append(chip('Default'));
     copy.append(title, el('p', choice.description));
-    label.append(radio, copy);
+    label.append(radio, badge, copy);
     group.append(label);
   }
   return group;
