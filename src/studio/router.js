@@ -10,8 +10,14 @@ export const NAV_ITEMS = Object.freeze([
   { name: 'about', label: 'About and privacy', icon: 'info', tab: 'More', path: '/about' }
 ]);
 
-export function buildRoute(name, { childId, semester = '2026-S2' } = {}) {
+export function buildRoute(name, params = {}) {
+  const { childId, semester = '2026-S2', domain } = params;
   const item = NAV_ITEMS.find(item => item.name === name);
+  if (name === 'reports' && params.semester && ['2026-S1', '2026-S2'].includes(semester)) {
+    const query = new URLSearchParams({ sem: semester });
+    if (childId) query.set('child', childId);
+    return `#/reports?${query}`;
+  }
   if (item) return `#${item.path}`;
   if (!['2026-S1', '2026-S2'].includes(semester)) return '#/';
   if (name === 'print-class') return `#/print-class?sem=${semester}`;
@@ -25,7 +31,9 @@ export function buildRoute(name, { childId, semester = '2026-S2' } = {}) {
   if (name === 'student-profile') return `#/students/${id}`;
   const path = name === 'child-editor' ? `/classes/class-a/children/${id}`
     : name === 'print' ? `/print/${id}` : null;
-  return path ? `#${path}?sem=${semester}` : '#/';
+  const tab = ['english', 'chinese', 'mathematics', 'social-emotional'].includes(domain)
+    && name === 'child-editor' ? `&domain=${domain}` : '';
+  return path ? `#${path}?sem=${semester}${tab}` : '#/';
 }
 
 export function legacyRedirect(hash) {
@@ -37,6 +45,18 @@ export function legacyRedirect(hash) {
 export function parseRoute(hash) {
   const source = legacyRedirect(hash) ?? hash;
   if (!source || source === '#') return { name: 'home' };
+  const reports = /^#\/reports\?sem=(2026-S[12])(?:&child=([^&#]+))?$/.exec(source);
+  if (reports) {
+    try {
+      return { name: 'reports', semester: reports[1],
+        ...(reports[2] ? { childId: decodeURIComponent(reports[2]) } : {}) };
+    } catch { return { name: 'home', unknown: true, message: 'Unknown route. Home is shown.' }; }
+  }
+  const tab = /&domain=(english|chinese|mathematics|social-emotional)$/.exec(source);
+  if (tab && source.startsWith('#/classes/class-a/children/')) {
+    const route = parseRoute(source.slice(0, tab.index));
+    if (route.name === 'child-editor') return { ...route, domain: tab[1] };
+  }
   const item = NAV_ITEMS.find(item => `#${item.path}` === source);
   if (item) return { name: item.name };
   const childPath = /^#\/(classes\/class-a\/children|students|print)\/([^/?#]+)(?:\?sem=(2026-S[12]))?$/;

@@ -18,7 +18,7 @@ export function render(ctx, route) {
   const record = ctx.current(child.id);
   const root = el('section');
   const header = childHeader(ctx, child, record);
-  const tabs = editorTabs(ctx, child, record);
+  const tabs = editorTabs(ctx, child, record, route.domain);
   const draft = button('Draft all four', async () => {
     await ctx.runDraft(() => ctx.draft(child, record, DOMAINS.map(domain => domain.id)));
     tabs.refresh();
@@ -76,14 +76,15 @@ function childHeader(ctx, child, record) {
   } };
 }
 
-function editorTabs(ctx, child, record) {
+function editorTabs(ctx, child, record, initialDomain) {
   const tabs = el('div', undefined, 'domain-tabs');
   tabs.setAttribute('role', 'tablist');
   tabs.setAttribute('aria-label', 'Portfolio domains and narrative review');
   const panel = el('div');
   panel.id = 'editor-panel';
   panel.setAttribute('role', 'tabpanel');
-  let selected = DOMAINS[0].id;
+  let selected = DOMAINS.some(domain => domain.id === initialDomain)
+    ? initialDomain : DOMAINS[0].id;
   let content = null;
   let disposed = false;
   const show = (focus = false) => {
