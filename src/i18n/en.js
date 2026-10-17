@@ -311,6 +311,8 @@ export default Object.freeze({
   "ui.provider.choose": "Choose a provider",
   "ui.provider.descriptions": "Provider descriptions",
   "ui.provider.keyLabel": "Disposable test API key",
+  "ui.provider.hideKey": "Hide key",
+  "ui.provider.showKey": "Show key",
   "ui.provider.keyPlaceholder": "Paste a disposable test key",
   "ui.provider.keyWarning": "Use a disposable test key only. Not stored. Not suitable for production.",
   "ui.provider.mockDescription": "Simulated text, not AI. Works offline without a network request.",

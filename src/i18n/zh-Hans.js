@@ -311,6 +311,8 @@ export default Object.freeze({
   "ui.provider.choose": "选择服务提供商",
   "ui.provider.descriptions": "服务提供商说明",
   "ui.provider.keyLabel": "一次性测试 API 密钥",
+  "ui.provider.hideKey": "隐藏密钥",
+  "ui.provider.showKey": "显示密钥",
   "ui.provider.keyPlaceholder": "粘贴一次性测试密钥",
   "ui.provider.keyWarning": "仅使用一次性测试密钥。不予存储。不适用于生产环境。",
   "ui.provider.mockDescription": "模拟文本，非 AI。无需网络请求即可离线使用。",

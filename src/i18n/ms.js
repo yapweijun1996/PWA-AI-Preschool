@@ -311,6 +311,8 @@ export default Object.freeze({
   "ui.provider.choose": "Pilih penyedia",
   "ui.provider.descriptions": "Keterangan penyedia",
   "ui.provider.keyLabel": "Kunci API ujian pakai buang",
+  "ui.provider.hideKey": "Sembunyikan kunci",
+  "ui.provider.showKey": "Tunjukkan kunci",
   "ui.provider.keyPlaceholder": "Tampal kunci ujian pakai buang",
   "ui.provider.keyWarning": "Gunakan kunci ujian pakai buang sahaja. Tidak disimpan. Tidak sesuai untuk kegunaan produksi.",
   "ui.provider.mockDescription": "Teks simulasi, bukan AI. Berfungsi luar talian tanpa permintaan rangkaian.",
