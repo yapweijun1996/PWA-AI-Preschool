@@ -19,8 +19,15 @@ Show Skeleton while records load; show EmptyState “No students match these fil
 Hide SidebarNav for MobileTabBar. Stack SearchField and filters above full-width ChildRows; each row places name/status first and wraps four rating labels below. Keep filter controls at least 44 px high and avoid horizontal table scrolling.
 ## Accessibility notes
 Use a labelled search input and labelled select controls; expose FilterChips with aria-pressed. Use semantic row headings and links/buttons with the child's name in the accessible name. Status includes text/icon as well as color; preserve focus after filtering.
-## Implementation mapping (existing files/functions to reuse; new files proposed; hash route)
-Reuse CHILDREN and seedRecords() from src/portfolio-seed.js, classSummary()/filterChildren()/STATUS_LABELS from src/class-view.js and computeStatus() from src/portfolio-model.js. A new directory route/view and class filter are proposed; current app has only the class overview route and five separate index demo students.
+## Implementation mapping
+Implemented in `class.html` at `#/students`.
+- `src/studio/pages/students.js`: exported `render`.
+- `src/studio/models/students-model.js`: exported `studentsModel`.
+- Shared routing: `src/studio/router.js` (`parseRoute`, `buildRoute`); shell: `src/studio/shell.js` (`mountShell`, `navigationModel`); styles: `studio.css` and `src/studio/tokens.css`.
+
+## Implementation notes / deviations
+The footer derives its count from all matching records, not a fixed two-row image example. At widths up to 600 px, visible domain labels use EN/ZH/MA/SE; full labels remain accessible.
+
 ## Acceptance checks (5-8 testable bullets)
 - The default roster contains 20 fictional children from the class seed, not the five-record index sample.
 - Search, class, semester and all five status filters update the visible ChildRows.

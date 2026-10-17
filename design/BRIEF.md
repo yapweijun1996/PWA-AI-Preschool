@@ -1,5 +1,6 @@
 # Design brief — page-per-module wireframes (SSOT inputs)
 
+Historical input brief (2026-10-17). The result is implemented; see README.md.
 Product: **AI Preschool Studio** — a fictional-data static PWA for preschool teachers: class portfolios with four learning domains (English, Chinese, Mathematics, Social-Emotional Development), ratings (Emerging, Developing, Secure, Extending), comments, photos, AI-drafted narratives that the teacher reviews and edits, semesters S1 (Jan-Jun) and S2 (Jul-Dec) where S2 shows S1 ratings, printable A4 reports with Simplified Chinese.
 
 ## Problem to solve

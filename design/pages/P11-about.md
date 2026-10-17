@@ -13,7 +13,7 @@ The page offers clear privacy facts and a direct link to the project write-up.
 7. PanelCard “Keyboard shortcuts”: “Alt + ArrowLeft — previous child”; “Alt + ArrowRight — next child”.
 8. SecondaryButton link “Read the submission write-up” to `docs/26-submission-writeup.md`.
 ## Data shown (fields, from which existing module/function)
-Storage and provider facts reflect src/class-app.js, src/portfolio-store.js, src/narrative.js and src/providers.js. Known limits and non-implemented items are summarized from docs/26-submission-writeup.md; keyboard shortcuts come from src/class-app.js.
+Storage and provider facts reflect src/studio/context.js, src/portfolio-store.js, src/narrative.js and src/providers.js. Known limits and non-implemented items are summarized from docs/26-submission-writeup.md; keyboard shortcuts come from src/studio/pages/child-editor.js.
 ## Actions and navigation (what each control does, where it goes)
 The write-up link opens the local submission document. Keyboard shortcuts navigate between adjacent children only while the P03 editor is active. Sidebar or More menu returns to any fixed route.
 ## States (empty, loading, error, offline, long content, 20 children)
@@ -22,8 +22,14 @@ This static reference page works offline. If the write-up cannot be opened, pres
 Use MobileTabBar with More active. Stack PanelCards and make the write-up link full width; keep safe-area spacing above the fixed tabs and avoid horizontal overflow.
 ## Accessibility notes
 Use descriptive headings, real link text and semantic lists for NOT IMPLEMENTED items. Keep privacy facts and limitations readable without relying on warning color.
-## Implementation mapping (existing files/functions to reuse; new files proposed; hash route)
-Implement a static shared-shell `#/about` page. Reuse established copy from docs/26-submission-writeup.md and keyboard behavior from src/class-app.js; no new data store is needed.
+## Implementation mapping
+Implemented in `class.html` at `#/about`.
+- `src/studio/pages/about.js`: exported `render` and `writeupHref`.
+- Shared routing: `src/studio/router.js` (`parseRoute`, `buildRoute`); shell: `src/studio/shell.js` (`mountShell`, `navigationModel`); styles: `studio.css` and `src/studio/tokens.css`.
+
+## Implementation notes / deviations
+writeupHref() builds a GitHub document link from the configured repository URL. Without that configuration the page shows the document path as text; it does not implement a custom link-error state.
+
 ## Acceptance checks (5-8 testable bullets)
 - “Fictional demo data” and “Stored only in this browser” are visible.
 - NOT IMPLEMENTED items include login, server/database and authenticated approval.

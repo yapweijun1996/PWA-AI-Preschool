@@ -21,8 +21,15 @@ Show Skeleton while local records load; show “Not saved: storage unavailable�
 Hide SidebarNav for MobileTabBar. Keep the child PageHeader and ProgressBar visible while scrolling the single PanelCard. DomainTabs wrap to two rows within their labelled region; rating choices and photo tiles wrap vertically, with no horizontal page scrolling. Leave safe space above the fixed bottom tabs.
 ## Accessibility notes
 Use one h1, labelled DomainTabs with selected state, fieldset/legend for RatingControl, persistent FormField labels, required alt text, live save/draft feedback and visible focus. Do not convey ratings or status by color alone; honor reduced motion.
-## Implementation mapping (existing files/functions to reuse; new files proposed; hash route)
-Reuse src/class-app.js editor state, src/portfolio-model.js, src/portfolio-seed.js, src/portfolio-store.js, src/narrative.js and src/class-view.js narrativeChip(). A shared-shell route renderer, sticky PageHeader, domain-tab view and final review step are proposed; current editor route is `#/child/C-05?sem=2026-S2`.
+## Implementation mapping
+Implemented in `class.html` at `#/classes/class-a/children/:id?sem=2026-S2`.
+- `src/studio/pages/child-editor.js`: exported `render`.
+- `src/studio/editor-model.js`: exported `editorModel`; domain and narrative controls are composed by the page.
+- Shared routing: `src/studio/router.js` (`parseRoute`, `buildRoute`); shell: `src/studio/shell.js` (`mountShell`, `navigationModel`); styles: `studio.css` and `src/studio/tokens.css`.
+
+## Implementation notes / deviations
+Print / PDF opens P09 directly, not P08. The legacy child hash redirects to the canonical editor route.
+
 ## Acceptance checks (5-8 testable bullets)
 - Opening the route selects C-05, 2026-S2, English, and shows “5 / 20”.
 - Exactly one domain panel is visible; Review narratives is a distinct final step.

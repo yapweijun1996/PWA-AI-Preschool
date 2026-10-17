@@ -19,8 +19,15 @@ Show Skeleton while local records load; show EmptyState “No evidence matches t
 Hide SidebarNav for MobileTabBar. Stack the four filters and SearchField; display comments and PhotoTile in a single column. Wrap domain labels and actions below item content, keep controls at least 44 px, and prevent horizontal overflow.
 ## Accessibility notes
 Give each filter a persistent label; expose selected FilterChips with aria-pressed. Use semantic headings for each evidence item, retain photo alt text, and make “Open in editor” names include child/domain. Do not use color alone for domain or type.
-## Implementation mapping (existing files/functions to reuse; new files proposed; hash route)
-Reuse src/portfolio-seed.js, src/portfolio-model.js, src/class-app.js photo/comment record rendering, src/class-view.js domain labels and the shared shell. The filterable evidence route/view and editor deep-link state are proposed; the original index evidence list is scoped to one selected student and observation module.
+## Implementation mapping
+Implemented in `class.html` at `#/evidence`.
+- `src/studio/pages/evidence.js`: exported `render`.
+- `src/studio/models/evidence-model.js`: exported `evidenceModel`.
+- Shared routing: `src/studio/router.js` (`parseRoute`, `buildRoute`); shell: `src/studio/shell.js` (`mountShell`, `navigationModel`); styles: `studio.css` and `src/studio/tokens.css`.
+
+## Implementation notes / deviations
+The initial filter selects all children in the shared semester, not C-05. Selecting C-05 reproduces the specified evidence example.
+
 ## Acceptance checks (5-8 testable bullets)
 - Child, domain, semester, type and text filters can be combined and cleared.
 - The C-05 S2 filter shows two comments and one abstract sample photo with matching alt text.

@@ -20,8 +20,15 @@ Show a Skeleton while records load. A missing child or record gives an explicit 
 Use MobileTabBar with More active. Stack the selectors, warnings and preview; show Print / Save as PDF as a full-width action above the fixed tab bar with safe-area spacing. No horizontal scroll.
 ## Accessibility notes
 Use labelled single-select controls, a heading for completeness warnings, semantic warning text and a readable thumbnail caption. Print action and preview links remain keyboard reachable.
-## Implementation mapping (existing files/functions to reuse; new files proposed; hash route)
-Reuse src/report-model.js buildReport(), src/report-view.js renderReport()/renderReportControls(), and src/class-app.js child and class print routes. Add shared-shell `#/reports` selector and preview route; no server-side PDF is implied.
+## Implementation mapping
+Implemented in `class.html` at `#/reports`.
+- `src/studio/pages/reports.js`: exported `render`.
+- `src/studio/models/reports-model.js`: exported `reportsModel`.
+- Shared routing: `src/studio/router.js` (`parseRoute`, `buildRoute`); shell: `src/studio/shell.js` (`mountShell`, `navigationModel`); styles: `studio.css` and `src/studio/tokens.css`.
+
+## Implementation notes / deviations
+The selection page uses its local reportThumbnail helper, not renderReport(), for the compact preview. The complete report renderer is used by P09.
+
 ## Acceptance checks (5-8 testable bullets)
 - Users can select Child report or Class report and 2026-S1 or 2026-S2.
 - Child report exposes a child selector; Class report shows the 20-child preview.

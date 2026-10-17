@@ -21,8 +21,15 @@ Show skeleton metrics until local records resolve; show zeroed, labelled progres
 Use a two-by-two MetricCard grid, compact ChildRows and a two-column secondary ActionGroup below the full-width primary action. Keep all quick actions clear of the fixed MobileTabBar; content gets safe-area padding and scrolls vertically as needed. The persistent DemoNotice carries the safety copy; no duplicate footer notice. No horizontal scroll.
 ## Accessibility notes
 Use one h1 and ordered section headings; make counts text-readable; progress has an accessible name/value; keyboard focus follows the selected action; announce saved/draft errors; never encode status using color alone.
-## Implementation mapping (existing files/functions to reuse; new files proposed; hash route)
-Aggregate from src/portfolio-seed.js and src/portfolio-model.js through the shared shell proposed in 00-information-architecture.md. Current index.html is a long marketing-led showcase with five different records; src/class-app.js owns the 20-child persisted class records. Proposed Home route is #/.
+## Implementation mapping
+Implemented in `class.html` at `#/`.
+- `src/studio/pages/home.js`: exported `render`.
+- `src/studio/models/home-model.js`: exported `homeModel`.
+- Shared routing: `src/studio/router.js` (`parseRoute`, `buildRoute`); shell: `src/studio/shell.js` (`mountShell`, `navigationModel`); styles: `studio.css` and `src/studio/tokens.css`.
+
+## Implementation notes / deviations
+Print class report opens P08 with the shared semester but no class-type query parameter; Reports initially selects Child report. This differs from the specified class preselection.
+
 ## Acceptance checks (5-8 testable bullets)
 - The page opens on class work with no large marketing hero.
 - The sample S2 counts read 0 / 20 reviewed, 3 ready to draft, 0 drafts awaiting review and 5 in progress.

@@ -2,7 +2,7 @@
 
 ## Product and scope
 
-The target is a page-per-module redesign of the existing fictional-data static PWA. Every route shares one navigation shell, one semester context, one provider status, and one persistent demo notice. This document defines the design target; the current build still has a long-scroll index page and a separate class app.
+The page-per-module fictional-data static PWA is implemented in `class.html`. Non-print pages share navigation, semester context, provider status and a persistent demo notice; print routes hide app chrome. `index.html` remains the unchanged legacy long-scroll demo.
 
 The educator's primary job is to complete four-domain portfolios, review generated text against teacher evidence, and print a child or class report. The only people represented in data are fictional children and the simulated educator.
 
@@ -41,9 +41,9 @@ No additional top-level routes are introduced. P03 uses a sticky child header, p
 
 ## Current implementation mapping and limits
 
-- Existing class overview/editor/report: class.html, src/class-app.js, src/class-view.js, src/portfolio-model.js, src/portfolio-seed.js, src/portfolio-store.js, src/narrative.js, src/report-model.js and src/report-view.js.
-- The current class app uses C-01 through C-20, localStorage key ai-preschool-portfolios-v2, S1/S2, four domains and explicit mock/AI/teacher narrative source labels. Its current routes are #/, #/child/:id, #/print/:id and #/print-class; the target routes above require a future router mapping.
+- Studio host/entry: `class.html`, `src/studio/app.js`; routing: `src/studio/router.js`; shell: `src/studio/shell.js`; shared state: `src/studio/context.js`. Page renderers and view-models live in `src/studio/pages/` and `src/studio/models/`, with `src/studio/editor-model.js` for the editor.
+- Canonical routes above and `#/print-class?sem=2026-S2` are implemented. `legacyRedirect()` preserves old child-editor hashes; unknown routes resolve to Home with a visible notice. The studio reuses the portfolio model, seed and browser store.
 - Existing index.html and src/app.js contain a different five-record, long-scroll showcase and session-only portfolio/review state. Do not mix its sample counts or session-only records into the class dashboard.
 - src/providers.js and src/narrative.js validate remote responses and surface request/rejection errors; they do not silently fall back to mock. Photos are not sent to providers.
-- src/pwa.js provides install/offline/update status for the original index experience. A shared shell must keep update consent explicit and not claim unverified offline readiness.
+- `src/pwa.js` supplies PWA controls integrated by the studio entry and shell. Update consent remains explicit; offline readiness must reflect actual cache state, not the wireframe example.
 - Real login, authorization, tenant isolation, server/database/object storage, audit log, finalisation, vector RAG and production AI are NOT IMPLEMENTED.

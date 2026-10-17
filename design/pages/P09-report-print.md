@@ -21,8 +21,15 @@ Keep incomplete warnings in screen and print output. No-evidence domains show �
 The P09 route may be previewed on a phone, where the paper scales to viewport width and controls stack above it. Browser print uses A4 portrait regardless of screen size; no sideways page scrolling.
 ## Accessibility notes
 Use semantic report headings, table caption and scoped headers; set Simplified Chinese text to `zh-Hans`. The four rating segments include their text labels and selected state.
-## Implementation mapping (existing files/functions to reuse; new files proposed; hash route)
-Reuse src/report-model.js buildReport(), src/report-view.js renderReport()/renderReportControls(), src/portfolio-model.js progressComparison(), and the existing `#/print/:id?sem=` route. Preserve browser print behavior; no server PDF is implied.
+## Implementation mapping
+Implemented in `class.html` at `#/print/:id?sem=2026-S2; #/print-class?sem=2026-S2`.
+- `src/studio/pages/print.js`: exported `render` and `printModel`.
+- `src/studio/models/reports-model.js`: exported `reportsModel`.
+- Shared routing: `src/studio/router.js` (`parseRoute`, `buildRoute`); shell: `src/studio/shell.js` (`mountShell`, `navigationModel`); styles: `studio.css` and `src/studio/tokens.css`.
+
+## Implementation notes / deviations
+Back returns to the child editor for a child report and Class portfolios for class output, not the previous Reports configuration.
+
 ## Acceptance checks (5-8 testable bullets)
 - The wireframe shows one A4 portrait report with all four domain sections.
 - 李沐辰 and “Semester 2, 2026 (Jul-Dec)” appear in the header.

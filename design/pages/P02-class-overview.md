@@ -23,8 +23,14 @@ Show loading skeleton while records load; show “No children match this search.
 Hide SidebarNav for MobileTabBar. Stack provider, semester/search controls, progress, filters and actions. ProviderCard keeps the concise disclosure “Sends only the child's first name, ratings and comments. Photos are never sent.” ChildCard becomes a full-width row with four readable domain labels; actions wrap, controls stay at least 44 px and no horizontal scroll is allowed.
 ## Accessibility notes
 Use one h1; label semester/search; expose selected filters with aria-pressed; announce save/draft results; give progress a text value; pair every domain state/color with a word/icon; preserve keyboard focus after filtering.
-## Implementation mapping (existing files/functions to reuse; new files proposed; hash route)
-Reuse class.html, src/class-app.js, src/class-view.js, src/portfolio-model.js, src/portfolio-seed.js and src/portfolio-store.js. New shared shell and route renderer proposed; target route #/classes replaces the current class-app overview hash #/. Keep the independent five-record src/data.js index sample out of this view.
+## Implementation mapping
+Implemented in `class.html` at `#/classes`.
+- `src/studio/pages/classes.js`: exported `render` and `classesModel`.
+- Shared routing: `src/studio/router.js` (`parseRoute`, `buildRoute`); shell: `src/studio/shell.js` (`mountShell`, `navigationModel`); styles: `studio.css` and `src/studio/tokens.css`.
+
+## Implementation notes / deviations
+Print class report links directly to `#/print-class?sem=…`. At widths up to 600 px, domain labels are visually abbreviated to EN/ZH/MA/SE; full labels remain in the accessible content.
+
 ## Acceptance checks (5-8 testable bullets)
 - With the sample seed at 2026-S2, the summary reads 0 / 20 reviewed and 12 / 5 / 3 / 0 / 0 across the five statuses.
 - S1/S2 selection updates ratings and comparisons; missing S1 reads “No comparison”.

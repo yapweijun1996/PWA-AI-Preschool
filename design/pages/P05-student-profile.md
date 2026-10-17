@@ -19,8 +19,12 @@ Show Skeleton while the two semester records load; show “Not rated in Semester
 Hide SidebarNav for MobileTabBar. Stack PageHeader actions; convert the comparison table to four PanelCard rows with S1, S2 and change labels; timeline entries and NarrativeBox use one column. Keep the editor/print actions above the fixed tab bar.
 ## Accessibility notes
 Use one h1 and semantic table headers on desktop; each mobile comparison row repeats explicit semester labels. Narrative sources and review state are text, not color-only. Give PhotoTile alt text and keyboard-reachable editor/report actions.
-## Implementation mapping (existing files/functions to reuse; new files proposed; hash route)
-Reuse src/portfolio-seed.js, src/portfolio-model.js progressComparison(), src/class-view.js narrativeChip(), src/report-model.js buildReport() and shared shell components. Student profile route/view is proposed; current class app only renders overview, editor and print routes.
+## Implementation mapping
+Implemented in `class.html` at `#/students/:id`.
+- `src/studio/pages/student-profile.js`: exported `render`.
+- `src/studio/models/profile-model.js`: exported `profileModel`, `profileComparison`.
+- Shared routing: `src/studio/router.js` (`parseRoute`, `buildRoute`); shell: `src/studio/shell.js` (`mountShell`, `navigationModel`); styles: `studio.css` and `src/studio/tokens.css`.
+
 ## Acceptance checks (5-8 testable bullets)
 - C-05 shows four S1/S2 comparison rows with +1, no change and two missing-S2 states accurately represented.
 - S2 comments and the sample photo alt text match the seeded record.

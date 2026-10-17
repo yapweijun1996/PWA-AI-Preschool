@@ -12,7 +12,7 @@ The populated wireframe is an illustrative mixed-provider state; initial S2 seed
 6. PanelCard “Rejected drafts · 1”: “林悦宁 · Mathematics”; reason “unsupported capitalised word or name”; SecondaryButton “Retry”.
 7. InlineNotice: “Review each narrative against teacher evidence. Local review is not authenticated approval or report release.”
 ## Data shown (fields, from which existing module/function)
-Use CHILDREN and seedRecords() from src/portfolio-seed.js; computeStatus(), classProgress() and narrativeInputFor() from src/portfolio-model.js; narrativeChip(), STATUS_LABELS and PROVIDER_LABELS from src/class-view.js; provider selection and rejection reasons from src/class-app.js and src/narrative.js. The populated rows illustrate drafts created after explicit generation; do not seed or persist these examples.
+Use CHILDREN and seedRecords() from src/portfolio-seed.js; computeStatus(), classProgress() and narrativeInputFor() from src/portfolio-model.js; narrativeChip(), STATUS_LABELS and PROVIDER_LABELS from src/class-view.js; provider selection and rejection reasons from src/studio/context.js and src/narrative.js. The populated rows illustrate drafts created after explicit generation; do not seed or persist these examples.
 ## Actions and navigation (what each control does, where it goes)
 Draft all ready children uses only the selected provider, updates “n of m children”, and stops visibly on a request failure while preserving completed children. Retry invokes the selected provider for the rejected domain; it never silently substitutes mock text. Review draft opens P03 at Review narratives. Mark reviewed remains available there only after all four narratives exist; it is local demo state.
 ## States (empty, loading, error, offline, long content, 20 children)
@@ -21,8 +21,12 @@ Initial queue is empty and links to Class portfolios filtered to Ready to draft.
 Use MobileTabBar with Drafts active. Stack provider, run progress, review queue and rejected list; make each ChildRow full width and keep Retry/Review draft at least 44 px. No horizontal scroll.
 ## Accessibility notes
 Announce run progress and errors with live status text; pair every source and state color with its exact text label. Keep keyboard order aligned with queue order and show focus.
-## Implementation mapping (existing files/functions to reuse; new files proposed; hash route)
-Reuse src/class-app.js draft(), providerControls() and draftButton(), src/class-view.js narrativeChip(), src/portfolio-model.js status functions, and src/narrative.js rejection validation. Add shared-shell route `#/drafts`; rejection map is currently memory-only. Display the requested shorter “GPT Demo Gateway” provenance label in place of the current “(public demo session)” suffix.
+## Implementation mapping
+Implemented in `class.html` at `#/drafts`.
+- `src/studio/pages/drafts.js`: exported `render`.
+- `src/studio/models/drafts-model.js`: exported `draftsModel`.
+- Shared routing: `src/studio/router.js` (`parseRoute`, `buildRoute`); shell: `src/studio/shell.js` (`mountShell`, `navigationModel`); styles: `studio.css` and `src/studio/tokens.css`.
+
 ## Acceptance checks (5-8 testable bullets)
 - The page shows exact AI and MOCK provenance labels on every queued draft.
 - The run action reflects the current ready-child count and exposes “n of m children”.
