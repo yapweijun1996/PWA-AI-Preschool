@@ -49,10 +49,11 @@ export function startStudio() {
     const redirect = legacyRedirect(location.hash);
     if (redirect) history.replaceState(null, '', redirect);
     const route = parseRoute(location.hash);
+    ctx.enterRoute(location.hash);
     if (route.semester) ctx.semester = route.semester;
     shell.update(route);
     current = pages[route.name].render(ctx, route);
-    shell.main.replaceChildren(current);
+    shell.main.replaceChildren(current, shell.actionFeedback);
     const heading = shell.main.querySelector('h1');
     focusHeading(heading);
     ctx.announce(route.message ?? heading?.textContent ?? 'Page opened');

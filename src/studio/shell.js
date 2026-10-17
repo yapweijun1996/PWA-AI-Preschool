@@ -20,6 +20,7 @@ export function mountShell(ctx) {
     notice.append(el('span', text));
   }
   const feedback = el('div', undefined, 'session-feedback');
+  const actionFeedback = el('div', undefined, 'action-feedback');
   const live = el('p', undefined, 'visually-hidden');
   live.setAttribute('aria-live', 'polite');
   live.setAttribute('aria-atomic', 'true');
@@ -30,11 +31,14 @@ export function mountShell(ctx) {
   root.append(nav.sidebar, content);
   ctx.subscribe(() => {
     feedback.replaceChildren();
+    actionFeedback.replaceChildren();
     if (ctx.isOffline()) feedback.append(offlineState());
     if (ctx.draftError) {
       const retry = button('Retry draft', () => ctx.retryDraft?.());
       retry.disabled = ctx.busy || (ctx.provider.id !== 'mock' && ctx.isOffline());
-      feedback.append(errorState(ctx.draftError, retry));
+      const error = errorState(ctx.draftError, retry);
+      error.append(button('Dismiss', ctx.dismissDraftError));
+      actionFeedback.append(error);
     }
     live.textContent = ctx.message;
   });
@@ -45,7 +49,7 @@ export function mountShell(ctx) {
     root.classList.toggle('print-mode', ['print', 'print-class'].includes(route.name));
     ctx.notify();
   };
-  return { root, main, update };
+  return { root, main, update, actionFeedback };
 }
 
 function topbar(ctx) {
@@ -83,7 +87,8 @@ function topbar(ctx) {
     const child = ctx.children.find(child => child.id === route.childId);
     breadcrumb.replaceChildren(icon('home'), el('span', 'Home'));
     if (parent?.name !== 'home') {
-      breadcrumb.append(icon('chevron'), el('span', parent?.label ?? 'Reports'));
+      breadcrumb.append(icon('chevron'), link(parent?.label ?? 'Reports',
+        buildRoute(parent?.name ?? 'reports')));
     }
     if (child) breadcrumb.append(icon('chevron'), el('span', child.name));
     semester.value = ctx.semester;

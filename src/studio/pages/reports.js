@@ -1,4 +1,3 @@
-import { renderReport } from '../../report-view.js';
 import { el, link, chip, emptyState } from '../ui.js';
 import { selectField } from '../page-controls.js';
 import { reportsModel } from '../models/reports-model.js';
@@ -39,12 +38,7 @@ export function render(ctx, route = {}) {
     if (selection.type === 'class') {
       preview.append(el('p', `${ctx.children.length} fictional children`));
     }
-    for (const report of model.reports) {
-      const page = renderReport(report);
-      const heading = page.querySelector('h1');
-      heading.replaceWith(el('h3', heading.textContent));
-      preview.append(page);
-    }
+    for (const report of model.reports) preview.append(reportThumbnail(report));
     if (!model.reports.length) preview.append(emptyState('No matching child. Choose a child.'));
     print.href = model.href;
     print.hidden = !model.reports.length;
@@ -53,6 +47,22 @@ export function render(ctx, route = {}) {
   root.dispose = ctx.subscribe(refresh);
   refresh();
   return root;
+}
+
+function reportThumbnail(report) {
+  const page = el('article', undefined, 'report-thumbnail');
+  page.append(el('p', report.header.productName, 'report-thumbnail-brand'),
+    el('h3', report.header.title), el('h4', report.childName),
+    el('p', report.semesterLabel));
+  for (const domain of report.domains) {
+    const row = el('section', undefined, 'report-thumbnail-domain');
+    row.append(el('h5', domain.label), el('p', `Rating: ${domain.ratingLabel}`),
+      el('p', domain.comment || 'No comment recorded.', 'report-thumbnail-comment'));
+    page.append(row);
+  }
+  if (!report.status.complete) page.append(el('p', 'INCOMPLETE', 'incomplete-chip chip'));
+  page.append(el('p', 'Open Print / Save as PDF to review the complete report.', 'hint'));
+  return page;
 }
 
 function showCompleteness(root, model) {

@@ -117,12 +117,27 @@ test('draft review deep links open the Review step and retain quick provider set
   assert.equal(page.querySelectorAll('h2')[0].textContent, 'Review narratives');
   assert.equal(page.querySelectorAll('textarea').length, 4);
   assert.match(page.textContent, /Local review is not authenticated approval/);
-  const settings = page.querySelectorAll('a').find(link => link.textContent === 'Provider settings');
+  const settings = page.querySelectorAll('a')
+    .find(link => link.textContent === 'Provider: Offline mock (not AI)');
   assert.equal(settings.href, '#/settings/ai');
-  assert.equal(page.querySelectorAll('select')[0].value, 'mock');
+  assert.equal(page.querySelectorAll('select').length, 0);
 });
 
-test('editor keeps one compact child header and provider selection without a provider card', async t => {
+test('editor puts child context before tabs and compact drafting tools', t => {
+  const { page } = setup(t);
+  const [navigation, tools, panel] = page.children;
+  assert.equal(navigation.className, 'editor-navigation');
+  assert.deepEqual(navigation.children.map(node => node.className),
+    ['child-header', 'editor-progress', 'domain-tabs']);
+  assert.equal(tools.className, 'editor-provider-line');
+  assert.equal(tools.attributes['aria-label'], 'Narrative drafting tools');
+  assert.equal(tools.querySelectorAll('button')[0].textContent, 'Draft all four');
+  assert.equal(panel.attributes.role, 'tabpanel');
+  assert.equal(page.querySelectorAll('a').some(link => link.textContent === 'Back to class'),
+    false);
+});
+
+test('editor keeps one compact child header and reactive provider settings access', t => {
   const { page, ctx } = setup(t);
   const headers = page.querySelectorAll('header')
     .filter(node => node.className === 'child-header');
@@ -135,13 +150,18 @@ test('editor keeps one compact child header and provider selection without a pro
     .some(node => node.className === 'provider-panel'), false);
   assert.equal(page.querySelectorAll('input')
     .some(node => node.type === 'password'), false);
-  const provider = page.querySelectorAll('select')[0];
-  ctx.provider.key = 'memory-only-test-key';
-  provider.value = 'gateway';
-  await provider.emit('change');
-  assert.equal(ctx.provider.id, 'gateway');
-  assert.equal(ctx.provider.key, '');
-  assert.equal(ctx.provider.status, 'not tested');
+  const provider = page.querySelectorAll('a')
+    .find(link => link.className === 'editor-provider-settings');
+  assert.equal(provider.textContent, 'Provider: Offline mock (not AI)');
+  assert.equal(provider.href, '#/settings/ai');
+  assert.equal(page.querySelectorAll('select').length, 0);
+  ctx.provider.id = 'gateway';
+  ctx.notify();
+  assert.equal(provider.textContent, 'Provider: GPT Demo Gateway');
+  ctx.busy = true;
+  ctx.notify();
+  assert.equal(page.querySelectorAll('button')
+    .find(node => node.textContent === 'Draft all four').disabled, true);
   assert.equal(page.querySelectorAll('textarea').length, 2);
 });
 

@@ -33,7 +33,7 @@ export function render(ctx, route) {
   const unsubscribe = ctx.subscribe(refresh);
   const navigation = el('div', undefined, 'editor-navigation');
   navigation.append(header.root, header.progress, tabs.tabs);
-  root.append(provider.root, navigation, tabs.panel);
+  root.append(navigation, provider.root, tabs.panel);
   refresh();
   root.dispose = () => {
     header.dispose();
@@ -100,30 +100,18 @@ function childHeader(ctx, child, record) {
 
 function compactProvider(ctx) {
   const root = el('div', undefined, 'editor-provider-line');
-  const label = el('label', 'Narrative provider');
-  const select = el('select');
-  for (const [id, text] of Object.entries(PROVIDER_LABELS)) {
-    const option = el('option', text);
-    option.value = id;
-    select.append(option);
-  }
-  label.append(select);
-  select.addEventListener('change', () => {
-    ctx.provider.id = select.value;
-    ctx.provider.key = '';
-    ctx.provider.status = 'not tested';
-    ctx.notify();
-  });
+  root.setAttribute('role', 'group');
+  root.setAttribute('aria-label', 'Narrative drafting tools');
+  const settings = link('', '#/settings/ai');
+  settings.className = 'editor-provider-settings';
   const status = el('span', undefined, 'editor-provider-status');
   status.setAttribute('role', 'status');
   const disclosure = el('span', 'Photos are never sent.', 'editor-provider-disclosure');
   disclosure.title = "Only the child's first name, ratings and comments "
     + 'are sent to the selected provider.';
-  root.append(label, status, disclosure, link('Provider settings', '#/settings/ai'),
-    link('Back to class', '#/classes'));
+  root.append(settings, status, disclosure);
   const refresh = () => {
-    select.value = ctx.provider.id;
-    select.disabled = ctx.busy;
+    settings.textContent = `Provider: ${PROVIDER_LABELS[ctx.provider.id]}`;
     status.textContent = ctx.provider.status;
   };
   const unsubscribe = ctx.subscribe(refresh);

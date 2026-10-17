@@ -23,6 +23,7 @@ export function render(ctx) {
     progress);
   const queue = el('section', undefined, 'card draft-queue');
   const rejected = el('section', undefined, 'card draft-queue');
+  const failures = el('section', undefined, 'card draft-queue request-failures');
   const refresh = () => {
     const model = draftsModel(ctx);
     status.replaceChildren(el('strong', PROVIDER_LABELS[ctx.provider.id]),
@@ -36,9 +37,19 @@ export function render(ctx) {
       `${state.completed} of ${state.total} children`));
     reviewQueue(queue, model.queue);
     rejectionQueue(rejected, model.rejected, ctx);
+    failures.replaceChildren(el('h2', `Request failures · ${ctx.failures?.length ?? 0}`));
+    for (const message of ctx.failures ?? []) {
+      const row = el('article', undefined, 'work-row request-failure-row');
+      row.append(el('p', message));
+      failures.append(row);
+    }
+    if (!ctx.failures?.length) {
+      failures.append(emptyState('No request failures in this session.'));
+    }
   };
-  root.append(heading, provider, batch, queue, rejected,
-    el('p', 'Rejected drafts are session memory only; reloading clears these reasons.', 'hint'),
+  root.append(heading, provider, batch, queue, rejected, failures,
+    el('p', 'Rejected drafts and request failures are session memory only; reloading clears '
+      + 'this history.', 'hint'),
     el('p', 'Review each narrative against teacher evidence. Local review is not authenticated '
       + 'approval or report release.', 'notice'));
   root.dispose = ctx.subscribe(refresh);

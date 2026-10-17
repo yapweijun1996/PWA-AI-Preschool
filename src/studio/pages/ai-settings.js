@@ -19,7 +19,7 @@ export function render(ctx) {
   }, true);
   const refresh = () => {
     const keyed = ['openai', 'gemini'].includes(model.state.id);
-    key.root.hidden = false;
+    key.root.hidden = !keyed;
     key.input.value = model.state.key;
     key.input.disabled = ctx.busy || !keyed;
     for (const radio of choices.querySelectorAll('input')) {

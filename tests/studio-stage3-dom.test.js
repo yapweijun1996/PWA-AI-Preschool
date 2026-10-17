@@ -166,6 +166,7 @@ test('system states distinguish save failure, retry, loading and verified PWA', 
   } } });
   const shell = mountShell(ctx);
   shell.update({ name: 'home' });
+  shell.main.append(shell.actionFeedback);
   assert.equal(shell.root.querySelectorAll('section')
     .some(node => node.dataset.state === 'unsaved'), false);
   assert.equal(loadingState().attributes['aria-busy'], 'true');
@@ -180,8 +181,37 @@ test('system states distinguish save failure, retry, loading and verified PWA', 
   ctx.pwa = { online: true, cacheReady: true, updateAvailable: true };
   ctx.notify();
   assert.match(shell.root.textContent, /Update available/);
-  ctx.draftError = 'AI request failed. No narratives were changed.';
-  ctx.notify();
-  assert.match(shell.root.textContent, /AI request failed/);
-  assert.equal(control(shell.root, 'Retry draft').disabled, false);
+  ctx.enterRoute('#/drafts');
+  await ctx.runDraft(async () => { throw new Error('private provider response'); });
+  assert.match(shell.main.textContent, /AI request failed/);
+  assert.equal(control(shell.main, 'Retry draft').disabled, false);
+  await control(shell.main, 'Dismiss').emit('click');
+  assert.doesNotMatch(shell.main.textContent, /AI request failed/);
+  await ctx.runDraft(async () => { throw new Error('private provider response'); });
+  ctx.enterRoute('#/classes');
+  assert.doesNotMatch(shell.main.textContent, /AI request failed/);
+  assert.equal(ctx.provider.status, 'failed');
+  assert.equal(ctx.failures.length, 2);
+  assert.ok(ctx.failures.every(message => !message.includes('private provider response')));
+  ctx.rejections.set('C-01:2026-S2:english', 'Draft rejected: unsupported claim.');
+  const history = drafts(ctx);
+  assert.match(history.textContent, /AI request failed/);
+  assert.match(history.textContent, /unsupported claim/);
+  history.dispose();
+});
+
+test('request failure arriving after navigation stays only in session history', async t => {
+  dom(t);
+  const { ctx } = context();
+  ctx.enterRoute('#/classes/class-a/children/C-05');
+  let reject;
+  const pending = ctx.runDraft(() => new Promise((_resolve, fail) => { reject = fail; }));
+  ctx.enterRoute('#/students');
+  ctx.enterRoute('#/classes/class-a/children/C-05');
+  reject(new Error('private failure'));
+  await pending;
+  assert.equal(ctx.draftError, '');
+  assert.equal(ctx.retryDraft, null);
+  assert.equal(ctx.provider.status, 'failed');
+  assert.match(ctx.failures[0], /No narratives were changed/);
 });
