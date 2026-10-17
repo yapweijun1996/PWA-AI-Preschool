@@ -28,6 +28,7 @@ Implemented at the root in `index.html` at `#/settings/ai`.
 - Shared routing: `src/studio/router.js` (`parseRoute`, `buildRoute`); shell: `src/studio/shell.js` (`mountShell`, `navigationModel`); styles: `studio.css` and `src/studio/tokens.css`.
 
 ## Implementation notes / deviations
+Provider cards show their descriptions at every width; icon badges appear from 601px. The key field has a show/hide toggle and an amber warning notice. The disclosure card keeps the implemented pseudonymisation notice instead of the wireframe's first-name wording. A "Report and narrative language" card sits between the provider cards and the key panel; it is not in the wireframes. The top status chips use short labels between 1280 and 1679px.
 The connection probe is implemented. Leaving settings clears its input/model key; an applied provider key remains in shared page memory for drafting, until cleared or the app reloads. The key field is conditional and hidden for Offline mock.
 
 ## Acceptance checks (5-8 testable bullets)
