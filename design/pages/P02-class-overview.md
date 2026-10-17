@@ -24,7 +24,7 @@ Hide SidebarNav for MobileTabBar. Stack provider, semester/search controls, prog
 ## Accessibility notes
 Use one h1; label semester/search; expose selected filters with aria-pressed; announce save/draft results; give progress a text value; pair every domain state/color with a word/icon; preserve keyboard focus after filtering.
 ## Implementation mapping
-Implemented in `class.html` at `#/classes`.
+Implemented at the root in `index.html` at `#/classes`.
 - `src/studio/pages/classes.js`: exported `render` and `classesModel`.
 - Shared routing: `src/studio/router.js` (`parseRoute`, `buildRoute`); shell: `src/studio/shell.js` (`mountShell`, `navigationModel`); styles: `studio.css` and `src/studio/tokens.css`.
 

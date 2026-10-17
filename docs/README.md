@@ -1,39 +1,39 @@
-# Documentation Index
+# Documentation index
 
-This is a company-agnostic **AI Preschool Studio** reference package. Files are ordered for reading or task delegation:
+Current product: **AI Preschool Studio** at the [live root](https://yapweijun1996.github.io/PWA-AI-Preschool/). `index.html` hosts the studio; `class.html` only redirects, preserving hash routes. All public records are fictional.
 
-1. [Vision and boundaries](01-vision.md)
-2. [Product requirements and users](02-prd.md)
-3. [MVP scope and acceptance](03-scope-and-acceptance.md)
-4. [Architecture and threat boundaries](04-architecture.md)
-5. [Student evidence and RAG model](05-data-and-rag.md)
-6. [AI provider adapters / BYOK](06-provider-integrations.md)
-7. [Security and privacy controls](07-security-privacy.md)
-8. [UI, branding and accessible UX](08-ui-and-branding.md)
-9. [GitHub Pages deployment](09-deployment.md)
-10. [Testing and evaluation](10-testing.md)
-11. [Milestones and prioritized backlog](11-roadmap.md)
-12. [Demo script and FAQ](12-demo-walkthrough.md)
-13. [Risks and decision records](13-risks-and-decisions.md)
-14. [Future backend/API design](14-backend-api.md)
-15. [Operating model and cost strategy](15-operations-and-costs.md)
-16. [Singapore regulatory research checklist](16-singapore-compliance.md)
-17. [AI Coding Agent implementation task](17-ai-agent-task.md)
-18. [中文使用与开发说明](18-zh-quickstart.md)
-19. [Official sources and reading](19-sources.md)
-20. [Version/changelog](20-changelog.md)
-21. [Optional classroom & timetable module](21-future-classroom.md)
-22. [Preschool → primary school transition](22-transition-exports.md)
-23. [Optional course e-commerce module](23-course-commerce.md)
-24. [Verification and delivery report](24-verification-report.md)
-25. [PWA product standard and acceptance](25-pwa-standard.md)
-26. [Submission write-up and production proposal](26-submission-writeup.md)
-27. [Development UI audit harness](27-ui-audit.md)
+## Current behavior and development
 
-Design source of truth: [`design/README.md`](../design/README.md) — canonical routes/menu,
-12 page specs, 24 WebP wireframes, shared tokens and the consistency review. Specs define
-copy/behavior; images show visual intent; tokens define enforceable values.
+- [Architecture and trust boundaries](04-architecture.md)
+- [Semester records, evidence and RAG boundary](05-data-and-rag.md)
+- [Provider adapters and disposable BYOK](06-provider-integrations.md)
+- [Security and privacy](07-security-privacy.md)
+- [UI, branding and accessibility](08-ui-and-branding.md)
+- [GitHub Pages deployment and rollback](09-deployment.md)
+- [Testing and evaluation](10-testing.md)
+- [中文使用与开发说明](18-zh-quickstart.md)
+- [Changelog](20-changelog.md)
+- [PWA acceptance contract](25-pwa-standard.md)
+- [Submission write-up, recorded evidence and production proposal](26-submission-writeup.md)
+- [Development UI audit harness](27-ui-audit.md)
 
-Supplementary machine-readable artefacts: [`../spec/portfolio.schema.json`](../spec/portfolio.schema.json), [`../spec/future-api.openapi.yaml`](../spec/future-api.openapi.yaml), [`../schema/future-postgres.sql`](../schema/future-postgres.sql), [`../examples/portfolio.sample.json`](../examples/portfolio.sample.json).
+The [design SSOT](../design/README.md) owns routes/menu, 12 page specs, 24 WebP wireframes and shared tokens. Specs define copy/behavior, images visual intent and tokens enforceable values.
 
-**Implementation labels:** `LIVE IN STATIC MVP` = presently in source; `PROPOSED` = architecture suggestion only; `RESEARCH REQUIRED` = cannot ship without further validation. Regulatory research is not legal advice.
+## Product direction and proposed production work
+
+These documents are planning references, not implemented private services:
+
+- [Vision and boundaries](01-vision.md)
+- [Roadmap and release gates](11-roadmap.md)
+- [Risks and decisions](13-risks-and-decisions.md)
+- [Future backend/API design](14-backend-api.md)
+- [Operating model and costs](15-operations-and-costs.md)
+- [Singapore regulatory research checklist](16-singapore-compliance.md)
+- [Official sources](19-sources.md)
+- [Optional classroom/timetable research](21-future-classroom.md)
+- [Controlled school transition proposal](22-transition-exports.md)
+- [Separate course-commerce proposal](23-course-commerce.md)
+
+Supporting proposals: [future OpenAPI sketch](../spec/future-api.openapi.yaml), [future SQL sketch](../schema/future-postgres.sql) and [public configuration example](../examples/config-example.md). None provides production authorization, tenancy or legal approval.
+
+Old-only PRD, acceptance, walkthrough, coding-agent task and five-record verification documents/screenshots were removed during the root cutover. Their historical context belongs to the `legacy-demo-v1` tag, not the current product contract. Numbering gaps are intentional. Historical evidence in the changelog/write-up must not be treated as current-root acceptance.

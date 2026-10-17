@@ -1,105 +1,22 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
-  <meta name="theme-color" content="#f8f8f4" />
-  <meta name="color-scheme" content="light dark" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="AI Preschool Studio" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; worker-src 'self'; style-src 'self'; connect-src 'self' https://gpt.yapweijun1996.com https://api.openai.com https://generativelanguage.googleapis.com; img-src 'self' https:; font-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
-  <meta name="description" content="Browser-first, privacy-conscious AI preschool portfolio demo using fictional student records." />
-  <title>AI Preschool Studio — Student Growth, Simplified</title>
-  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
-  <link rel="manifest" href="./manifest.webmanifest" />
-  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
-  <link rel="stylesheet" href="./styles.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#f8f8f4" />
+<meta name="color-scheme" content="light dark" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; worker-src 'self'; style-src 'self'; connect-src 'self' https://gpt.yapweijun1996.com https://api.openai.com https://generativelanguage.googleapis.com; img-src 'self' data:; font-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
+<title>AI Preschool Studio</title>
+<link rel="manifest" href="./manifest.webmanifest" />
+<link rel="icon" href="./favicon.svg" />
+<link rel="stylesheet" href="./src/studio/tokens.css" />
+<link rel="stylesheet" href="./studio.css" />
+<link rel="stylesheet" href="./src/studio/lists.css" />
 </head>
 <body data-build-id="__BUILD_ID__">
-  <div id="app" class="app-shell">
-    <aside class="sidebar" aria-label="Main navigation">
-      <div class="brand"><div class="brand-icon" aria-hidden="true"><span></span><span></span><span></span></div><div><strong id="app-brand">AI Preschool Studio</strong><small id="app-brand-subtitle">STUDENT GROWTH DEMO</small></div></div>
-      <div class="workspace-label">WORKSPACE</div>
-      <nav id="navigation" class="navigation">
-        <button class="nav-item active" data-page="overview"><span class="nav-icon">▦</span> Overview</button>
-        <button class="nav-item" data-page="students"><span class="nav-icon">◉</span> Students</button>
-        <button class="nav-item" data-page="portfolio"><span class="nav-icon">▤</span> AI Portfolio <span class="nav-pill">NEW</span></button>
-        <button class="nav-item" data-page="observations"><span class="nav-icon">≡</span> Evidence library</button>
-        <a class="nav-item" href="./class.html">Class portfolios</a>
-      </nav>
-      <div class="workspace-label secondary-label">PREFERENCES</div>
-      <nav class="navigation"><button class="nav-item" data-page="settings"><span class="nav-icon">⚙</span> AI provider settings</button></nav>
-      <div class="sidebar-bottom"><div class="privacy-note"><span class="privacy-symbol">♢</span><div><strong>Privacy-safe showcase</strong><span>All student records are fictional. No real child data.</span></div></div><div class="profile"><span class="avatar avatar-profile">MJ</span><div class="profile-text"><strong>Ms. Jordan</strong><small>Demo educator</small></div><span class="profile-dot"></span></div></div>
-    </aside>
-
-    <main class="main-content">
-      <header class="topbar"><div class="breadcrumbs">WORKSPACE <span>/</span> <strong id="breadcrumb-current">Overview</strong></div><div class="top-actions"><span class="top-demo"><span class="live-dot"></span> INTERACTIVE DEMO</span><button class="btn btn-plain" id="header-settings" title="Provider settings" aria-label="Provider settings">⚙</button><span class="avatar avatar-small">MJ</span></div></header>
-      <div class="content-inner">
-        <div id="pwa-controls-host"></div>
-        <div class="demo-warning" role="note"><strong>Fictional demo only.</strong> Do not enter real child, family, staff, photo or voice records. Educator access is simulated; this is not a production school system.</div>
-        <noscript><p class="demo-warning">Enable JavaScript to explore the static demo. No installation or sign-in is required.</p></noscript>
-        <section class="hero"><div class="hero-copy"><div class="eyebrow">THE FUTURE OF PRESCHOOL DOCUMENTATION <span class="tiny-line"></span> DEMO V1</div><h1>More time for <em>little moments.</em></h1><p>Turn everyday learning observations into meaningful student portfolios — supported by AI, guided by educators.</p><div class="hero-actions"><button class="btn btn-primary" id="hero-generate">Create a portfolio <span>↗</span></button><button class="btn btn-outline-light" id="hero-evidence">Explore student records <span>→</span></button></div></div><div class="hero-visual" aria-hidden="true"><div class="visual-orbit orbit-one"></div><div class="visual-orbit orbit-two"></div><div class="hero-paper"><div class="hero-paper-top"><span class="paper-leaf">✦</span><span class="paper-label">GROWTH PORTFOLIO</span></div><div class="paper-avatar"></div><span class="paper-line wide"></span><span class="paper-line medium"></span><div class="paper-chart"><i></i><i></i><i></i><i></i><i></i></div><span class="paper-line short"></span></div><div class="hero-float float-left">✦ <span>Made for educators</span></div><div class="hero-float float-right">✓ <span>Evidence-based AI</span></div></div></section>
-
-        <section class="metrics" aria-label="Demo insights"><div class="metric"><span class="metric-icon amber">↗</span><div><span class="metric-label">Student profiles</span><strong id="metric-students">05 <small>demo records</small></strong></div></div><div class="metric"><span class="metric-icon sage">◷</span><div><span class="metric-label">Learning journey</span><strong>18 <small>months of records</small></strong></div></div><div class="metric"><span class="metric-icon lilac">▤</span><div><span class="metric-label">Current baseline</span><strong id="metric-baseline">~6h <small>per portfolio*</small></strong></div></div><div class="metric"><span class="metric-icon blue">✦</span><div><span class="metric-label">AI review target</span><strong id="metric-edit-target">&lt;10% <small>edits (unproven)</small></strong></div></div></section>
-        <p class="metric-disclaimer">The baseline and editing target are illustrative, unverified planning figures — not measured savings or AI accuracy.</p>
-
-        <section class="section two-col" id="workspace-section">
-          <div class="main-pane">
-            <div class="section-heading"><div><div class="section-kicker">01 / STUDENT DIRECTORY</div><h2>Every little journey matters.</h2><p>Explore fictional student profiles and their learning milestones.</p></div><div class="teacher-selector"><label for="teacher-select">Viewing as</label><select id="teacher-select" aria-label="Demo teacher selection"><option value="jordan">Ms. Jordan</option><option value="lee">Mr. Lee</option><option value="all">Administrator</option></select></div></div>
-            <div id="student-list" class="student-grid"></div>
-            <div class="permission-note"><span>ⓘ</span> Teacher access here is a <strong>UI simulation only</strong>. A real school system requires backend authorization and audit logging.</div>
-            <div class="observations-panel"><div class="panel-heading"><div><span class="section-kicker">02 / LEARNING EVIDENCE</span><h3 id="evidence-heading">Recent observations</h3></div><button class="btn btn-outline" id="add-observation">+ Add observation</button></div><p id="evidence-coverage" class="evidence-coverage"></p><div id="evidence-list" class="evidence-list"></div></div>
-          </div>
-          <div class="portfolio-pane" id="portfolio-pane">
-            <div class="panel-heading portfolio-header"><div><span class="section-kicker">03 / AI-ASSISTED PORTFOLIO</span><h3>Growth portfolio</h3></div><span class="status-chip" id="portfolio-status">NOT GENERATED</span></div>
-            <div class="generate-tools"><div class="selected-brief"><span id="chosen-avatar" class="student-avatar selected-avatar">AC</span><div><small>CREATING FOR</small><strong id="chosen-name">Avery Chen</strong><span id="chosen-period">Apr 2025 – Sep 2026</span></div></div><div class="provider-compact"><span class="provider-led"></span><span id="provider-name">GPT Demo Gateway</span><button id="change-provider" title="Change AI provider">Change</button></div></div>
-            <div id="portfolio-preview" class="portfolio-preview"><div class="empty-portfolio"><div class="empty-visual"><span>✦</span><span class="empty-lines"></span><span class="empty-lines short"></span></div><h4>Every story starts here.</h4><p>Select a student and generate a personalized portfolio from their learning observations.</p><span class="empty-caption">Uses fictional data for demonstration only</span></div></div>
-            <div class="portfolio-controls"><div id="generation-message" class="generation-message" role="status" aria-live="polite"></div><button class="btn btn-primary generate-btn" id="generate-button"><span class="generate-icon">✦</span> Generate with AI <span>→</span></button><div class="post-generate-actions"><button class="btn btn-outline" id="review-button" disabled>Edit & review</button><button class="btn btn-outline" id="print-button" disabled>Print / PDF ↗</button></div></div>
-          </div>
-        </section>
-        <footer class="footer"><span id="footer-brand">AI Preschool Studio · Independent concept demo</span><span>Fictional data only · Not an approved school system</span></footer>
-      </div>
-    </main>
-  </div>
-
-  <dialog id="provider-dialog" class="modal" aria-labelledby="provider-title"><form method="dialog" id="provider-form">
-    <div class="dialog-top"><div><span class="section-kicker">AI CONFIGURATION</span><h2 id="provider-title">Choose your AI provider</h2><p>Use Offline Mock without an API, or explicitly test a cloud provider with fictional data.</p></div><button class="close-btn" value="cancel" aria-label="Close">×</button></div>
-    <div class="provider-choices" id="provider-choices">
-      <label class="provider-choice"><input type="radio" name="provider" value="gateway" checked /><span class="choice-icon">✦</span><span><strong>GPT Demo Gateway</strong><small>Default · Temporary session · Availability not guaranteed</small></span></label>
-      <label class="provider-choice"><input type="radio" name="provider" value="openai" /><span class="choice-icon">O</span><span><strong>OpenAI API Key</strong><small>Disposable test key · Direct browser request</small></span></label>
-      <label class="provider-choice"><input type="radio" name="provider" value="gemini" /><span class="choice-icon">✧</span><span><strong>Google Gemini API Key</strong><small>Disposable test key · Direct browser request</small></span></label>
-      <label class="provider-choice"><input type="radio" name="provider" value="mock" /><span class="choice-icon">▣</span><span><strong>Offline Mock Demo</strong><small>No network request · Clearly marked simulated output</small></span></label>
-    </div>
-    <div id="byok-fields" class="byok-fields" hidden>
-      <label for="user-api-key">Temporary API Key</label><div class="key-row"><input id="user-api-key" type="password" autocomplete="off" spellcheck="false" placeholder="Paste a disposable test key" /><button type="button" id="toggle-key" aria-label="Show or hide key" aria-pressed="false">Show</button></div>
-      <label for="user-model">Model</label><input id="user-model" type="text" autocomplete="off" spellcheck="false" />
-      <div class="risk-warning">Browser-based API calls expose your key to developer tools, extensions and scripts. Only use restricted, disposable keys with fictional data. Keys stay in page memory; this is not production-grade credential security. Provider CORS or quotas may block requests.</div>
-      <label class="approval-check"><input type="checkbox" id="byok-ack" /> I understand the risk and will use only a disposable test key and fictional data.</label>
-    </div>
-    <p id="provider-message" class="generation-message" role="status" aria-live="polite"></p>
-    <div class="dialog-bottom"><button class="btn btn-outline" value="cancel">Cancel</button><button class="btn btn-primary" id="save-provider" value="save">Apply provider</button></div>
-  </form></dialog>
-
-  <dialog id="observation-dialog" class="modal small-modal" aria-labelledby="observation-title"><form method="dialog" id="observation-form">
-    <div class="dialog-top"><div><span class="section-kicker">NEW LEARNING RECORD</span><h2 id="observation-title">Add an observation</h2><p>Fictional data only. This session-only record is dated 30 Sep 2026, within the demo period, and resets on refresh.</p></div><button class="close-btn" value="cancel" aria-label="Close">×</button></div>
-    <label for="observation-area">Learning domain</label><select id="observation-area"><option value="Communication">Communication</option><option value="Literacy">Early literacy</option><option value="Numeracy">Numeracy</option><option value="Social-emotional">Social-emotional</option><option value="Creative expression">Creative expression</option></select>
-    <label for="observation-text">Fictional observation</label><textarea id="observation-text" rows="5" maxlength="500" placeholder="Example: Participated in a storytelling circle, explaining the ending in her own words."></textarea>
-    <p id="observation-message" class="generation-message" role="status" aria-live="polite"></p>
-    <div class="dialog-bottom"><button class="btn btn-outline" value="cancel">Cancel</button><button class="btn btn-primary" id="save-observation" value="save">Add to demo records</button></div>
-  </form></dialog>
-
-  <dialog id="review-dialog" class="modal review-modal" aria-labelledby="review-title"><form method="dialog" id="review-form">
-    <div class="dialog-top"><div><span class="section-kicker">HUMAN-IN-THE-LOOP REVIEW</span><h2 id="review-title">Review portfolio draft</h2><p>Verify every claim against the evidence. Keep domain citations in [EVIDENCE-ID] format. Edits reset the approval checkbox; approval is local and unauthenticated.</p></div><button class="close-btn" value="cancel" aria-label="Close">×</button></div>
-    <div id="review-fields" class="review-fields"></div>
-    <div class="review-metric">Estimated text change: <strong id="edit-percent">0%</strong><span>Lexical proxy, not accuracy. Target &lt;10% is illustrative and unverified.</span></div>
-    <label class="approval-check"><input type="checkbox" id="teacher-approved" /> I have reviewed facts, student identity and supporting evidence.</label>
-    <p id="review-message" class="generation-message" role="status" aria-live="polite"></p>
-    <div class="dialog-bottom"><button class="btn btn-outline" value="cancel">Close without saving</button><button class="btn btn-primary" id="save-review" value="save">Save reviewed draft</button></div>
-  </form></dialog>
-  <button type="button" id="scroll-top" class="scroll-top" aria-label="Scroll to top" hidden>↑</button>
-
-  <div id="toast" role="status" aria-live="polite" class="toast" hidden></div><script type="module" src="./src/app.js"></script>
+<a class="skip" href="#main">Skip to portfolios</a>
+<noscript>Enable JavaScript to manage the fictional class portfolios.</noscript>
+<div id="app"></div>
+<script type="module" src="./src/studio/app.js"></script>
 </body>
 </html>

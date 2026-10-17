@@ -1,6 +1,6 @@
 # 04 — Architecture and Trust Boundaries
 
-## Deployed static demo (implemented)
+## Current static studio (implemented)
 
 ```mermaid
 flowchart TD
@@ -17,7 +17,9 @@ flowchart TD
     B --> R[Teacher edits and browser print/PDF]
 ```
 
-**Trust boundary:** GitHub Pages, downloaded JavaScript and all browser-visible data are public. The teacher selector restricts *which cards are shown*, not what data a determined viewer can read. The browser is also not safe storage for user-provided long-lived secrets. No model/credential response should be treated as a source of truth without verification.
+The root `index.html` mounts `src/studio/app.js`, with shared router/context/shell, page renderers and pure models. `class.html` only redirects to the root while preserving hash routes. Fictional semester records, photos and narrative provenance persist through `src/portfolio-store.js` in browser `localStorage`; provider keys remain in page memory.
+
+**Trust boundary:** GitHub Pages, downloaded JavaScript and bundled records are public. Browser filtering and local review are not authentication or authorization. Browser storage is not encrypted records storage, a backup or safe custody for long-lived secrets. Model responses require independent validation and human review.
 
 ## Proposed production architecture (NOT IMPLEMENTED)
 

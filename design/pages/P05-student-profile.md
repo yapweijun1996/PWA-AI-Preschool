@@ -20,7 +20,7 @@ Hide SidebarNav for MobileTabBar. Stack PageHeader actions; convert the comparis
 ## Accessibility notes
 Use one h1 and semantic table headers on desktop; each mobile comparison row repeats explicit semester labels. Narrative sources and review state are text, not color-only. Give PhotoTile alt text and keyboard-reachable editor/report actions.
 ## Implementation mapping
-Implemented in `class.html` at `#/students/:id`.
+Implemented at the root in `index.html` at `#/students/:id`.
 - `src/studio/pages/student-profile.js`: exported `render`.
 - `src/studio/models/profile-model.js`: exported `profileModel`, `profileComparison`.
 - Shared routing: `src/studio/router.js` (`parseRoute`, `buildRoute`); shell: `src/studio/shell.js` (`mountShell`, `navigationModel`); styles: `studio.css` and `src/studio/tokens.css`.

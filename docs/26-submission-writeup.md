@@ -1,5 +1,7 @@
 # 26 - Submission write-up: AI Preschool Studio
 
+Current entry: https://yapweijun1996.github.io/PWA-AI-Preschool/ . The root hosts the studio; `class.html` redirects there while preserving hash routes. Command/browser/deployment observations below are historical, supplied before the root cutover; they were not rerun for this documentation change and do not certify the new entry or cache layout.
+
 ## Short write-up
 
 AI Preschool Studio is a fictional-data prototype, not a school records service. It demonstrates class progress, semester comparison, editable drafting, teacher review and printable portfolios. Never enter real identities, photos or workplace records.
@@ -38,10 +40,10 @@ Proposed priorities, not shipped features:
 
 ### Architecture and design SSOT
 
-`class.html` mounts `src/studio/app.js`. `src/studio/` separates the hash router, context,
+`index.html` mounts `src/studio/app.js`. `src/studio/` separates the hash router, context,
 shell, UI helpers, `pages/` and pure `models/`, reusing the portfolio, provider and report
 modules. `studio.css` supplies layouts; `src/studio/tokens.css` copies `design/tokens.css`.
-The obsolete `src/class-app.js` and `class.css` were removed; `index.html` is unchanged.
+`class.html` is only a hash-preserving root redirect. The retired long-scroll implementation is historical under `legacy-demo-v1`.
 
 The [design SSOT](../design/README.md) includes 12 page specs, 24 WebP wireframes generated
 with Codex CLI image generation, shared tokens and a consistency review. Images express visual
@@ -49,13 +51,13 @@ intent; specs own exact copy and behavior; tokens own enforceable values. To cha
 edit its spec, regenerate its image, update shared tokens when needed and synchronize the
 runtime token copy before implementing the page.
 
-The design index still describes target routes as unimplemented, names the retired
-`src/class-app.js`, and calls the wireframes PNGs despite linking WebP files. Those historical
-statements do not describe the current studio. Design files were left unchanged in this stage.
+The design index describes the current root routes and module mappings. Historical screenshots
+and the input brief are explicitly labelled; wireframes are WebP visual references, not proof
+of current browser or deployment acceptance.
 
 ### What to try (3 minutes)
 
-Open the [live studio](https://yapweijun1996.github.io/PWA-AI-Preschool/class.html).
+Open the [live studio](https://yapweijun1996.github.io/PWA-AI-Preschool/).
 Suggested walkthrough, not a measured duration:
 
 1. Start on Home, inspect needing-work rows, then open Class portfolios and switch semesters.
@@ -93,14 +95,14 @@ Mobile uses a chip row and five fixed bottom tabs; print routes hide app navigat
 
 ## Verification evidence
 
-Deployment, browser, Gateway and build observations below were supplied for 2026-10-17.
-`npm run check` and `npm test` were rerun for this documentation update; both passed.
+Deployment, browser, Gateway and build observations below were supplied for 2026-10-17 before
+the root cutover. The recorded command results are earlier evidence, not checks rerun for this update.
 
 ### Commands and counts
 
-Current check/test results and supplied pre-merge build evidence:
+Historical check/test results and supplied pre-merge build evidence:
 
-| Command | Current result |
+| Command | Recorded result (pre-cutover) |
 |---|---|
 | `npm run check` | Passed, including syntax and static CSP checks |
 | `npm test` | 177 tests passed; 0 failed, cancelled, skipped or todo |
@@ -162,7 +164,7 @@ Supplied verification for 2026-10-17; not rerun during this documentation update
 
 | Check | Verified result |
 |---|---|
-| Live demo | https://yapweijun1996.github.io/PWA-AI-Preschool/class.html |
+| Historical studio entry | `class.html` (now redirects to the root; this row records the earlier deployment) |
 | Repository | https://github.com/yapweijun1996/PWA-AI-Preschool |
 | Release | Merge `0c30b26` on `main`; previous stable release / rollback commit `108c80f` |
 | GitHub Actions | Run `39002277394`, “Static checks and Pages deployment”: “Check, test, and build” and “Deploy GitHub Pages” both succeeded |
@@ -349,7 +351,7 @@ The school and DPO must approve purpose-specific retention periods before real u
 - **Child photos:** real photos are forbidden in this public demo. A private production service would require a lawful collection purpose and permissions, private encrypted storage, ownership checks, restricted type/size validation, metadata stripping, malware checks, scoped previews and retention deletion. No face recognition is proposed. Local browser downsizing alone does not implement these production controls.
 - **Incident response:** maintain an accountable incident lead/DPO escalation path; contain access, revoke tokens/links, preserve scoped evidence, assess affected children and disclosure duties, notify within applicable requirements, restore safely and record corrective actions. Exercise the process before a real pilot.
 
-The prototype deliberately does **NOT IMPLEMENT** real login, roles or tenant isolation; an application server, database or object storage; server-side PDF; vector RAG; audit log; or production AI hosting. Public Demo Gateway availability is external and is not a production school service. No security certification, production approval or lawful real-data processing is claimed. Earlier memory-only statements in [security documentation](07-security-privacy.md) and [the PWA standard](25-pwa-standard.md) concern the original demo: class records instead persist in browser `localStorage`, while disposable test keys must never be persisted.
+The prototype deliberately does **NOT IMPLEMENT** real login, roles or tenant isolation; an application server, database or object storage; server-side PDF; vector RAG; audit log; or production AI hosting. Public Demo Gateway availability is external and is not a production school service. No security certification, production approval or lawful real-data processing is claimed. The current [security documentation](07-security-privacy.md) and [PWA standard](25-pwa-standard.md) distinguish persisted fictional records in browser `localStorage` from disposable test keys, which must never be persisted.
 
 ### Future features detail (proposed priorities)
 

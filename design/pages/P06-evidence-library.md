@@ -20,7 +20,7 @@ Hide SidebarNav for MobileTabBar. Stack the four filters and SearchField; displa
 ## Accessibility notes
 Give each filter a persistent label; expose selected FilterChips with aria-pressed. Use semantic headings for each evidence item, retain photo alt text, and make “Open in editor” names include child/domain. Do not use color alone for domain or type.
 ## Implementation mapping
-Implemented in `class.html` at `#/evidence`.
+Implemented at the root in `index.html` at `#/evidence`.
 - `src/studio/pages/evidence.js`: exported `render`.
 - `src/studio/models/evidence-model.js`: exported `evidenceModel`.
 - Shared routing: `src/studio/router.js` (`parseRoute`, `buildRoute`); shell: `src/studio/shell.js` (`mountShell`, `navigationModel`); styles: `studio.css` and `src/studio/tokens.css`.

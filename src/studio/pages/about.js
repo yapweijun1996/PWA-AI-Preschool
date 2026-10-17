@@ -60,7 +60,7 @@ export function render(ctx) {
   }
   cards.append(writeup);
   const actions = el('div', undefined, 'toolbar about-actions');
-  actions.append(link('Open the legacy demo', './index.html'), resetSampleButton(ctx));
+  actions.append(resetSampleButton(ctx));
   root.append(heading, cards, actions);
   return root;
 }

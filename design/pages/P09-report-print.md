@@ -22,7 +22,7 @@ The P09 route may be previewed on a phone, where the paper scales to viewport wi
 ## Accessibility notes
 Use semantic report headings, table caption and scoped headers; set Simplified Chinese text to `zh-Hans`. The four rating segments include their text labels and selected state.
 ## Implementation mapping
-Implemented in `class.html` at `#/print/:id?sem=2026-S2; #/print-class?sem=2026-S2`.
+Implemented at the root in `index.html` at `#/print/:id?sem=2026-S2; #/print-class?sem=2026-S2`.
 - `src/studio/pages/print.js`: exported `render` and `printModel`.
 - `src/studio/models/reports-model.js`: exported `reportsModel`.
 - Shared routing: `src/studio/router.js` (`parseRoute`, `buildRoute`); shell: `src/studio/shell.js` (`mountShell`, `navigationModel`); styles: `studio.css` and `src/studio/tokens.css`.

@@ -1,47 +1,20 @@
-# 11 — Phases, Milestones and Prioritized Backlog
+# 11 — Roadmap and release gates
+
+## Current static studio
+
+The root hosts one page-per-module fictional-data studio: 20 sample children, four-domain semester records, local autosave, explicit mock/remote drafts, local review and browser reports. `class.html` is a hash-preserving redirect, not a second product. The original five-record showcase is historical under `legacy-demo-v1`.
+
+Implemented behavior is not blanket acceptance. Current-root/offline/update and hosted-origin checks, physical devices, screen readers, cross-browser/CJK print behavior and real disposable BYOK calls require their own evidence; see [testing](10-testing.md), [PWA gates](25-pwa-standard.md) and [recorded evidence](26-submission-writeup.md).
+
+## Proposed phases — NOT IMPLEMENTED
 
 | Phase | Goal | Release condition |
 |---|---|---|
-| P0 — Static demo | Show full fictional portfolio workflow | GitHub Pages, 5 fictional students, mock, edit, print |
-| P1 — Reliable AI demo | Verify Default Gateway, OpenAI/Gemini test adapters | Real browser API evidence, rate limits, CORS, empty response UX |
-| P2 — Curriculum-template pilot | Demonstrate school-configurable sections and language | Educator validates template, deterministic evidence mapping |
-| P3 — Secure private pilot | Real authentication, tenant/student evidence access, DB | DPO/contract signoff, authorization tests, audit, retention |
-| P4 — School workflow | Curriculum guide mapping, review workflow, scheduling | Human approvals and teacher/parent permissions |
-| P5 — Advanced research | Optional classroom audio with restrictions | Independent DPIA, policy, consent, feasibility validation |
+| Curriculum-template pilot | Operator-defined sections and writing style | Educator-approved templates; source-support evaluation |
+| Secure private pilot | Staff identity, authorized tenant/student access and durable records | DPO/contracts, independent authorization tests, audit, retention and restore evidence |
+| Governed school workflow | Finalisation, controlled guardian release and exports | Authenticated reviewers, purpose/recipient checks and human sign-off |
+| Advanced research | Optional classroom/voice assistance | Separate necessity, DPIA, policy, consent and feasibility validation |
 
-## Priority backlog
+No production capability is implied by the public demo. Browser `localStorage` is not secure records storage, editable local review is not finalisation, and provider grounding guards are not an accuracy benchmark.
 
-### P0 (must have now)
-
-- White-label `src/config.js` not containing school/company names.
-- Device responsive demo and test scripts.
-- Five synthetic 18-month profiles, evidence IDs and domains.
-- Provider picker, default public Gateway session, OpenAI & Gemini BYOK sandbox modes, offline mock.
-- Review, edit estimate, approval state, Print/PDF.
-- Clear `DEMO ONLY` warnings, no student data persistence.
-
-### P1 (before external live showcase)
-
-- Browser integration tests and visual screenshots for supported viewports.
-- CORS/origin/credential expiry/429 test on current Gateway.
-- API response schema and version contract test against current gateway.
-- Error telemetry sanitized of prompts/keys.
-- If needed: accessible mobile navigation and print stylesheet fixes.
-- One-page neutral demo instructions and a five-minute scripted walkthrough.
-
-### P2 (future pilot)
-
-- Operator-configurable portfolios, curriculum map, photo tagging **without** face recognition.
-- Real source-by-source fact-check screen and change tracking.
-- Signed reviewer attribution, submission rules and re-generation comparisons.
-- Pilot metrics dashboard (generation time, review minutes, factual support).
-
-### P3 (production prerequisites)
-
-- Authorized private API, tenant isolation, row-level access, audit, backups.
-- Contracts, privacy review, DPIA, data residency and provider evaluation.
-- Parent-facing delivery authorization and controlled exports.
-
-### Do not rush
-
-- Classroom AV capture, children's voiceprints/facial recognition, automated teacher rankings, auto-send family updates, inter-school transfers. These need separate governance and validation.
+Classroom AV capture, child biometrics, automated teacher ranking, automatic family messaging, inter-school transfer and commerce must not be introduced as incidental extensions. Each requires explicit scope, governance and independent validation.

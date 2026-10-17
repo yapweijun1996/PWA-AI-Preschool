@@ -12,7 +12,7 @@ This is a working dashboard, not a marketing hero or student-record feed.
 6. PanelCard “Drafts awaiting review”: “No drafts are waiting for review.” and “Three children are ready to draft.”; link/button “Open AI drafts”.
 7. ActionGroup: PrimaryButton “Continue with next unfinished child”; SecondaryButton “Draft narratives for all ready children (3)”; SecondaryButton “Print class report”.
 ## Data shown (fields, from which existing module/function)
-Use the class seed, not index.html's separate five-student/session-only showcase: CHILDREN and seedRecords() in src/portfolio-seed.js, classProgress(), computeStatus() and nextChildNeedingWork() in src/portfolio-model.js. P01 dashboard counts reflect the current 2026-S2 seed (12 not started, 5 in progress, 3 ready; 0 drafted/reviewed). Real-time totals update after local record changes.
+Use CHILDREN and seedRecords() in src/portfolio-seed.js, classProgress(), computeStatus() and nextChildNeedingWork() in src/portfolio-model.js. P01 dashboard counts reflect the current 2026-S2 seed (12 not started, 5 in progress, 3 ready; 0 drafted/reviewed). Real-time totals update after local record changes.
 ## Actions and navigation (what each control does, where it goes)
 Continue opens the next unfinished child in P03. Open portfolio opens that child's P03 route. Open AI drafts goes to P07; with zero drafts it shows an empty state and a link to P02 ready-to-draft children. Draft narratives for all ready children runs the currently selected provider only after explicit activation. Print class report opens P08 with class and current semester preselected.
 ## States (empty, loading, error, offline, long content, 20 children)
@@ -22,7 +22,7 @@ Use a two-by-two MetricCard grid, compact ChildRows and a two-column secondary A
 ## Accessibility notes
 Use one h1 and ordered section headings; make counts text-readable; progress has an accessible name/value; keyboard focus follows the selected action; announce saved/draft errors; never encode status using color alone.
 ## Implementation mapping
-Implemented in `class.html` at `#/`.
+Implemented at the root in `index.html` at `#/`.
 - `src/studio/pages/home.js`: exported `render`.
 - `src/studio/models/home-model.js`: exported `homeModel`.
 - Shared routing: `src/studio/router.js` (`parseRoute`, `buildRoute`); shell: `src/studio/shell.js` (`mountShell`, `navigationModel`); styles: `studio.css` and `src/studio/tokens.css`.

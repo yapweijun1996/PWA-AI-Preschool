@@ -22,7 +22,6 @@ async function main() {
           const context = { route, ...viewport, scheme };
           const origin = options.url || server.url;
           const base = new URL(origin);
-          if (base.pathname.endsWith('/')) base.pathname += 'class.html';
           const row = await capture(chrome.endpoint, base.href, context, options);
           row.budgets = evaluateBudgets(row.metrics, context, budgets);
           results.push(row);

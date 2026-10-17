@@ -1,5 +1,13 @@
 # 20 — Documentation and Project Changelog
 
+## Root studio cutover — 2026-10-17
+
+- Made the studio the sole root product; `class.html` is a small redirect preserving hash routes, including child/editor and print destinations.
+- Removed the old five-record long-scroll runtime and its exclusive schema/example, tests and documentation/evidence. Historical context belongs to `legacy-demo-v1`; shared studio provider, portfolio, report and PWA code remains in use.
+- Updated the short root README, documentation index, current behavior/security/deployment/PWA guidance, intentional Chinese quickstart and design route/file mappings. Retained intentional submission/UI-audit documents and clearly labelled production proposals.
+- Main-agent cutover verification: `npm run check && npm test && npm run build` passed, with 189/189 tests and 55 precached routes. Browser checks rendered the root, preserved `class.html#/classes` as root `#/classes`, and exercised the offline redirect after worker fragment normalization; no browser errors were reported. Relative Markdown scan: 42 documents, 118 links, zero broken. These supplied results are local cutover evidence, not deployment, physical-device or live-provider acceptance.
+- Root UI audits passed: `npm run ui:audit` covered 150 combinations with zero failed rows (`artifacts/ui-audit/2026-10-17T10-00-46-543Z/summary.md`); `npm run ui:audit -- --quick` covered 60 with zero failed rows (`artifacts/ui-audit/2026-10-17T10-03-19-358Z/summary.md`). No live Gateway/provider request or physical-device acceptance was performed.
+
 ## B4 mobile utility pages — 2026-10-17
 
 - Home puts Continue before metrics on phones, preserves whole metric values, and groups
@@ -113,7 +121,7 @@
 - Added config-only public logo support; defaults remain neutral, with no logo or organization configured.
 - Added dependency-free runtime-only `dist/` build and checked GitHub Actions Pages deployment; PRs never deploy.
 - Removed the stale ZIP packaging `MANIFEST.json`; its hashes and unverified status no longer describe the repository.
-- Recorded 27 passing tests, browser journeys at the required viewports, print/PDF proof, injected failures, and live Gateway HTTP session/response smoke in [the delivery report](24-verification-report.md).
+- Recorded 27 passing tests, browser journeys at the required viewports, print/PDF proof, injected failures, and live Gateway HTTP session/response smoke in the historical delivery report (retired with the old demo; see `legacy-demo-v1`).
 - Removed external font fetching; the static UI and Offline Mock require no external service after assets load.
 
 ## v0.2 — 2026-10-13
@@ -126,7 +134,7 @@
 - Added supplemental schemas, machine-readable future API outline, and AI coding agent brief.
 - Verified source syntax and baseline Node unit tests; browser E2E and live Gateway are explicitly **not verified** by this documentation build.
 
-## Deferred
+## Historical deferred items (pre-cutover)
 
 - Owner push and publication of the new PWA release; earlier static Pages deployment is separate evidence.
 - Integration E2E tests against live gateway and OpenAI/Gemini in a real browser.

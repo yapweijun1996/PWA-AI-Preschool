@@ -2,17 +2,17 @@
 
 ## Public demo data classification
 
-**PUBLIC & SYNTHETIC ONLY.** Fictional names/observations are hardcoded in JavaScript and therefore visible to anyone who opens the site. No student identifiers belonging to real people, biometric photos or audio may be uploaded. All input is treated as fictitious test material. A fake educator role is only a UI filter, not a security boundary.
+**PUBLIC & SYNTHETIC ONLY.** Bundled fictional names/records are visible to anyone who opens the site. No actual child identifiers, biometric photos or audio may be entered. Browser-local records remain fictional test material. Client-side filtering and editable review state are not security boundaries.
 
 ## Threats and mitigations
 
 | Threat | Demo mitigation | Production minimum |
 |---|---|---|
 | Child data leaked to GitHub Pages | Never include real records | Private backend, controlled storage, prepublication DLP scan |
-| Cross-student retrieval | Fictional evidence ID filtering; test only | Tenant/student authorization on every read, after vector search too |
+| Cross-student retrieval | Fictional child/semester-scoped inputs; browser filtering is not authorization | Tenant/student authorization on every read, after vector search too |
 | API key disclosure | No embedded key, disposable BYOK warning | Trusted server proxy with secret manager and restricted scopes |
 | Gateway abuse | Server-owned short-lived sessions and quota expected | Enforced per-project quota, IP/session limits, bot defense, logging and revocation |
-| Hallucinated development claims | Evidence IDs validated; educator review | Per-claim provenance checks and independent QA |
+| Hallucinated development claims | Structured input, grounding guards and mandatory educator review | Per-claim provenance checks and independent QA |
 | Prompt injection via observations | Evidence marked untrusted | Parse schema, isolate tool permissions, do not obey evidence instructions |
 | Child face/voice biometric misuse | No real recognition module | Separate lawful basis, necessity, safeguards and DPIA before considering pilot |
 | Staff surveillance | Not present | Transparent policy, purpose limitation, consultation and oversight |
@@ -21,9 +21,9 @@
 
 ## Static PWA security boundary
 
-- The HTML CSP restricts scripts, styles, fonts, workers and manifests to this origin; connections are limited to this origin and the configured default Gateway/OpenAI/Gemini hosts. HTTPS images allow authorized public branding in the original demo; class images remain same-origin/data only. Objects are disabled and base/form destinations remain same-origin. A custom Gateway origin requires updating the CSP in both `index.html` and `class.html` as well as public configuration.
-- The worker admits only exact, same-origin, query-free GET routes in its generated static allowlist. POST, other paths/origins, provider sessions, responses and credential-bearing URLs are not cached. Cache names include registration scope and release identity; cleanup touches only this app's obsolete releases.
-- Original-demo drafts, extra observations and approvals stay memory-only. Class-page records, photos, narratives and provider/model provenance instead persist in browser `localStorage`, without authenticated ownership, encryption or backup. Disposable BYOK keys stay in page memory in both demos, never localStorage, sessionStorage, URLs or Cache Storage. Static bundled fictional examples remain public and cached.
+- The root studio's CSP restricts scripts, styles, fonts, workers and manifests to this origin and connections to the configured Gateway/OpenAI/Gemini hosts. Images stay same-origin/data; objects are disabled and base/form destinations remain same-origin. A custom Gateway origin requires an explicit CSP and public-configuration update. `class.html` is a constrained redirect, not another provider-enabled application.
+- The worker admits only exact, same-origin, query-free static GET routes in its generated allowlist. POST, other paths/origins, provider sessions, responses and credential-bearing URLs are not cached. Cache names include registration scope and release identity; cleanup touches only this app's obsolete releases.
+- Studio records, photos, narratives and provider/model provenance persist in browser `localStorage`, without authenticated ownership, encryption or backup. Disposable BYOK keys and transient rejection history remain in page memory, never localStorage, sessionStorage, URLs or Cache Storage. Static bundled fictional examples remain public and cached.
 - HTTPS is provided by GitHub Pages; localhost is only a development secure-context exception. CSP and scoped caches do not provide staff authentication, tenant isolation, secure BYOK custody or protection from trusted same-origin scripts/extensions.
 - Class remote prompts allowlist first name, domain labels, current/previous ratings and comments; image bytes and photo metadata are excluded. Comments can still contain identifiers: fictional input only. Exact JSON, bounded strings and conservative grounding guards reject unsupported numbers/names/photo claims, Traditional-only characters and additions to no-evidence text. These heuristics do not verify every factual claim or guarantee language quality. Rejection never triggers mock generation; a teacher must explicitly select mock and review all drafts.
 

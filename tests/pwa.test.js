@@ -5,7 +5,7 @@ import vm from 'node:vm';
 import {initPwa} from '../src/pwa.js';
 
 const workerSource = await readFile(new URL('../sw.js', import.meta.url), 'utf8');
-const paths = ['./', './index.html', './class.html', './styles.css', './src/app.js', './src/pwa.js', './manifest.webmanifest', './icons/icon-192.png'];
+const paths = ['./', './index.html', './class.html', './studio.css', './src/studio/app.js', './src/pwa.js', './manifest.webmanifest', './icons/icon-192.png'];
 const scope = 'https://example.test/studio/';
 const cacheName = (base, version) => `ai-preschool-studio:${encodeURIComponent(base)}:${version}`;
 
@@ -69,8 +69,12 @@ test('install caches a complete release with no implicit activation; navigation 
   assert.equal(await index.text(), 'release:release-one:/studio/index.html');
   const classPage = await runtime.event('fetch', {request: {url: `${scope}class.html`, method: 'GET', mode: 'navigate'}});
   assert.equal(await classPage.text(), 'release:release-one:/studio/class.html');
-  const asset = await runtime.event('fetch', {request: new Request(`${scope}src/app.js`)});
-  assert.equal(await asset.text(), 'release:release-one:/studio/src/app.js');
+  for (const [route, cached] of [['#/classes', 'index.html'], ['class.html#/classes', 'class.html']]) {
+    const response = await runtime.event('fetch', {request: {url: scope + route, method: 'GET', mode: 'navigate'}});
+    assert.equal(await response.text(), `release:release-one:/studio/${cached}`);
+  }
+  const asset = await runtime.event('fetch', {request: new Request(`${scope}src/studio/app.js`)});
+  assert.equal(await asset.text(), 'release:release-one:/studio/src/studio/app.js');
   assert.equal(runtime.requests.length, paths.length, 'cached fetches never ask the mutable network');
 });
 
@@ -80,8 +84,8 @@ test('reinstalling an intact immutable release never overwrites it with mutable 
   const reinstall = worker({caches, fetcher: () => { throw new Error('network must not replace this release'); }});
   await reinstall.event('install');
   assert.equal(reinstall.requests.length, 0);
-  const response = await reinstall.event('fetch', {request: new Request(`${scope}styles.css`)});
-  assert.equal(await response.text(), 'release:release-one:/studio/styles.css');
+  const response = await reinstall.event('fetch', {request: new Request(`${scope}studio.css`)});
+  assert.equal(await response.text(), 'release:release-one:/studio/studio.css');
 });
 
 test('redirected shell responses are rejected rather than caching unrelated login or provider content', async () => {
@@ -98,10 +102,10 @@ test('failed installation leaves no partial release and preserves the previous o
   const caches = cacheStorage();
   const previous = worker({caches});
   await previous.event('install');
-  const failing = worker({version: 'release-two', caches, fetcher: request => request.url.endsWith('styles.css') ? new Response('Unavailable', {status: 503}) : new Response('new asset')});
+  const failing = worker({version: 'release-two', caches, fetcher: request => request.url.endsWith('studio.css') ? new Response('Unavailable', {status: 503}) : new Response('new asset')});
   await assert.rejects(failing.event('install'), /complete offline release/);
   assert.deepEqual(await caches.keys(), [cacheName(scope, 'release-one')]);
-  const response = await previous.event('fetch', {request: new Request(`${scope}src/app.js`)});
+  const response = await previous.event('fetch', {request: new Request(`${scope}src/studio/app.js`)});
   assert.match(await response.text(), /release-one/);
 });
 
@@ -112,7 +116,7 @@ test('a failed cache write removes the entire incomplete new version', async () 
     const cache = await open(name);
     const put = cache.put.bind(cache);
     cache.put = async (key, response) => {
-      if (key.endsWith('styles.css')) throw new Error('quota exceeded');
+      if (key.endsWith('studio.css')) throw new Error('quota exceeded');
       await put(key, response);
     };
     return cache;
@@ -143,9 +147,9 @@ test('provider, session, generated, unknown, cross-origin and query requests are
     new Request(`${scope}sessions/current`),
     new Request(`${scope}generated/portfolio.json`),
     new Request(`${scope}index.html?token=private`),
-    new Request(`${scope}styles.css?v=unrelated`),
+    new Request(`${scope}studio.css?v=unrelated`),
     new Request('https://example.test/other-studio/index.html'),
-    new Request(`${scope}src/app.js`, {method: 'POST', body: 'private'}),
+    new Request(`${scope}src/studio/app.js`, {method: 'POST', body: 'private'}),
     {url: `${scope}unknown-page`, method: 'GET', mode: 'navigate'}
   ];
   for (const request of requests) assert.equal(await runtime.event('fetch', {request}), undefined, request.url);
@@ -156,8 +160,8 @@ test('provider, session, generated, unknown, cross-origin and query requests are
 test('missing shell assets fail visibly without mixing in a different network release', async () => {
   const runtime = worker();
   await runtime.event('install');
-  runtime.caches.stores.get(cacheName(scope, 'release-one')).delete(`${scope}src/app.js`);
-  const response = await runtime.event('fetch', {request: new Request(`${scope}src/app.js`)});
+  runtime.caches.stores.get(cacheName(scope, 'release-one')).delete(`${scope}src/studio/app.js`);
+  const response = await runtime.event('fetch', {request: new Request(`${scope}src/studio/app.js`)});
   assert.equal(response.status, 503);
   assert.match(await response.text(), /Offline release unavailable/);
   assert.equal(runtime.requests.length, paths.length);

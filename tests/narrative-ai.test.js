@@ -29,6 +29,7 @@ const childInput = () => narrativeInputFor({ name: 'Avery Fictional-Surname' }, 
 const response = data => ({ ok: true, status: 200, text: async () => JSON.stringify(data) });
 const safeError = error => {
   assert.ok(error instanceof Error);
+  assert.ok(error.message.length < 300);
   assert.ok(!error.message.includes(key));
   assert.ok(!error.message.includes('PRIVATE_PROVIDER_BODY'));
   return true;
@@ -242,6 +243,148 @@ test('raw transport uses OpenAI Responses and Gemini JSON shapes with header-onl
   }
 });
 
+test('transport HTTP failures give bounded guidance without reading private response bodies', async () => {
+  for (const [status, guidance] of [[400, /request/], [401, /Credentials/], [403, /permissions/],
+    [404, /model/], [408, /timed out/], [413, /too large/], [422, /format/], [429, /quota/],
+    [500, /unavailable/], [502, /unavailable/], [504, /timed out/]]) {
+    let calls = 0, bodyReads = 0;
+    await assert.rejects(requestProviderText({ provider: 'openai', key, prompt: 'Fictional prompt',
+      fetchImpl: async () => {
+        calls++;
+        return { ok: false, status, text: async () => {
+          bodyReads++;
+          return JSON.stringify({ error: { message: `${key} PRIVATE_PROVIDER_BODY` } });
+        } };
+      } }), error => {
+      safeError(error);
+      assert.match(error.message, new RegExp(`HTTP ${status}:`));
+      assert.match(error.message, guidance);
+      return true;
+    });
+    assert.equal(calls, 1);
+    assert.equal(bodyReads, 0);
+  }
+});
+
+test('transport network and body-read failures never expose arbitrary exception messages', async () => {
+  for (const [fetchImpl, guidance] of [
+    [async () => { throw new Error(`${key} PRIVATE_PROVIDER_BODY`); }, /network.*CORS/],
+    [async () => ({ ok: true, status: 200, text: async () => {
+      throw new Error(`${key} PRIVATE_PROVIDER_BODY`);
+    } }), /could not be read/]
+  ]) await assert.rejects(requestProviderText({ provider: 'openai', key,
+    prompt: 'Fictional prompt', fetchImpl }), error => {
+    safeError(error);
+    assert.match(error.message, guidance);
+    return true;
+  });
+});
+
+test('transport timeout aborts the request without exposing provider exception text', async t => {
+  let triggerTimeout;
+  const timer = t.mock.method(globalThis, 'setTimeout', callback => {
+    triggerTimeout = callback;
+    return 1;
+  });
+  const clear = t.mock.method(globalThis, 'clearTimeout', () => {});
+  try {
+    await assert.rejects(requestProviderText({ provider: 'openai', key, prompt: 'Fictional prompt',
+      fetchImpl: async (url, options) => new Promise((resolve, reject) => {
+        options.signal.addEventListener('abort', () => reject(new Error(`${key} PRIVATE_PROVIDER_BODY`)), { once: true });
+        triggerTimeout();
+      }) }), error => {
+      safeError(error);
+      assert.match(error.message, /timed out.*Offline Mock/);
+      return true;
+    });
+  } finally {
+    timer.mock.restore();
+    clear.mock.restore();
+  }
+});
+
+test('transport rejects invalid JSON and malformed provider envelopes without leaking content', async () => {
+  for (const provider of ['openai', 'gemini']) {
+    for (const envelope of [null, [], [{}], 'provider text'])
+      await assert.rejects(requestProviderText({ provider, key, prompt: 'Fictional prompt',
+        fetchImpl: async () => response(envelope) }), safeError);
+    await assert.rejects(requestProviderText({ provider, key, prompt: 'Fictional prompt',
+      fetchImpl: async () => ({ ok: true, status: 200,
+        text: async () => `${key} PRIVATE_PROVIDER_BODY` }) }), error => {
+      safeError(error);
+      assert.match(error.message, /invalid JSON/);
+      return true;
+    });
+  }
+  const text = JSON.stringify(faithful());
+  for (const envelope of [
+    {}, { output_text: null }, { output: {} }, { output: 'text' }, { output: [null] },
+    { output: [{ content: { text } }] }, { output: [{ content: [null] }] },
+    { output: [{ content: [{ text: { message: `${key} PRIVATE_PROVIDER_BODY` } }] }] },
+    { output_text: text, output: {} }, { choices: {} }, { choices: [null] },
+    { choices: [{ message: { content: [text] } }] }, { output: [] }
+  ]) await assert.rejects(requestProviderText({ provider: 'openai', key, prompt: 'Fictional prompt',
+    fetchImpl: async () => response(envelope) }), safeError);
+  for (const envelope of [
+    {}, { candidates: {} }, { candidates: [null] }, { candidates: [{ content: null }] },
+    { candidates: [{ content: { parts: {} } }] }, { candidates: [{ content: { parts: [null] } }] },
+    { candidates: [{ content: { parts: [{ text: { message: `${key} PRIVATE_PROVIDER_BODY` } }] } }] },
+    { candidates: [] }, { candidates: [{ content: { parts: [] } }] }
+  ]) await assert.rejects(requestProviderText({ provider: 'gemini', key, prompt: 'Fictional prompt',
+    fetchImpl: async () => response(envelope) }), safeError);
+});
+
+test('each Gateway request obtains a fresh session and rejects unusable tokens before generation', async () => {
+  let sessions = 0, generations = 0;
+  const fetchImpl = async (url, options) => {
+    assert.ok(!url.includes(key));
+    assert.ok(!options.body.includes(key));
+    if (url.endsWith('/demo/session')) return response({ token: `temporary-session-${++sessions}` });
+    generations++;
+    assert.equal(options.headers.Authorization, `Bearer temporary-session-${sessions}`);
+    return response({ output_text: 'raw draft text' });
+  };
+  for (let attempt = 0; attempt < 2; attempt++)
+    assert.equal(await requestProviderText({ provider: 'gateway', key, prompt: 'Fictional prompt', fetchImpl }), 'raw draft text');
+  assert.equal(sessions, 2);
+  assert.equal(generations, 2);
+  for (const token of [undefined, [], '', '   ']) {
+    let calls = 0;
+    await assert.rejects(requestProviderText({ provider: 'gateway', prompt: 'Fictional prompt',
+      fetchImpl: async () => { calls++; return response({ token }); } }), safeError);
+    assert.equal(calls, 1);
+  }
+});
+
+test('Gateway generation errors expose neither session tokens nor private server bodies', async () => {
+  let calls = 0, bodyReads = 0;
+  await assert.rejects(requestProviderText({ provider: 'gateway', prompt: 'Fictional prompt',
+    fetchImpl: async () => {
+      if (++calls === 1) return response({ token: key });
+      return { ok: false, status: 401, text: async () => {
+        bodyReads++;
+        return `${key} PRIVATE_PROVIDER_BODY`;
+      } };
+    } }), error => {
+    safeError(error);
+    assert.match(error.message, /HTTP 401/);
+    return true;
+  });
+  assert.equal(calls, 2);
+  assert.equal(bodyReads, 0);
+});
+
+test('missing keys, invalid Gemini models and unsupported providers fail before network access', async () => {
+  let calls = 0;
+  for (const options of [
+    { provider: 'openai', key: '' }, { provider: 'gemini', key: '' },
+    { provider: 'gemini', key, model: `bad/model/${key}` },
+    { provider: `${key} PRIVATE_PROVIDER_BODY` }
+  ]) await assert.rejects(requestProviderText({ ...options, prompt: 'Fictional prompt',
+    fetchImpl: async () => { calls++; throw new Error('Unexpected request'); } }), safeError);
+  assert.equal(calls, 0);
+});
+
 test('AI provenance survives persistence and teacher edits have unambiguous labels', () => {
   const storage = memoryStorage(), store = createStore(storage), record = readyRecord();
   record.narratives.english = { text: faithful().english, source: 'ai', edited: false, provider: 'openai', model: providerModels.openai };
@@ -255,8 +398,8 @@ test('AI provenance survives persistence and teacher edits have unambiguous labe
     english: { ...saved, provider: 'unexpected' } } }), /provider/);
 });
 
-test('class CSP limits connections exactly and class controller contains no credential storage writes', async () => {
-  const html = await readFile(new URL('../class.html', import.meta.url), 'utf8');
+test('root CSP limits connections exactly and studio controller contains no credential storage writes', async () => {
+  const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
   const policy = html.match(/http-equiv="Content-Security-Policy" content="([^"]+)"/)[1];
   assert.deepEqual(policy.match(/(?:^|;)\s*connect-src\s+([^;]+)/)[1].trim().split(/\s+/), [
     "'self'", 'https://gpt.yapweijun1996.com', 'https://api.openai.com', 'https://generativelanguage.googleapis.com'

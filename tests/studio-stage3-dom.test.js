@@ -129,7 +129,7 @@ test('settings probe on click, apply memory-only keys and clear disposed fields'
   }
 });
 
-test('about contains the full nonimplemented scope, honest storage limits and legacy link', t => {
+test('about contains the full nonimplemented scope and honest storage limits', t => {
   const { page } = mount(t, about);
   for (const item of NOT_IMPLEMENTED) assert.ok(page.textContent.includes(item));
   assert.match(page.textContent, /Stored only in this browser/);
@@ -139,7 +139,6 @@ test('about contains the full nonimplemented scope, honest storage limits and le
   assert.match(page.textContent, /CJK fonts/);
   assert.equal(anchor(page, 'Read the submission write-up').href,
     'https://github.com/yapweijun1996/PWA-AI-Preschool/blob/main/docs/26-submission-writeup.md');
-  assert.equal(anchor(page, 'Open the legacy demo').href, './index.html');
 });
 
 test('every module keeps five tabs, More destinations and parent selection', async t => {

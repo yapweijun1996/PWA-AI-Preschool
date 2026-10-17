@@ -22,7 +22,7 @@ Hide SidebarNav for MobileTabBar. Keep the child PageHeader and ProgressBar visi
 ## Accessibility notes
 Use one h1, labelled DomainTabs with selected state, fieldset/legend for RatingControl, persistent FormField labels, required alt text, live save/draft feedback and visible focus. Do not convey ratings or status by color alone; honor reduced motion.
 ## Implementation mapping
-Implemented in `class.html` at `#/classes/class-a/children/:id?sem=2026-S2`.
+Implemented at the root in `index.html` at `#/classes/class-a/children/:id?sem=2026-S2`.
 - `src/studio/pages/child-editor.js`: exported `render`.
 - `src/studio/editor-model.js`: exported `editorModel`; domain and narrative controls are composed by the page.
 - Shared routing: `src/studio/router.js` (`parseRoute`, `buildRoute`); shell: `src/studio/shell.js` (`mountShell`, `navigationModel`); styles: `studio.css` and `src/studio/tokens.css`.

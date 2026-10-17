@@ -22,7 +22,7 @@ Use MobileTabBar with Drafts active. Stack provider, run progress, review queue 
 ## Accessibility notes
 Announce run progress and errors with live status text; pair every source and state color with its exact text label. Keep keyboard order aligned with queue order and show focus.
 ## Implementation mapping
-Implemented in `class.html` at `#/drafts`.
+Implemented at the root in `index.html` at `#/drafts`.
 - `src/studio/pages/drafts.js`: exported `render`.
 - `src/studio/models/drafts-model.js`: exported `draftsModel`.
 - Shared routing: `src/studio/router.js` (`parseRoute`, `buildRoute`); shell: `src/studio/shell.js` (`mountShell`, `navigationModel`); styles: `studio.css` and `src/studio/tokens.css`.

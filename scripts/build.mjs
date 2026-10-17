@@ -8,8 +8,8 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 const output = path.join(root, 'dist');
 // Audit-only helpers in scripts/ui-audit stay local; never ship them as runtime assets.
 const assets = [
-  'index.html', 'styles.css', 'favicon.svg',
-  'class.html', 'studio.css', 'src/class-view.js',
+  'index.html', 'favicon.svg',
+  'class.html', 'src/redirect.js', 'studio.css', 'src/class-view.js',
   'src/studio/tokens.css', 'src/studio/app.js', 'src/studio/router.js',
   'src/studio/lists.css',
   'src/studio/context.js', 'src/studio/ui.js', 'src/studio/shell.js',
@@ -25,7 +25,7 @@ const assets = [
   'src/studio/pages/print.js', 'src/studio/pages/ai-settings.js', 'src/studio/pages/about.js',
   'src/report-model.js', 'src/report-view.js',
   'src/narrative.js', 'src/photo.js', 'src/portfolio-model.js', 'src/portfolio-seed.js', 'src/portfolio-store.js',
-  'src/app.js', 'src/config.js', 'src/data.js', 'src/providers.js', 'src/pwa.js',
+  'src/config.js', 'src/providers.js', 'src/pwa.js',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png',
 ];
 const inputs = [...assets, 'sw.js'];

@@ -15,7 +15,7 @@ The page offers clear privacy facts and a direct link to the project write-up.
 ## Data shown (fields, from which existing module/function)
 Storage and provider facts reflect src/studio/context.js, src/portfolio-store.js, src/narrative.js and src/providers.js. Known limits and non-implemented items are summarized from docs/26-submission-writeup.md; keyboard shortcuts come from src/studio/pages/child-editor.js.
 ## Actions and navigation (what each control does, where it goes)
-The write-up link opens the local submission document. Keyboard shortcuts navigate between adjacent children only while the P03 editor is active. Sidebar or More menu returns to any fixed route.
+The write-up link opens the configured public main-branch submission document, not an unpublished local docs file. Keyboard shortcuts navigate between adjacent children only while the P03 editor is active. Sidebar or More menu returns to any fixed route.
 ## States (empty, loading, error, offline, long content, 20 children)
 This static reference page works offline. If the write-up cannot be opened, preserve the page and show a normal link error state. Long limitation lists scroll vertically without hiding the privacy notice.
 ## Responsive behaviour (what changes at 390 px)
@@ -23,7 +23,7 @@ Use MobileTabBar with More active. Stack PanelCards and make the write-up link f
 ## Accessibility notes
 Use descriptive headings, real link text and semantic lists for NOT IMPLEMENTED items. Keep privacy facts and limitations readable without relying on warning color.
 ## Implementation mapping
-Implemented in `class.html` at `#/about`.
+Implemented at the root in `index.html` at `#/about`.
 - `src/studio/pages/about.js`: exported `render` and `writeupHref`.
 - Shared routing: `src/studio/router.js` (`parseRoute`, `buildRoute`); shell: `src/studio/shell.js` (`mountShell`, `navigationModel`); styles: `studio.css` and `src/studio/tokens.css`.
 

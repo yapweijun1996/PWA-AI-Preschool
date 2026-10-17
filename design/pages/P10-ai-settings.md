@@ -22,7 +22,7 @@ Use MobileTabBar with More active. Stack all ProviderCards, key field, disclosur
 ## Accessibility notes
 ProviderCards form a labelled single-choice group; key field has a persistent label and associated warning. Announce connection results and show status with text plus icon, never color alone.
 ## Implementation mapping
-Implemented in `class.html` at `#/settings/ai`.
+Implemented at the root in `index.html` at `#/settings/ai`.
 - `src/studio/pages/ai-settings.js`: exported `render`.
 - `src/studio/models/settings-model.js`: exported `createSettingsModel`.
 - Shared routing: `src/studio/router.js` (`parseRoute`, `buildRoute`); shell: `src/studio/shell.js` (`mountShell`, `navigationModel`); styles: `studio.css` and `src/studio/tokens.css`.

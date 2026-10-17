@@ -2,9 +2,9 @@
 
 ## Purpose
 
-This directory is the design SSOT for the implemented fictional-data, static AI Preschool Studio. The page-per-module routes below run in `class.html`; page specs and tokens remain the design contract, with code-inspected differences recorded in implementation notes.
+This directory is the design SSOT for the implemented fictional-data, static AI Preschool Studio. The page-per-module routes below run at the [live root](https://yapweijun1996.github.io/PWA-AI-Preschool/) in `index.html`; `class.html` redirects there while preserving the hash. Page specs and tokens remain the design contract, with code-inspected differences recorded in implementation notes.
 
-The screenshots in `current/` document the earlier implementation, not the current studio. [`BRIEF.md`](BRIEF.md) is historical input; [`00-information-architecture.md`](00-information-architecture.md) describes the implemented route structure.
+The screenshots in `current/` document the earlier class prototype, not the current studio. [`BRIEF.md`](BRIEF.md) is historical input; the removed long-scroll demo belongs to `legacy-demo-v1`. [`00-information-architecture.md`](00-information-architecture.md) describes the current route structure.
 
 ## How the SSOT works
 
@@ -19,7 +19,7 @@ All 12 page specs and all 24 expected wireframe WebP images are present: sitemap
 
 ## Menu and routes (canonical)
 
-The routes below are implemented in `class.html` (P12 is a shared-state reference, not a route). The canonical menu order comes from `NAV_ITEMS` in `src/studio/router.js`: Home, Class portfolios, Students, Evidence library, AI drafts, Reports, AI provider settings, About and privacy. Child pages keep their parent active.
+The routes below are implemented at the root in `index.html` (P12 is a shared-state reference, not a route). The canonical menu order comes from `NAV_ITEMS` in `src/studio/router.js`: Home, Class portfolios, Students, Evidence library, AI drafts, Reports, AI provider settings, About and privacy. Child pages keep their parent active.
 
 | ID | Page | Canonical route | Desktop menu / active parent | Mobile destination | Spec route | Wireframes |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -44,7 +44,7 @@ Desktop uses `AppShell` with `SidebarNav`, `TopBar` and `DemoNotice`. The fixed 
 
 At mobile width, the sidebar becomes the five-tab `MobileTabBar`: Home, Classes, Students, Drafts, More. Child pages highlight their parent tab; More opens Evidence library, Reports, AI provider settings and About and privacy. P09 is a print document without app navigation and retains its report disclaimer. P12 is a reference sheet, not a product route.
 
-`class.html` mounts `src/studio/app.js` and the shared studio shell. `index.html` / `src/app.js` remains the unchanged legacy long-scroll demo. `legacyRedirect()` preserves `#/child/:id?sem=…`; unknown routes show Home with a visible notice. Real login, server/database, authenticated approval, vector RAG and production AI hosting remain NOT IMPLEMENTED.
+`index.html` mounts `src/studio/app.js` and the shared studio shell. `class.html` is only a hash-preserving root redirect. `legacyRedirect()` preserves `#/child/:id?sem=…`; unknown routes show Home with a visible notice. Real login, server/database, authenticated approval, vector RAG and production AI hosting remain NOT IMPLEMENTED.
 
 ## Historical build sequence
 
@@ -100,7 +100,7 @@ The page specs and canonical tokens take precedence over these wireframe details
 
 ## Current implementation file map
 
-- `class.html`: host; `src/studio/app.js`: page dispatch, route focus and PWA integration.
+- `index.html`: studio host; `class.html`: compatibility redirect; `src/studio/app.js`: page dispatch, route focus and PWA integration.
 - `src/studio/router.js`: `NAV_ITEMS`, `parseRoute`, `buildRoute`, `legacyRedirect`, `parentModule`.
 - `src/studio/context.js`: `createContext`, shared records, semester, provider and persistence/drafting state.
 - `src/studio/shell.js`: `mountShell`, `navigationModel`; `src/studio/ui.js`: DOM and feedback helpers.

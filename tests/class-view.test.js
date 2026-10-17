@@ -145,7 +145,7 @@ test("class UI sources avoid dynamic HTML, inline code and unsafe evaluation", a
     }
     return result;
   }
-  const files = [new URL("../class.html", import.meta.url),
+  const files = [new URL("../index.html", import.meta.url), new URL("../class.html", import.meta.url),
     new URL("../studio.css", import.meta.url), ...await sources(studio),
     ...names.map(name => new URL(name, sourceDirectory))];
   for (const file of files) {

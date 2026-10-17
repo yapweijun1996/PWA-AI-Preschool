@@ -1,14 +1,14 @@
 # Design brief — page-per-module wireframes (SSOT inputs)
 
-Historical input brief (2026-10-17). The result is implemented; see README.md.
+Historical input brief (2026-10-17), not current product instructions. The result runs at the [root studio](https://yapweijun1996.github.io/PWA-AI-Preschool/); see [the design index](README.md). The removed long-scroll version is historical under `legacy-demo-v1`.
 Product: **AI Preschool Studio** — a fictional-data static PWA for preschool teachers: class portfolios with four learning domains (English, Chinese, Mathematics, Social-Emotional Development), ratings (Emerging, Developing, Secure, Extending), comments, photos, AI-drafted narratives that the teacher reviews and edits, semesters S1 (Jan-Jun) and S2 (Jul-Dec) where S2 shows S1 ratings, printable A4 reports with Simplified Chinese.
 
 ## Problem to solve
-Today the main page (`index.html`) is ONE long scrolling page: hero + metrics + student directory + evidence + AI portfolio. The menu items Overview / Students / AI Portfolio / Evidence library only scroll to different spots of that page. "AI provider settings" is a modal dialog. `class.html` is a separate mini-app with a different look and no shared navigation. There is no single source of truth (SSOT) for layout, navigation, components or states.
+Before the redesign, the main page was one long scrolling showcase: hero, metrics, student directory, evidence and AI portfolio. Overview / Students / AI Portfolio / Evidence library scrolled within that page; provider settings opened a modal. A separate class prototype had a different look and no shared navigation. This historical problem is resolved by the root studio; `class.html` is now only a hash-preserving redirect.
 
 Goal: design a **page-per-module** application. Every menu item is its own page (own route, own wireframe, own spec), all sharing ONE shell (navigation, topbar, notices) and ONE design system. The wireframes plus the page specs become the SSOT that implementers follow.
 
-Current screenshots (real, for reference, in `design/current/`): `01-index-desktop.png`, `02-index-mobile.png`, `03-class-overview-desktop.png`, `04-class-overview-mobile.png`, `05-child-editor-desktop.png`, `06-child-editor-mobile.png`, `07-print-child.png`.
+Historical class-prototype screenshots retained in `current/`: `03-class-overview-desktop.png`, `04-class-overview-mobile.png`, `05-child-editor-desktop.png`, `06-child-editor-mobile.png`, `07-print-child.png`. Old-only long-scroll screenshots were removed with that product; use `legacy-demo-v1` for its history.
 
 ## Hard constraints
 - Fictional data only: made-up child names (mix of English names and Simplified Chinese names), abstract placeholder pictures (shapes, illustrations), NO real people, faces, photos, logos, company or school names. Product name is exactly "AI Preschool Studio".
@@ -51,7 +51,7 @@ Child editor (P03) must NOT be one long scroll: sticky child header (name, "5 / 
 # Pxx — Name
 Route / menu item / who uses it / purpose (2 lines)
 ## Wireframes
-![desktop](../wireframes/Pxx-name-desktop.webp) ![mobile](../wireframes/Pxx-name-mobile.webp)
+Insert the actual desktop/mobile wireframe paths for the chosen page; P09 and P12 have one reference image each.
 ## Regions (top to bottom, left to right; numbered)
 1. ... (component names from the design system, exact visible copy in quotes)
 ## Data shown (fields, from which existing module/function)
@@ -62,4 +62,4 @@ Route / menu item / who uses it / purpose (2 lines)
 ## Implementation mapping (existing files/functions to reuse; new files proposed; hash route)
 ## Acceptance checks (5-8 testable bullets)
 ```
-Existing code to read for real capabilities: `index.html`, `src/app.js`, `src/data.js`, `src/providers.js`, `class.html`, `src/class-app.js`, `src/class-view.js`, `src/portfolio-model.js`, `src/narrative.js`, `src/report-model.js`, `src/report-view.js`, `src/pwa.js`, `docs/26-submission-writeup.md`.
+Current implementation references: `index.html`, `src/studio/app.js`, `src/studio/router.js`, `src/studio/context.js`, `src/providers.js`, `src/class-view.js`, `src/portfolio-model.js`, `src/narrative.js`, `src/report-model.js`, `src/report-view.js`, `src/pwa.js` and [the submission write-up](../docs/26-submission-writeup.md). Historical retired source belongs to `legacy-demo-v1`, not the current file map.

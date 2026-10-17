@@ -58,13 +58,13 @@ Content-Type: application/json
 
 `POST https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent` with `x-goog-api-key: <USER_TEST_KEY>`; body carries `contents` and `generationConfig.responseMimeType=application/json`. Client can fail on CORS or vendor restrictions. Model names change; don't promise model availability based solely on source defaults. Never put keys in query parameters or static bundles.
 
-## Portfolio response contract
+## Studio narrative response contract
 
-Prompts include the period from `src/data.js` and only the selected student's supplied fictional observations. The remote portfolio must contain exactly `summary`, `domains`, `nextSteps`, and `evidenceIds`; provider-supplied `generationMode` or extra fields are rejected. The application attaches its own generation label after a successful remote call. Offline Mock is a separately selected, labelled deterministic mode, never a failure fallback.
+`src/narrative.js` builds per-domain requests from the selected fictional child's first name, rating, comment and available previous rating. Photos are not sent. Strict JSON parsing, first-name/language constraints and grounding guards reject unsupported or malformed output without changing the existing narrative. See [semester data and traceability](05-data-and-rag.md) and the [submission write-up](26-submission-writeup.md).
 
-Every domain with evidence must cite its own domain IDs inline as `[EVIDENCE-ID]`. Summary factual claims require inline references; next steps must be provisional suggestions and any factual claims there also need references. Unsupported domains must state an evidence gap. The consumer rejects schema violations, duplicate/unknown/other-student evidence IDs, references missing from `evidenceIds`, cross-domain citations, and observed domains without any citation. Valid IDs alone do **not** prove that claims are supported or that all factual statements are cited; educator review is still required. See [data and traceability](05-data-and-rag.md) and the four-field schema/example.
+These guards can reject faithful text or miss unsupported claims; they do not establish factual entailment or a quality benchmark. Teacher review remains mandatory. Provider/model/source metadata is recorded with accepted narratives; Offline mock is a separately selected, labelled deterministic mode, never a failure fallback.
 
-Transport responses must be JSON objects. OpenAI/Gateway output arrays and Gemini candidate/part arrays are checked before reading text; malformed envelopes, missing visible text, array portfolios, prose-wrapped JSON and incomplete/extra portfolio fields fail visibly. A complete JSON object inside a single markdown JSON fence is accepted, but no object is extracted from surrounding prose or arrays.
+Transport responses must be JSON objects. OpenAI/Gateway output arrays and Gemini candidate/part arrays are checked before reading text; malformed envelopes or missing visible text fail visibly. Raw provider output and credentials must not be rendered as error guidance.
 
 ## Error behavior
 
@@ -72,7 +72,7 @@ Transport responses must be JSON objects. OpenAI/Gateway output arrays and Gemin
 - Error response bodies are never read or shown. Provider error strings, raw JSON, request credentials and temporary tokens are never interpolated into displayed errors.
 - Network/CORS and 30-second request timeout failures use local actionable messages. Invalid JSON, malformed envelopes and unreadable responses are rejected without echoing raw content.
 - No failed request produces a substitute portfolio or automatically retries through another provider. The user must explicitly retry or choose Offline Mock.
-- Each Gateway generation obtains a new public short-lived session; no long-lived Gateway key is bundled or persisted. Runtime status and origin-specific CORS evidence belong in the [verification report](24-verification-report.md), not an assumption of universal availability.
+- Each Gateway generation obtains a new public short-lived session; no long-lived Gateway key is bundled or persisted. Record runtime status and origin-specific CORS evidence separately in the [submission write-up](26-submission-writeup.md), never as an assumption of universal availability.
 
 ## Security notes
 

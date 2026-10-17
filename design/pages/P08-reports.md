@@ -21,7 +21,7 @@ Use MobileTabBar with More active. Stack the selectors, warnings and preview; sh
 ## Accessibility notes
 Use labelled single-select controls, a heading for completeness warnings, semantic warning text and a readable thumbnail caption. Print action and preview links remain keyboard reachable.
 ## Implementation mapping
-Implemented in `class.html` at `#/reports`.
+Implemented at the root in `index.html` at `#/reports`.
 - `src/studio/pages/reports.js`: exported `render`.
 - `src/studio/models/reports-model.js`: exported `reportsModel`.
 - Shared routing: `src/studio/router.js` (`parseRoute`, `buildRoute`); shell: `src/studio/shell.js` (`mountShell`, `navigationModel`); styles: `studio.css` and `src/studio/tokens.css`.
