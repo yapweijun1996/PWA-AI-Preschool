@@ -1,17 +1,12 @@
 # AI Preschool Studio — White-label Browser Demo
 
-**Status:** completed fictional-only static PWA demo; deployed-origin route, cache and Gateway checks recorded; physical-device and true offline-reload acceptance remain untested. **Audience:** education product teams, prospective operators, engineers and reviewers. **No school affiliation is asserted.**
+**Live demo:** https://yapweijun1996.github.io/PWA-AI-Preschool/class.html - **Source:** this repository - **Design SSOT:** [design/README.md](design/README.md) - **Write-up:** [docs/26-submission-writeup.md](docs/26-submission-writeup.md)
+
+**Status:** fictional-only static PWA demo with studio routes implemented; physical devices, true studio offline reload, screen readers, Safari/Firefox, Windows/Linux CJK fonts and live OpenAI/Gemini test keys remain untested. **Audience:** education product teams, prospective operators, engineers and reviewers. **No school affiliation is asserted.**
 
 A browser-first, GitHub Pages–ready demonstration of evidence-grounded preschool learning portfolios. Visitors can try the default public GPT Demo Gateway (if configured and live), use a temporary **BYOK** OpenAI or Gemini test key, or choose **Offline Mock**. The UI uses **five fictional students** and synthetic observations across an illustrative **18-month** period.
 
 > **Hard restriction:** This public project is **not** a school records platform. Never input real child identities, images, audio, observations, staff records or company-only documents. Teacher access is simulated client-side. The app does not provide production authentication, tenant isolation or a compliant data-processing service.
-
-Studio avatars reuse the fictional seed's Latin initials, including Chinese sample names.
-Three-letter initials use compact typography without wrapping; circles remain at least
-40 px and do not shrink in flex rows. Mobile class cards use tighter vertical padding.
-Responsive DOM QA in light mode at 390, 430 and 1440 px confirmed contained, centred
-avatar text. At 390 × 844, document heights were Classes 4,884 px, Students 4,358 px
-and Evidence 5,241 px. Browser screenshot capture timed out; visual QA remains unverified.
 
 ## Quick start
 
@@ -39,11 +34,6 @@ Open the [live class studio](https://yapweijun1996.github.io/PWA-AI-Preschool/cl
 for the static, vanilla ES-module studio: 20 fictional children, semester comparison,
 browser-local autosave, editable drafts, review and printable reports.
 The original five-record `index.html` demo remains independent and unchanged.
-
-Deployed merge commit: `0c30b26`. Previous stable release / rollback commit: `108c80f`.
-For this documentation update, `npm run check` passed and `npm test` confirmed
-**177 passed, 0 failed**. Supplied Actions run `39002277394` passed both check/test/build
-and GitHub Pages deployment jobs.
 
 ```bash
 npm run build && python3 -m http.server 4173 --directory dist
@@ -78,21 +68,6 @@ rejection history remain in page memory. Browser storage is neither secure stora
 Offline mock is explicit and labelled, not AI. Provider failures never silently select mock.
 Grounding can reject faithful text or miss unsupported claims; teacher review is mandatory.
 
-Owner-supplied QA (2026-10-17, built-in browser, `dist`, light scheme): every route loaded at
-1440×900, 430×932 and 390×844 with one focused h1, no horizontal overflow and targets at least
-44 px. Home reduced from 9,273 px to 1,162 px with three needing-work rows. Mock drafting,
-editing, persisted review, fake-key non-persistence and sanitized failure were exercised.
-The C-01 S1 PDF had two A4 pages, embedded PingFang SC, correct Simplified Chinese and no
-app chrome. These are supplied observations, not checks rerun for this documentation edit.
-
-Supplied deployed-origin verification (2026-10-17): all 14 route checks loaded with one h1
-and no horizontal overflow; the active service worker cached 56 entries. GPT Demo Gateway
-drafting for C-02 / 2026-S2 accepted three domains and visibly rejected English through
-grounding checks. This single non-deterministic sample is not a quality benchmark.
-
-Service-worker offline reload with networking disabled, real hardware, screen readers,
-Safari/Firefox, Windows/Linux CJK fonts and real OpenAI/Gemini test keys remain untested.
-Registration/cache population were verified, not a true offline reload.
 No teacher-time, edit-rate or quality measurement is claimed.
 
 Implementation: `src/studio/` contains routing, context, shared shell/UI, pages and models;

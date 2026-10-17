@@ -3,6 +3,7 @@
 ## Page-per-module studio and design SSOT — 2026-10-17
 
 - Fixed ≤600 px Classes/Students cards and Evidence rows; final measured 390 px heights 4,884 / 4,358 / 5,241 px; retained desktop layouts and refreshed verification evidence.
+- Studio avatars reuse fictional-seed Latin initials with compact, non-wrapping typography and minimum 40 px circles; responsive DOM QA confirmed containment, while mobile header DOM QA measured 109 px with no route overflow; screenshot capture timed out, leaving visual and physical-iPhone verification unverified.
 - Replaced the class prototype with the routed `class.html` studio: shared desktop sidebar,
   topbar, amber safety notice, mobile chip row and five bottom tabs; print routes hide chrome.
 - Added Home, class/editor, students/profile, evidence, drafts, reports, provider settings and
