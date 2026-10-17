@@ -8,6 +8,18 @@ export function navigationModel(name) {
   return NAV_ITEMS.map(item => ({ ...item, active: item.name === parent }));
 }
 
+export function providerChipModel(provider) {
+  const labels = {
+    mock: 'Offline mock', gateway: 'GPT Demo Gateway',
+    openai: 'OpenAI key', gemini: 'Gemini key'
+  };
+  const suffix = ['failed', 'ok'].includes(provider.status) ? ` · ${provider.status}` : '';
+  return {
+    short: `${labels[provider.id]}${suffix}`,
+    full: `${PROVIDER_LABELS[provider.id]} · ${provider.status}`
+  };
+}
+
 export function mountShell(ctx) {
   const root = el('div', undefined, 'app-shell');
   const nav = navigation();
@@ -19,6 +31,9 @@ export function mountShell(ctx) {
     'NOT IMPLEMENTED: real login / server / database']) {
     notice.append(el('span', text));
   }
+  notice.append(el('p',
+    'Fictional demo data | Stored only in this browser | '
+      + 'NOT IMPLEMENTED: real login / server / database', 'mobile-notice'));
   const feedback = el('div', undefined, 'session-feedback');
   const actionFeedback = el('div', undefined, 'action-feedback');
   const live = el('p', undefined, 'visually-hidden');
@@ -76,9 +91,20 @@ function topbar(ctx) {
   pwa.append(el('summary', 'Offline and installation details'), host);
   root.append(el('strong', 'AI Preschool Studio', 'mobile-brand'), breadcrumb, label, chips);
   ctx.subscribe(() => {
+    const model = providerChipModel(ctx.provider);
+    provider.setAttribute('aria-label', model.full);
+    provider.title = model.full;
     provider.replaceChildren(icon('settings'),
-      el('span', `${PROVIDER_LABELS[ctx.provider.id]} · ${ctx.provider.status}`), icon('chevron'));
-    pwaChip.replaceChildren(pwaStatusChip(ctx.pwa));
+      el('span', model.full, 'provider-full'),
+      el('span', model.short, 'provider-short'), icon('chevron'));
+    const pwaStatus = pwaStatusChip(ctx.pwa);
+    const short = ctx.pwa?.updateAvailable ? 'Update available'
+      : ctx.pwa?.cacheReady ? 'Offline ready' : 'Not verified';
+    pwaStatus.setAttribute('aria-label', pwaStatus.textContent);
+    pwaStatus.title = pwaStatus.textContent;
+    pwaStatus.replaceChildren(el('span', pwaStatus.textContent, 'provider-full'),
+      el('span', short, 'provider-short'));
+    pwaChip.replaceChildren(pwaStatus);
     semester.value = ctx.semester;
     semester.disabled = ctx.busy;
   });

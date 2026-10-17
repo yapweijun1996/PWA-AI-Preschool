@@ -997,6 +997,48 @@ h1:focus { outline: none; }
 }
 @media print { .pwa-details { display: none !important; } }
 
+.provider-short, .mobile-notice { display: none; }
+@media (max-width: 600px) {
+  .topbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-1);
+    padding: var(--space-1) var(--space-2);
+    position: static;
+  }
+  .mobile-brand { white-space: nowrap; font-size: var(--text-md); }
+  .topbar label { margin: 0; }
+  .topbar label select { padding: var(--space-1) var(--space-2); }
+  .topbar .status-chips {
+    grid-column: 1 / -1;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: var(--space-1);
+    padding: var(--space-1) 0;
+  }
+  .topbar .status-chips > * { flex: 0 0 auto; }
+  .topbar .status-chips .chip {
+    white-space: nowrap;
+    font-size: var(--text-xs);
+    padding: var(--space-1);
+    gap: var(--space-1);
+  }
+  .topbar .status-chips .icon { width: var(--text-sm); height: var(--text-sm); }
+  .topbar .status-chips a > .icon:last-child,
+  .topbar .provider-full { display: none; }
+  .topbar .provider-short { display: inline; }
+  .app-content > .notice { align-items: flex-start; padding: var(--space-2); }
+  .app-content > .notice > span { display: none; }
+  .app-content > .notice > .icon { flex: 0 0 var(--text-sm); }
+  .mobile-notice {
+    flex: 1;
+    min-width: 0;
+    display: block;
+    margin: 0;
+    font-size: calc(var(--text-xs) + 1px);
+    line-height: var(--line-tight);
+  }
+}
 .compact-domain-label, .compact-domain-change { display: none; }
 @media (max-width: 600px) {
   .students-page .chips button { min-width: var(--control-min-height); }

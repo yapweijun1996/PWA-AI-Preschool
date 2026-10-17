@@ -7,6 +7,24 @@ import { printModel } from '../src/studio/pages/print.js';
 import { DOMAINS } from '../src/portfolio-model.js';
 import { avatarClass } from '../src/studio/ui.js';
 import { CHILDREN } from '../src/portfolio-seed.js';
+import { providerChipModel } from '../src/studio/shell.js';
+
+test('provider chip keeps full disclosure and only emphasizes failed or ok states', () => {
+  const labels = {
+    mock: 'Offline mock', gateway: 'GPT Demo Gateway',
+    openai: 'OpenAI key', gemini: 'Gemini key'
+  };
+  for (const [id, label] of Object.entries(labels)) {
+    for (const status of ['not tested', 'testing', 'failed', 'ok']) {
+      const model = providerChipModel({ id, status });
+      const suffix = ['failed', 'ok'].includes(status) ? ` · ${status}` : '';
+      assert.equal(model.short, label + suffix);
+      assert.ok(model.full.endsWith(` · ${status}`));
+      if (id === 'mock') assert.ok(model.full.includes('(not AI)'));
+      if (id === 'openai' || id === 'gemini') assert.ok(model.full.includes('(test key)'));
+    }
+  }
+});
 
 test('three-letter Latin initials stay compact, including Chinese sample names', () => {
   for (const initials of ['CXH', 'WYQ', 'LYN']) {
