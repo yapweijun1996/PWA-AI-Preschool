@@ -69,6 +69,7 @@ export function context(options = {}) {
 export function dom(t) {
   const document = new Element('document');
   document.createElement = tag => new Element(tag, document);
+  document.createElementNS = (_namespace, tag) => new Element(tag, document);
   const previous = Object.getOwnPropertyDescriptor(globalThis, 'document');
   Object.defineProperty(globalThis, 'document', { configurable: true, value: document });
   t.after(() => {

@@ -5,37 +5,50 @@ import { buildRoute } from '../router.js';
 import { CLASS } from '../../portfolio-seed.js';
 
 export function render(ctx, route) {
-  const root = el('section');
+  const root = el('section', undefined, 'student-profile-page');
   const child = ctx.children.find(c => c.id === route.childId);
   if (!child) {
     root.append(el('h1', 'Student not found'), errorState('Choose a fictional student.'),
       link('Back to students', '#/students'));
     return root;
   }
-  root.append(el('h1', child.name),
+  const heading = el('header', undefined, 'page-header profile-header');
+  const identity = el('div', undefined, 'profile-identity');
+  const avatar = el('span', Array.from(child.name)[0], 'avatar profile-avatar');
+  avatar.setAttribute('aria-hidden', 'true');
+  const title = el('div');
+  title.append(el('h1', child.name),
     el('p', `${child.id} · ${CLASS.name} · Fictional student`));
-  const actions = el('div', undefined, 'toolbar');
-  actions.append(link('Open editor', buildRoute('child-editor', {
+  const portfolioStatus = el('span', undefined, 'profile-current-status');
+  identity.append(avatar, title, portfolioStatus);
+  const actions = el('div', undefined, 'toolbar profile-actions');
+  const openEditor = link('Open editor', buildRoute('child-editor', {
     childId: child.id, semester: ctx.semester
-  })), link('Print report', buildRoute('reports', {
+  }));
+  openEditor.className += ' primary-link';
+  actions.append(openEditor, link('Print report', buildRoute('reports', {
     childId: child.id, semester: ctx.semester
   })));
-  const content = el('div');
+  heading.append(identity, actions);
+  const content = el('div', undefined, 'profile-content');
   const refresh = () => {
     const model = profileModel(child, ctx.records);
+    portfolioStatus.replaceChildren(statusChip(
+      model.semesters.find(semester => semester.semester === ctx.semester)?.status
+      ?? 'not-started'));
     content.replaceChildren(comparison(model.comparison), timeline(model.semesters),
       narratives(model.semesters));
   };
-  root.append(actions, content);
+  root.append(heading, content);
   root.dispose = ctx.subscribe(refresh);
   refresh();
   return root;
 }
 
 function comparison(rows) {
-  const section = el('section', undefined, 'card');
+  const section = el('section', undefined, 'card profile-comparison');
   section.append(el('h2', 'S1 to S2 progress'));
-  const table = el('table', undefined, 'responsive-table');
+  const table = el('table', undefined, 'responsive-table profile-comparison-table');
   const head = el('thead');
   const tr = el('tr');
   for (const label of ['Domain', '2026-S1', '2026-S2', 'Change']) {
@@ -55,7 +68,10 @@ function comparison(rows) {
       cell.append(el('span', `${label}: `, 'mobile-cell-label'), ratingChip(value));
       entry.append(cell);
     }
-    entry.append(el('td', row.changeText));
+    const change = el('td', undefined,
+      row.change > 0 ? 'progress-change positive' : 'progress-change');
+    change.append(el('span', 'Change: ', 'mobile-cell-label'), el('span', row.changeText));
+    entry.append(change);
     body.append(entry);
   }
   table.append(head, body);
@@ -64,12 +80,16 @@ function comparison(rows) {
 }
 
 function timeline(semesters) {
-  const section = el('section');
+  const section = el('section', undefined, 'card profile-timeline');
   section.append(el('h2', 'Learning timeline'));
   for (const semester of semesters) {
-    const group = el('section');
+    const group = el('section', undefined, 'timeline-semester');
     group.append(el('h3', semester.semester));
-    for (const item of semester.evidence) group.append(evidenceCard(item));
+    for (const item of semester.evidence) {
+      const card = evidenceCard(item);
+      card.className += ' timeline-evidence';
+      group.append(card);
+    }
     if (!semester.evidence.length) {
       group.append(emptyState('No evidence recorded for this semester.'));
     }
@@ -79,16 +99,21 @@ function timeline(semesters) {
 }
 
 function narratives(semesters) {
-  const section = el('section', undefined, 'card');
+  const section = el('section', undefined, 'card profile-narratives');
   section.append(el('h2', 'Narratives and review'));
-  if (!semesters.some(s => s.reviewed)) section.append(el('p', 'No narratives reviewed yet.'));
+  if (!semesters.some(s => s.reviewed)) {
+    section.append(el('p', 'No narratives reviewed yet.', 'profile-review-notice'));
+  }
   for (const semester of semesters) {
-    const group = el('section');
+    const group = el('section', undefined, 'narrative-semester');
     group.append(el('h3', semester.semester), statusChip(semester.status));
     if (!semester.narratives.length) group.append(emptyState('No narratives for this semester.'));
     for (const narrative of semester.narratives) {
       const box = el('article', undefined, 'narrative-box');
-      box.append(el('h4', narrative.domain), el('p', narrative.source),
+      const source = el('p', narrative.source, 'narrative-source');
+      source.dataset.source = narrative.source.startsWith('MOCK') ? 'mock'
+        : narrative.source.startsWith('AI') ? 'ai' : 'teacher';
+      box.append(el('h4', narrative.domain), source,
         el('p', narrative.text, 'evidence-text'));
       group.append(box);
     }

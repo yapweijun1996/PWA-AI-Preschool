@@ -4,12 +4,13 @@ import { el, button, emptyState } from '../ui.js';
 import { selectField, searchField, filterChips, evidenceCard } from '../page-controls.js';
 
 export function render(ctx) {
-  const root = el('section');
-  root.append(el('h1', 'Evidence library'),
+  const root = el('section', undefined, 'evidence-page');
+  const heading = el('header', undefined, 'page-header');
+  heading.append(el('h1', 'Evidence library'),
     el('p', 'Browse fictional comments and placeholder photos.'));
   const filters = { childId: '', domain: '', semester: ctx.semester, type: 'all', query: '' };
-  const tools = el('div', undefined, 'toolbar');
-  const listing = el('section');
+  const tools = el('div', undefined, 'toolbar evidence-toolbar');
+  const listing = el('section', undefined, 'card evidence-listing');
   const update = (key, value) => { filters[key] = value; refresh(); };
   const fields = [
     ['Child', 'childId', [['', 'All children'], ...ctx.children.map(c => [c.id, c.name])]],
@@ -26,7 +27,14 @@ export function render(ctx) {
   const refresh = () => {
     const items = evidenceModel(ctx.children, ctx.records, filters);
     const cards = el('div', undefined, 'evidence-grid');
-    for (const item of items) cards.append(evidenceCard(item));
+    for (const item of items) {
+      const card = evidenceCard(item);
+      card.className += ' library-evidence-card';
+      const type = el('span', item.type === 'photo' ? 'Placeholder photo' : 'Teacher comment',
+        'evidence-type');
+      card.replaceChildren(type, ...card.children);
+      cards.append(card);
+    }
     listing.replaceChildren(el('h2', `${items.length} items`), cards);
     if (!items.length) listing.append(emptyState('No evidence matches these filters.'),
       button('Clear filters', () => {
@@ -39,8 +47,10 @@ export function render(ctx) {
         refresh();
       }));
   };
+  search.input.placeholder = 'Search comments and photo descriptions';
+  search.root.className = 'evidence-search';
   tools.append(search.root);
-  root.append(tools, chips, listing);
+  root.append(heading, tools, chips, listing);
   root.dispose = ctx.subscribe(refresh);
   refresh();
   return root;

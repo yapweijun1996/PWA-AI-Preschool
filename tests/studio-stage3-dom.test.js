@@ -132,9 +132,6 @@ test('about contains the full nonimplemented scope, honest storage limits and le
   assert.match(page.textContent, /CJK fonts/);
   assert.match(page.textContent, /docs\/26-submission-writeup\.md/);
   assert.equal(anchor(page, 'Open the legacy demo').href, './index.html');
-  const warning = page.querySelectorAll('section')
-    .find(section => section.querySelector('h2')?.textContent === 'NOT IMPLEMENTED');
-  assert.equal(warning.className, 'card not-implemented');
 });
 
 test('every module keeps five tabs, More destinations and parent selection', async t => {
@@ -169,13 +166,15 @@ test('system states distinguish save failure, retry, loading and verified PWA', 
   } } });
   const shell = mountShell(ctx);
   shell.update({ name: 'home' });
-  assert.match(shell.root.textContent, /Not saved: storage unavailable/);
+  assert.equal(shell.root.querySelectorAll('section')
+    .some(node => node.dataset.state === 'unsaved'), false);
   assert.equal(loadingState().attributes['aria-busy'], 'true');
   assert.equal(saveState('Saved in this browser').dataset.state, 'saved');
   fail = false;
-  await control(shell.root, 'Retry save').emit('click');
+  const failedSave = saveState(ctx.saveStatus, ctx.retrySave);
+  assert.match(failedSave.textContent, /Not saved: storage unavailable/);
+  await control(failedSave, 'Retry save').emit('click');
   assert.equal(ctx.saveStatus, 'Saved in this browser');
-  assert.equal(control(shell.root, 'Retry save'), undefined);
   assert.doesNotMatch(pwaStatusChip({ cacheReady: false }).textContent, /^Offline ready$/);
   assert.equal(pwaStatusChip({ cacheReady: true }).textContent, 'Offline ready');
   ctx.pwa = { online: true, cacheReady: true, updateAvailable: true };

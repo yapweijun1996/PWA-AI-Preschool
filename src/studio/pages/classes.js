@@ -18,47 +18,64 @@ export function classesModel(ctx, options = {}) {
 
 function childCard(ctx, child) {
   const record = ctx.get(child.id);
-  const card = el('article', undefined, 'card');
-  card.append(el('span', child.initials, 'avatar'), el('h2', child.name),
-    statusChip(computeStatus(record)));
+  const card = el('article', undefined, 'card class-child-card');
+  const header = el('div', undefined, 'class-child-heading');
+  const avatar = el('span', child.initials, 'avatar');
+  avatar.setAttribute('aria-hidden', 'true');
+  const identity = el('div', undefined, 'class-child-identity');
+  identity.append(el('h2', child.name), statusChip(computeStatus(record)));
+  header.append(avatar, identity);
+  const open = link('Open portfolio', buildRoute('child-editor', {
+    childId: child.id, semester: ctx.semester
+  }));
+  open.setAttribute('aria-label', `Open portfolio for ${child.name}`);
+  open.className += ' class-child-open';
+  card.append(header, open);
   const comparisons = progressComparison(ctx.get(child.id, '2026-S1'), record);
-  const list = el('ul', undefined, 'indicators');
+  const list = el('ul', undefined, 'indicators class-domain-list');
   for (const domain of DOMAINS) {
     const dot = domainDot(record.domains[domain.id]);
-    const row = el('li', `${domain.label}: ${dot.state} `);
-    row.append(ratingChip(record.domains[domain.id].rating));
+    const row = el('li', undefined, 'class-domain-row');
+    const label = el('span', domain.label, 'class-domain-label');
+    const rating = ratingChip(record.domains[domain.id].rating);
+    rating.title = dot.state;
+    row.append(label, rating, el('span', dot.state, 'class-domain-readiness'));
     if (ctx.semester === '2026-S2') {
       const change = comparisons.find(c => c.domain === domain.id).change;
-      row.append(el('span', change === null ? 'No comparison'
-        : `Change: ${change > 0 ? '+' : ''}${change}`));
+      const comparison = el('span', change === null ? 'No comparison'
+        : `Change: ${change > 0 ? '+' : ''}${change}`, 'class-domain-change');
+      if (change > 0) comparison.className += ' positive';
+      row.append(comparison);
     }
     const rejection = ctx.rejections.get(`${child.id}:${ctx.semester}:${domain.id}`);
     if (rejection) row.append(rejectedState(`${domain.label}: ${rejection}`));
     list.append(row);
   }
-  card.append(list, link('Open portfolio', buildRoute('child-editor', {
-    childId: child.id, semester: ctx.semester
-  })));
+  card.append(list);
   return card;
 }
 
 export function render(ctx, route = {}) {
-  const root = el('section');
+  const root = el('section', undefined, 'classes-page');
   root.append(el('h1', 'Class portfolios'),
-    el('p', 'Review learning progress across 20 fictional children.'));
+    el('p', `Review learning progress across ${ctx.children.length} fictional children.`,
+      'page-intro'));
   const provider = providerCard(ctx);
+  provider.className += ' classes-provider';
   const listing = childListing(ctx, route.filter);
-  const summary = el('section', undefined, 'summary');
+  const summary = el('section', undefined, 'summary classes-summary');
   const actions = classActions(ctx, listing.refresh);
   const refresh = () => {
     const model = classesModel(ctx);
     summary.replaceChildren(progressBar(model.summary.statuses.reviewed, ctx.children.length,
       `${model.summary.statuses.reviewed} / ${ctx.children.length} reviewed`));
+    const counts = el('div', undefined, 'classes-status-counts');
     for (const [status, value] of Object.entries(model.summary.statuses)) {
       const node = statusChip(status);
       node.append(`: ${value}`);
-      summary.append(node);
+      counts.append(node);
     }
+    summary.append(counts);
     actions.refresh();
     listing.refresh();
   };
@@ -67,26 +84,31 @@ export function render(ctx, route = {}) {
     unsubscribe();
     provider.dispose();
   };
-  root.append(provider, listing.tools, summary, listing.filters, actions.root,
-    listing.count, listing.grid, el('p',
+  const controls = el('div', undefined, 'classes-controls');
+  controls.append(listing.filters, actions.root);
+  root.append(provider, listing.tools, summary, controls,
+    listing.grid, listing.count, el('p',
       'Fictional demonstration only. Not an approved school system. '
-      + 'Printed portfolios contain teacher-reviewable drafts, not assessments.'));
+      + 'Printed portfolios contain teacher-reviewable drafts, not assessments.',
+      'classes-disclaimer'));
   refresh();
   return root;
 }
 
 function childListing(ctx, initialFilter = 'all') {
-  const tools = el('div', undefined, 'toolbar');
+  const tools = el('div', undefined, 'toolbar classes-tools');
   const label = el('label', 'Search children');
   const search = el('input');
   search.type = 'search';
+  search.placeholder = 'Search children';
   label.append(search);
   tools.append(label, link('Print class report', buildRoute('print-class', {
     semester: ctx.semester
   })));
-  const filters = el('div', undefined, 'chips');
-  const grid = el('div', undefined, 'grid');
-  const count = el('p');
+  const filters = el('div', undefined, 'chips classes-filters');
+  filters.setAttribute('aria-label', 'Filter portfolios');
+  const grid = el('div', undefined, 'grid classes-grid');
+  const count = el('p', undefined, 'classes-count');
   count.setAttribute('role', 'status');
   let filter = initialFilter;
   const refresh = () => {
@@ -112,6 +134,7 @@ function childListing(ctx, initialFilter = 'all') {
       }
       refresh();
     });
+    control.dataset.filter = value;
     control.setAttribute('aria-pressed', String(value === filter));
     filters.append(control);
   }
@@ -121,7 +144,7 @@ function childListing(ctx, initialFilter = 'all') {
 }
 
 function classActions(ctx, refreshCards) {
-  const root = el('div', undefined, 'toolbar');
+  const root = el('div', undefined, 'toolbar classes-actions');
   root.append(button('Continue with next unfinished child', () => {
     const id = nextChildNeedingWork(ctx.children, ctx.records, ctx.semester);
     if (id) ctx.go(id);

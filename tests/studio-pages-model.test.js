@@ -30,6 +30,9 @@ test('home status counts equal recordProgress for both semesters and after edits
 
 test('needing-work tasks name only canonical domains and identify missing evidence', () => {
   const model = homeModel(CHILDREN, records, '2026-S2');
+  assert.equal(model.needingWork.length, 3);
+  assert.deepEqual(model.needingWork.map(row => row.child.id), ['C-04', 'C-05', 'C-06']);
+  assert.ok(model.needingWork.every(row => row.status === 'in-progress'));
   for (const row of model.needingWork) {
     const domain = DOMAINS.find(d => d.id === row.domain);
     assert.ok(domain);
@@ -41,6 +44,19 @@ test('needing-work tasks name only canonical domains and identify missing eviden
   assert.equal(model.next, 'C-01');
   assert.deepEqual(homeModel([], [], '2026-S2').needingWork, []);
   assert.equal(homeModel([], [], '2026-S2').next, null);
+  const smallClass = CHILDREN.slice(0, 2);
+  assert.equal(homeModel(smallClass, records, '2026-S2').needingWork.length, 2);
+  const reviewed = structuredClone(records);
+  for (const record of reviewed) {
+    if (record.semester !== '2026-S2') continue;
+    for (const domain of DOMAINS) {
+      record.domains[domain.id].rating = 2;
+      record.domains[domain.id].comment = 'Teacher evidence.';
+      record.narratives[domain.id] = { text: 'Reviewed draft', source: 'mock' };
+    }
+    record.reviewed = true;
+  }
+  assert.deepEqual(homeModel(CHILDREN, reviewed, '2026-S2').needingWork, []);
 });
 
 test('roster filters actual semester status, names and the seeded class', () => {

@@ -20,7 +20,10 @@ export function homeModel(children, records, semester) {
   });
   return {
     totals: classProgress(children, records, semester).totals,
-    needingWork: rows.filter(row => row.status !== 'reviewed'),
+    needingWork: [
+      ...rows.filter(row => row.status === 'in-progress'),
+      ...rows.filter(row => row.status !== 'reviewed' && row.status !== 'in-progress')
+    ].slice(0, 3),
     ready: rows.filter(row => row.status === 'ready-for-draft').map(row => row.child),
     next: nextChildNeedingWork(children, records, semester)
   };

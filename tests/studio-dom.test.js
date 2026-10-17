@@ -44,6 +44,7 @@ class Element {
 function setup(t, route = {}) {
   const doc = new Element('document');
   doc.createElement = tag => new Element(tag, doc);
+  doc.createElementNS = (_namespace, tag) => new Element(tag, doc);
   const before = Object.getOwnPropertyDescriptor(globalThis, 'document');
   Object.defineProperty(globalThis, 'document', { configurable: true, value: doc });
   const data = new Map();
@@ -119,4 +120,49 @@ test('draft review deep links open the Review step and retain quick provider set
   const settings = page.querySelectorAll('a').find(link => link.textContent === 'Provider settings');
   assert.equal(settings.href, '#/settings/ai');
   assert.equal(page.querySelectorAll('select')[0].value, 'mock');
+});
+
+test('editor keeps one compact child header and provider selection without a provider card', async t => {
+  const { page, ctx } = setup(t);
+  const headers = page.querySelectorAll('header')
+    .filter(node => node.className === 'child-header');
+  assert.equal(headers.length, 1);
+  assert.equal(page.querySelectorAll('h1').length, 1);
+  assert.match(headers[0].textContent, /C-05 · Class A \(Sample\)/);
+  assert.match(headers[0].textContent, /5 \/ 20/);
+  assert.match(headers[0].textContent, /Print \/ PDF/);
+  assert.equal(page.querySelectorAll('section')
+    .some(node => node.className === 'provider-panel'), false);
+  assert.equal(page.querySelectorAll('input')
+    .some(node => node.type === 'password'), false);
+  const provider = page.querySelectorAll('select')[0];
+  ctx.provider.key = 'memory-only-test-key';
+  provider.value = 'gateway';
+  await provider.emit('change');
+  assert.equal(ctx.provider.id, 'gateway');
+  assert.equal(ctx.provider.key, '');
+  assert.equal(ctx.provider.status, 'not tested');
+  assert.equal(page.querySelectorAll('textarea').length, 2);
+});
+
+test('domain columns retain accessible comparison, photo editing and narrative provenance', async t => {
+  const { page, find } = setup(t);
+  const comparison = page.querySelectorAll('section')
+    .find(node => node.className === 'editor-comparison');
+  assert.match(comparison.attributes['aria-label'],
+    /Semester 1: Emerging → Semester 2: Developing \(\+1\)/);
+  assert.equal(page.querySelectorAll('figcaption')[0].textContent,
+    'Fictional sample activity 1');
+  const alt = page.querySelectorAll('input').find(node => node.value ===
+    'Fictional sample activity 1');
+  alt.value = 'Fictional updated activity';
+  await alt.emit('change');
+  assert.equal(page.querySelectorAll('figcaption')[0].textContent,
+    'Fictional updated activity');
+  const source = page.querySelectorAll('p')
+    .find(node => node.className === 'chip narrative-source');
+  assert.equal(source.hidden, true);
+  await find('Draft narrative').emit('click');
+  assert.equal(source.hidden, false);
+  assert.equal(source.textContent, 'MOCK DRAFT (offline, not AI)');
 });

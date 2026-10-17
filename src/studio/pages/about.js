@@ -1,5 +1,5 @@
 import { STUDIO_CONFIG } from '../../config.js';
-import { el, link } from '../ui.js';
+import { el, link, icon } from '../ui.js';
 
 export const NOT_IMPLEMENTED = Object.freeze([
   'Real login, roles or tenant isolation',
@@ -18,10 +18,12 @@ export function writeupHref(config = STUDIO_CONFIG) {
 }
 
 export function render() {
-  const root = el('section');
-  root.append(el('h1', 'About and privacy'),
-    el('p', 'A fictional-data prototype for educator review.'),
-    panel('Fictional demo data', [
+  const root = el('section', undefined, 'about-page');
+  const heading = el('header', undefined, 'page-header');
+  heading.append(el('h1', 'About and privacy'),
+    el('p', 'A fictional-data prototype for educator review.'));
+  const cards = el('div', undefined, 'about-grid');
+  cards.append(panel('Fictional demo data', [
       'Use fictional records only. Do not enter real child, family or staff information.'
     ]),
     panel('Stored only in this browser', [
@@ -44,16 +46,34 @@ export function render() {
       'Shortcuts work only while the child portfolio editor is active.'
     ]));
   const href = writeupHref();
-  root.append(href ? link('Read the submission write-up', href)
-    : el('p', 'Read the submission write-up: docs/26-submission-writeup.md '
-      + '(repository URL not configured).'),
-  link('Open the legacy demo', './index.html'));
+  const writeup = panel('Submission write-up', [
+    'Read about the project goals, scope and design decisions.'
+  ]);
+  if (href) {
+    const action = link('Read the submission write-up', href);
+    action.className = 'button-link';
+    writeup.append(action);
+  } else {
+    writeup.append(el('p', 'Read the submission write-up: docs/26-submission-writeup.md '
+      + '(repository URL not configured).', 'hint'));
+  }
+  cards.append(writeup);
+  const actions = el('div', undefined, 'toolbar about-actions');
+  actions.append(link('Open the legacy demo', './index.html'));
+  root.append(heading, cards, actions);
   return root;
 }
 
 function panel(title, paragraphs, className = 'card') {
-  const root = el('section', undefined, className);
-  root.append(el('h2', title));
+  const root = el('section', undefined, `${className} about-card`);
+  const symbols = {
+    'Fictional demo data': 'warning', 'Stored only in this browser': 'folders',
+    'NOT IMPLEMENTED': 'info', 'Known limitations': 'file',
+    'Keyboard shortcuts': 'settings', 'Submission write-up': 'arrow'
+  };
+  const visual = el('span', undefined, 'about-card-icon');
+  visual.append(icon(symbols[title]));
+  root.append(visual, el('h2', title));
   const list = el('ul');
   for (const text of paragraphs) list.append(el('li', text));
   root.append(list);

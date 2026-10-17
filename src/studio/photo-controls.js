@@ -3,8 +3,8 @@ import { fileToDataUri } from '../photo.js';
 import { el, button } from './ui.js';
 
 export function photoControls(ctx, record, id) {
-  const root = el('section');
-  const photos = el('div', undefined, 'photos');
+  const root = el('section', undefined, 'editor-photo-controls');
+  const photos = el('div', undefined, 'photos editor-photos');
   const entry = record.domains[id];
   const state = { pending: false, disposed: false };
   const changed = () => ctx.change(record);
@@ -38,13 +38,13 @@ export function photoControls(ctx, record, id) {
     state.disposed = true;
     unsubscribe();
   };
-  root.append(el('h3', 'Fictional activity photos'), photos, upload.root);
+  root.append(el('h3', 'Sample activity artifact'), photos, upload.root);
   finish();
   return root;
 }
 
 function uploadControls(ctx, record, id, state, add) {
-  const root = el('div');
+  const root = el('div', undefined, 'editor-photo-actions');
   const label = el('label', 'Choose a local fictional image');
   const file = el('input');
   file.type = 'file';
@@ -66,12 +66,14 @@ function uploadControls(ctx, record, id, state, add) {
       update();
     }
   });
-  root.append(label, sample);
+  const localImage = el('details', undefined, 'editor-local-image');
+  localImage.append(el('summary', 'Choose a local fictional image'), label);
+  root.append(sample, localImage);
   return { root, update };
 }
 
 function pendingPhoto(src, save, cancel) {
-  const root = el('figure', undefined, 'photo');
+  const root = el('figure', undefined, 'photo editor-photo-pending');
   const image = el('img');
   image.src = src;
   image.alt = 'Unsaved image preview';
@@ -92,10 +94,13 @@ function pendingPhoto(src, save, cancel) {
 }
 
 function savedPhoto(photo, remove, changed) {
-  const figure = el('figure', undefined, 'photo');
+  const figure = el('figure', undefined, 'photo editor-photo');
   const image = el('img');
   image.src = photo.src;
   image.alt = photo.alt;
+  const caption = el('figcaption', photo.alt);
+  const details = el('details', undefined, 'editor-photo-details');
+  details.append(el('summary', 'Edit photo'));
   const label = el('label', 'Photo alt text');
   const alt = el('input');
   alt.required = true;
@@ -110,8 +115,10 @@ function savedPhoto(photo, remove, changed) {
     }
     photo.alt = alt.value.trim();
     image.alt = photo.alt;
+    caption.textContent = photo.alt;
     changed();
   });
-  figure.append(image, label, button('Remove photo', remove));
+  details.append(label, button('Remove photo', remove));
+  figure.append(image, caption, details);
   return figure;
 }

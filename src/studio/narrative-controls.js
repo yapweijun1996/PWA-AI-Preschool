@@ -4,17 +4,17 @@ import { el, button, offlineState, rejectedState } from './ui.js';
 export function narrativeControls(ctx, child, record, id) {
   const root = el('section', undefined, 'narrative-box');
   const key = `${child.id}:${record.semester}:${id}`;
-  const source = el('p', narrativeChip(record.narratives[id]), 'chip');
+  const source = el('p', undefined, 'chip narrative-source');
   const stale = el('p', 'Narrative may be out of date', 'stale');
   const rejected = el('div');
-  const label = el('label', 'Narrative (teacher editable)');
+  const label = el('label', 'Narrative (teacher editable)', 'editor-narrative-label');
   const narrative = el('textarea');
   narrative.maxLength = 2000;
   narrative.value = record.narratives[id]?.text ?? '';
   narrative.placeholder = 'No narrative yet';
   label.append(narrative);
   const baseline = narrative.value;
-  const count = el('p', `${narrative.value.length} / 2000`, 'hint');
+  const count = el('p', `${narrative.value.length} / 2000`, 'hint editor-character-count');
   narrative.addEventListener('input', () => {
     const old = record.narratives[id];
     record.narratives[id] = { ...old, text: narrative.value,
@@ -33,6 +33,8 @@ export function narrativeControls(ctx, child, record, id) {
   }, true);
   const offline = offlineState();
   const update = () => {
+    source.textContent = record.narratives[id] ? narrativeChip(record.narratives[id]) : '';
+    source.hidden = !record.narratives[id];
     stale.hidden = !ctx.stale.has(key);
     const reason = ctx.rejections.get(key);
     rejected.replaceChildren();
@@ -45,7 +47,8 @@ export function narrativeControls(ctx, child, record, id) {
     narrative.disabled = ctx.busy;
   };
   root.dispose = ctx.subscribe(update);
-  root.append(source, stale, rejected, offline, label, count, draft);
+  draft.className = 'primary editor-draft-narrative';
+  root.append(stale, rejected, offline, label, count, source, draft);
   update();
   return root;
 }

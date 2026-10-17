@@ -5,6 +5,7 @@ import { render as students } from '../src/studio/pages/students.js';
 import { render as evidence } from '../src/studio/pages/evidence.js';
 import { render as profile } from '../src/studio/pages/student-profile.js';
 import { render as home } from '../src/studio/pages/home.js';
+import { render as classes } from '../src/studio/pages/classes.js';
 
 class Node {
   constructor(tag) {
@@ -33,7 +34,8 @@ class Node {
 function mount(t, render, route = {}) {
   const previous = Object.getOwnPropertyDescriptor(globalThis, 'document');
   Object.defineProperty(globalThis, 'document', {
-    configurable: true, value: { createElement: tag => new Node(tag) }
+    configurable: true, value: { createElement: tag => new Node(tag),
+      createElementNS: (_namespace, tag) => new Node(tag) }
   });
   const memory = new Map();
   const ctx = createContext({ storage: {
@@ -101,6 +103,11 @@ test('profile exposes comparison, mock provenance and selected-semester report e
 
 test('home counts refresh from edits and Continue uses the next unfinished child', async t => {
   const { page, ctx } = mount(t, home);
+  assert.equal(page.querySelectorAll('article').length, 3);
+  const viewAll = page.querySelectorAll('a').find(node => node.href === '#/classes');
+  assert.equal(viewAll.href, '#/classes');
+  assert.match(page.textContent, /Good morning, Ms\. Jordan/);
+  assert.match(page.textContent, /Semester 2, 2026/);
   assert.match(page.textContent, /Ready to draft: 3/);
   const record = ctx.get('C-01');
   record.domains.english.comment = '';
@@ -109,4 +116,27 @@ test('home counts refresh from edits and Continue uses the next unfinished child
   assert.match(page.textContent, /English: Add a comment/);
   await control(page, 'Continue with next unfinished child').emit('click');
   assert.equal(ctx.destination, 'C-01');
+});
+
+test('class cards retain domain comparisons, matching open routes and accurate filtered counts', async t => {
+  const { page } = mount(t, classes);
+  assert.equal(page.querySelectorAll('article').length, 20);
+  assert.match(page.textContent, /Showing 20 of 20 children/);
+  const first = page.querySelectorAll('article')[0];
+  assert.match(first.textContent, /English/);
+  assert.match(first.textContent, /Chinese/);
+  assert.match(first.textContent, /Mathematics/);
+  assert.match(first.textContent, /Social-Emotional Development/);
+  assert.match(first.textContent, /Change: \+2/);
+  assert.equal(first.querySelector('a').href,
+    '#/classes/class-a/children/C-01?sem=2026-S2');
+  await control(page, 'Ready to draft').emit('click');
+  assert.equal(page.querySelectorAll('article').length, 3);
+  assert.match(page.textContent, /Showing 3 of 20 children/);
+  assert.equal(control(page, 'Ready to draft').attributes['aria-pressed'], 'true');
+  const search = page.querySelectorAll('input').find(node => node.type === 'search');
+  search.value = '林悦宁';
+  await search.emit('input');
+  assert.equal(page.querySelectorAll('article').length, 1);
+  assert.match(page.textContent, /Showing 1 of 20 children/);
 });

@@ -4,21 +4,29 @@ import { draftReadyChildren } from '../bulk-draft.js';
 import { el, button, link, chip, progressBar, emptyState, rejectedState } from '../ui.js';
 
 export function render(ctx) {
-  const root = el('section');
-  const provider = el('section', undefined, 'provider-panel');
-  const status = el('p');
+  const root = el('section', undefined, 'drafts-page');
+  const heading = el('header', undefined, 'page-header');
+  heading.append(el('h1', 'AI drafts'),
+    el('p', 'Draft, review, and retry narratives for the class.'));
+  const provider = el('section', undefined, 'provider-panel drafts-provider');
+  const status = el('div', undefined, 'drafts-provider-status');
   provider.append(el('h2', 'Narrative provider'), status,
-    link('Provider settings', '#/settings/ai'));
-  const batch = el('section', undefined, 'card');
-  const progress = el('div');
+    link('Provider settings', '#/settings/ai'),
+    el('p', "Sends only the child's first name, ratings and comments. Photos are never sent.",
+      'provider-disclosure'));
+  const batch = el('section', undefined, 'card draft-batch');
+  const progress = el('div', undefined, 'draft-batch-progress');
   const run = button('', () =>
     ctx.runDraft(() => draftReadyChildren(ctx, draftsModel(ctx).ready)), true);
-  batch.append(el('h2', 'Draft ready children'), run, progress);
+  batch.append(el('h2', 'Draft ready children'), run,
+    el('p', 'Generate narratives using the selected provider. Every draft needs teacher review.'),
+    progress);
   const queue = el('section', undefined, 'card draft-queue');
   const rejected = el('section', undefined, 'card draft-queue');
   const refresh = () => {
     const model = draftsModel(ctx);
-    status.textContent = `${PROVIDER_LABELS[ctx.provider.id]} · ${ctx.provider.status}`;
+    status.replaceChildren(el('strong', PROVIDER_LABELS[ctx.provider.id]),
+      chip(ctx.provider.status));
     run.textContent = `Draft all ready children (${model.ready.length})`;
     run.disabled = ctx.busy || !model.ready.length
       || (ctx.provider.id !== 'mock' && ctx.isOffline());
@@ -29,9 +37,8 @@ export function render(ctx) {
     reviewQueue(queue, model.queue);
     rejectionQueue(rejected, model.rejected, ctx);
   };
-  root.append(el('h1', 'AI drafts'),
-    el('p', 'Draft, review, and retry narratives for the class.'), provider, batch, queue, rejected,
-    el('p', 'Rejected drafts are session memory only; reloading clears these reasons.'),
+  root.append(heading, provider, batch, queue, rejected,
+    el('p', 'Rejected drafts are session memory only; reloading clears these reasons.', 'hint'),
     el('p', 'Review each narrative against teacher evidence. Local review is not authenticated '
       + 'approval or report release.', 'notice'));
   root.dispose = ctx.subscribe(refresh);
@@ -43,11 +50,24 @@ function reviewQueue(root, queue) {
   root.replaceChildren(el('h2', `Drafts awaiting review · ${queue.length}`));
   for (const item of queue) {
     const row = el('article', undefined, 'work-row');
-    row.append(el('h3', item.child.name));
+    const identity = el('div', undefined, 'draft-identity');
+    const avatar = el('span', Array.from(item.child.name)[0], 'avatar');
+    avatar.setAttribute('aria-hidden', 'true');
+    identity.append(avatar, el('h3', item.child.name));
+    const sources = el('div', undefined, 'draft-sources');
     for (const narrative of item.narratives) {
-      row.append(el('p', narrative.domain), chip(narrative.source));
+      const source = chip(narrative.source);
+      source.className += ' narrative-source';
+      source.dataset.source = narrative.source.startsWith('MOCK') ? 'mock'
+        : narrative.source.startsWith('AI') ? 'ai' : 'teacher';
+      const entry = el('div', undefined, 'draft-source-entry');
+      entry.append(el('span', narrative.domain), source);
+      sources.append(entry);
     }
-    row.append(link('Review draft', item.href));
+    const review = link('Review draft', item.href);
+    review.className = 'button-link primary-link';
+    review.setAttribute('aria-label', `Review draft for ${item.child.name}`);
+    row.append(identity, sources, review);
     root.append(row);
   }
   if (!queue.length) root.append(emptyState('No drafts awaiting review.',
@@ -61,6 +81,7 @@ function rejectionQueue(root, rejected, ctx) {
       ctx.draft(item.child, ctx.current(item.child.id), [item.domain.id])));
     retry.disabled = ctx.busy || (ctx.provider.id !== 'mock' && ctx.isOffline());
     const row = rejectedState(item.reason, retry);
+    row.className += ' rejected-draft-row';
     row.append(link('Write it yourself', item.href));
     row.prepend(el('h3', `${item.child.name} · ${item.domain.label}`));
     root.append(row);
