@@ -130,3 +130,17 @@ export async function generateRemotePortfolio({provider,key,model,student,eviden
  const raw=await requestProviderText({provider,key,model,prompt:makePrompt(student,evidence)});
  return validatePortfolio(parsePortfolio(raw),evidence);
 }
+
+export async function probeProviderConnection({ provider, key = '', fetchImpl = globalThis.fetch }) {
+  if (provider === 'mock') return;
+  if (provider === 'gateway') {
+    const session = await postJson(`${GATEWAY}/demo/session`, {},
+      { project_id: STUDIO_CONFIG.demoGateway.projectId }, fetchImpl);
+    if (typeof session.token !== 'string' || !session.token.trim()) {
+      throw new Error('Gateway session returned no usable token.');
+    }
+    return;
+  }
+  await requestProviderText({ provider, key, fetchImpl,
+    prompt: 'Connection probe only. Return only this JSON: {"ok":true}.' });
+}

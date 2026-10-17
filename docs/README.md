@@ -13,7 +13,7 @@ This is a company-agnostic **AI Preschool Studio** reference package. Files are 
 9. [GitHub Pages deployment](09-deployment.md)
 10. [Testing and evaluation](10-testing.md)
 11. [Milestones and prioritized backlog](11-roadmap.md)
-12. [Demo script and interviewer FAQ](12-demo-walkthrough.md)
+12. [Demo script and FAQ](12-demo-walkthrough.md)
 13. [Risks and decision records](13-risks-and-decisions.md)
 14. [Future backend/API design](14-backend-api.md)
 15. [Operating model and cost strategy](15-operations-and-costs.md)
@@ -28,6 +28,10 @@ This is a company-agnostic **AI Preschool Studio** reference package. Files are 
 24. [Verification and delivery report](24-verification-report.md)
 25. [PWA product standard and acceptance](25-pwa-standard.md)
 26. [Submission write-up and production proposal](26-submission-writeup.md)
+
+Design source of truth: [`design/README.md`](../design/README.md) — canonical routes/menu,
+12 page specs, 24 WebP wireframes, shared tokens and the consistency review. Specs define
+copy/behavior; images show visual intent; tokens define enforceable values.
 
 Supplementary machine-readable artefacts: [`../spec/portfolio.schema.json`](../spec/portfolio.schema.json), [`../spec/future-api.openapi.yaml`](../spec/future-api.openapi.yaml), [`../schema/future-postgres.sql`](../schema/future-postgres.sql), [`../examples/portfolio.sample.json`](../examples/portfolio.sample.json).
 

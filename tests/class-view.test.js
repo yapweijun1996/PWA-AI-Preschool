@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {readFile, readdir} from "node:fs/promises";
 import {DOMAINS, emptyRecord, classProgress} from "../src/portfolio-model.js";
-import {filterChildren, domainDot, classSummary, routeParse, routeBuild} from "../src/class-view.js";
+import {filterChildren, domainDot, classSummary} from "../src/class-view.js";
 import { STATUS_LABELS, FILTER_LABELS } from "../src/class-view.js";
 
 test("status and filter labels cover the complete public vocabulary", () => {
@@ -89,40 +89,33 @@ test("summary equals model totals and counts missing records and semester isolat
   assert.equal(classSummary([], records, semester).total, 0);
 });
 
-test("canonical routes roundtrip both semesters and encoded child identifiers", () => {
-  assert.equal(routeBuild({page:"overview"}), "#/");
-  assert.deepEqual(routeParse("#/"), {page:"overview"});
-  for (const childId of ["ready", "林 小雨", "a/b?c#d%", "<child>"]) {
-    for (const semester of ["2026-S1", "2026-S2"]) {
-      const route = {page:"child", childId, semester};
-      assert.deepEqual(routeParse(routeBuild(route)), route);
-    }
-  }
-  assert.deepEqual(routeParse("#/child/ready", children), {page:"child", childId:"ready", semester:"2026-S2"});
-  assert.equal(routeBuild({page:"child", childId:"ready"}), "#/child/ready?sem=2026-S2");
-});
-
-test("invalid routes fail closed and unknown children provide an overview message", () => {
-  for (const hash of [null, undefined, 42, "#/overview", "#/child/", "#/child/%ZZ", "#/child/%20", "#/child/ready/extra", "#/child/ready?sem=2027-S1", "#/child/ready?sem=2026-S3", "#/child/ready?semester=2026-S2", "#/child/ready?sem=2026-S2&x=1", "#/child/ready#extra"]) {
-    assert.deepEqual(routeParse(hash), {page:"overview"});
-  }
-  for (const hash of ["", "#", "#/"]) assert.deepEqual(routeParse(hash), {page:"overview"});
-  const missing = routeParse("#/child/missing?sem=2026-S1", children);
-  assert.equal(missing.page, "overview");
-  assert.match(missing.message, /child.*not found/i);
-  assert.equal(routeParse("#/child/missing").page, "child");
-  assert.equal(routeParse("#/child/ready", []).page, "overview");
-  for (const route of [null, {}, {page:"other"}, {page:"child",childId:""}, {page:"child",childId:4}, {page:"child",childId:"ready",semester:"2025-S2"}]) assert.equal(routeBuild(route), "#/");
-});
 
 test("class UI sources avoid dynamic HTML, inline code and unsafe evaluation", async () => {
   const sourceDirectory = new URL("../src/", import.meta.url);
   const names = (await readdir(sourceDirectory)).filter(name => /^(class-|report-).*\.js$/.test(name));
   assert.ok(names.includes("class-view.js"));
-  const files = [new URL("../class.html", import.meta.url), new URL("../class.css", import.meta.url), ...names.map(name => new URL(name, sourceDirectory))];
+  const studio = new URL("../src/studio/", import.meta.url);
+  async function sources(directory) {
+    const result = [];
+    for (const entry of await readdir(directory, {withFileTypes: true})) {
+      const path = new URL(entry.name + (entry.isDirectory() ? "/" : ""), directory);
+      if (entry.isDirectory()) result.push(...await sources(path));
+      else if (/\.(js|css)$/.test(entry.name)) result.push(path);
+    }
+    return result;
+  }
+  const files = [new URL("../class.html", import.meta.url),
+    new URL("../studio.css", import.meta.url), ...await sources(studio),
+    ...names.map(name => new URL(name, sourceDirectory))];
   for (const file of files) {
     const source = await readFile(file, "utf8");
-    for (const forbidden of [/\binnerHTML\b/i, /\binsertAdjacentHTML\b/i, /\bstyle\s*=/i, /\beval\s*\(/i]) assert.doesNotMatch(source, forbidden, file.pathname);
+    const forbiddenPatterns = [
+      /\binnerHTML\b/i, /\binsertAdjacentHTML\b/i, /\bstyle\s*=/i, /\beval\s*\(/i,
+      /\.setAttribute\s*\(\s*['"]style['"]/i, /\.style(?:\.|\[)/i
+    ];
+    for (const forbidden of forbiddenPatterns) {
+      assert.doesNotMatch(source, forbidden, file.pathname);
+    }
     for (const script of source.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi)) {
       assert.match(script[1], /\bsrc\s*=/i, file.pathname);
       assert.equal(script[2].trim(), "", file.pathname);
@@ -130,23 +123,6 @@ test("class UI sources avoid dynamic HTML, inline code and unsafe evaluation", a
   }
 });
 
-test("print routes roundtrip and reject malformed requests", () => {
-  for (const semester of ["2026-S1", "2026-S2"]) {
-    for (const route of [
-      {page:"print", childId:"林 小雨/a", semester},
-      {page:"print-class", semester}
-    ]) assert.deepEqual(routeParse(routeBuild(route)), route);
-  }
-  assert.deepEqual(routeParse("#/print/ready", children),
-    {page:"print", childId:"ready", semester:"2026-S2"});
-  assert.deepEqual(routeParse("#/print-class"), {page:"print-class", semester:"2026-S2"});
-  for (const hash of ["#/print/", "#/print/%ZZ", "#/print/%20", "#/print/ready?sem=2027-S1",
-    "#/print-class/ready", "#/print-class?sem=2026-S3", "#/print-class?sem=2026-S1&x=1"])
-    assert.deepEqual(routeParse(hash), {page:"overview"});
-  assert.equal(routeParse("#/print/missing", children).page, "overview");
-  assert.equal(routeBuild({page:"print", childId:""}), "#/");
-  assert.equal(routeBuild({page:"print-class", semester:"invalid"}), "#/");
-});
 
 test("static build ships both printable report modules", async () => {
   const source = await readFile(new URL("../scripts/build.mjs", import.meta.url), "utf8");

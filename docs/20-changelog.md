@@ -1,5 +1,42 @@
 # 20 — Documentation and Project Changelog
 
+## Page-per-module studio and design SSOT — 2026-10-17
+
+- Fixed ≤600 px Classes/Students cards and Evidence rows; measured 390 px heights 4,884 / 4,198 / 5,241 px; retained desktop layouts and refreshed verification evidence.
+- Replaced the class prototype with the routed `class.html` studio: shared desktop sidebar,
+  topbar, amber safety notice, mobile chip row and five bottom tabs; print routes hide chrome.
+- Added Home, class/editor, students/profile, evidence, drafts, reports, provider settings and
+  privacy destinations; legacy child links redirect and unknown hashes show a Home notice.
+- Runtime modules live in `src/studio/`, with `studio.css` and the copied design tokens.
+  Removed `src/class-app.js` and `class.css`; the original `index.html` demo is unchanged.
+- Design SSOT contains 12 page specs and 24 WebP wireframes generated with Codex CLI image
+  generation. Specs own copy/behavior, images visual intent and tokens enforceable values.
+- Updated the README, submission walkthrough/evidence and documentation index. Recorded
+  owner-supplied responsive, mock/edit/review, key-failure and two-page child-PDF QA separately
+  from earlier-release Gateway session evidence. New-build deployment verification is pending.
+- Documentation-stage check/test/build and current HEAD were not measured because shell
+  execution is prohibited; no historical count or hash is presented as a current result.
+- Real login, server/database, tenant isolation, server PDF, vector RAG and audit log remain
+  NOT IMPLEMENTED. No code, tests, design files or workflows changed in this documentation stage.
+
+## Page-per-module visual refinement — 2026-10-17
+
+- Added token-based sidebar icons, soft-green navigation selection, five equal mobile tabs,
+  an icon list sheet, responsive safety notice and button-style navigation actions.
+- Removed the duplicate visible route announcement and global save card. Save/retry feedback
+  remains in the editor; announcements remain available to assistive technology.
+- Limited Home's needing-work queue to three children and linked the full class roster.
+  Added compact class cards, three-column domain editing and responsive module layouts.
+- Moved real offline/install/update controls to the About page. Provider credentials remain
+  memory-only; the settings password field starts empty and is disabled for keyless providers.
+- Preserved the legacy demo and print route behavior. Design files were not modified.
+- Verification: syntax/CSP checks, 174 Node tests and static build passed. Browser review used
+  light-mode 1440 × 900 and 390 × 844 screenshots for all routed modules and both print outputs;
+  layout measurements additionally covered 430 px. No live Gateway/provider call was made.
+- Specs take precedence over image deviations: actual filtered roster counts, blue Developing
+  selection, visible mobile provider/PWA status and warning-colored NOT IMPLEMENTED sections.
+  Real missing evidence remains visible in previews rather than matching a complete sample image.
+
 ## Class portfolio printable reports — 2026-10-16
 
 - Added child Print / PDF and overview Print class report routes, with explicit Print / Save as PDF activation; reports do not invoke providers.

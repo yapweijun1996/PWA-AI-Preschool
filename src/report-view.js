@@ -34,7 +34,10 @@ export function renderReport(report) {
     scale.setAttribute('aria-label', `Rating: ${row.ratingLabel}`);
     for (const rating of RATINGS) {
       const selected = rating.value === row.ratingValue;
-      scale.append(el('span', `${rating.label}${selected ? ' (selected)' : ''}`, selected ? 'selected' : ''));
+      const segment = el('span', `${rating.label}${selected ? ' (selected)' : ''}`,
+        selected ? 'selected' : '');
+      if (selected) segment.dataset.rating = rating.label.toLowerCase();
+      scale.append(segment);
     }
     section.append(scale, el('p', `Rating: ${row.ratingLabel}`),
       language(el('p', row.comment || 'No comment recorded.', 'report-text'), row.id === 'chinese'));
