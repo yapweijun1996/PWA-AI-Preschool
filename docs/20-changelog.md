@@ -1,5 +1,36 @@
 # 20 — Documentation and Project Changelog
 
+## B4 mobile utility pages — 2026-10-17
+
+- Home puts Continue before metrics on phones, preserves whole metric values, and groups
+  queue identity/status, tasks and full-width actions without duplicating completion copy.
+- Phone screen reports use 2×2 ratings and labelled stacked comparison rows; A4 print CSS
+  and Simplified Chinese report generation are unchanged. Back has a 44×44 minimum target.
+- Profile evidence groups every comment/photo by semester and domain with one editor link;
+  tablet comparisons use cards. About links the public main-branch write-up and retains the
+  shared confirmed sample reset and legacy entry point.
+- Empty rejection/failure queues are summaries; Reports puts printing before the collapsible
+  preview. Tablet utility pages stack. Phone provider descriptions are disclosed separately
+  so all four choices remain visible, with no reduction in control or text sizes.
+- Browser interaction QA confirmed an empty focused OpenAI key field at 390×844:
+  bottom 628.58px, bottom-tab top 777px, autocomplete off and 90px scroll padding.
+  No key was entered and no provider request was made. Reports opened from its collapsed
+  preview state; About exposed the configured write-up URL.
+- Verification: `npm run check && npm test && npm run build && npm run ui:audit`
+  passed: 205 tests, 150 device/scheme/route combinations, zero fail-level violations.
+  Evidence: `artifacts/ui-audit/2026-10-17T09-21-21-559Z/summary.json`.
+  Viewed `full.png` for Home, Print, Profile, Drafts, Reports, Settings and About at
+  320/390/768 light and 390 dark. Final caption-corrected audit:
+  `artifacts/ui-audit/2026-10-17T09-25-09-388Z/summary.json`, also zero failures;
+  re-viewed all four Print captures. Print is 2108px (was 1854px), deliberately taller
+  on phones to preserve whole rating and semester labels rather than compressing columns.
+- Against the original 08:07 audit, 390px light heights changed: Home 2155→1571,
+  Profile 5149→3759, Drafts 1625→1414, Reports 2140→1366, Settings 1414→1158.
+  About is 2213px (was 2212px), retaining all disclosures and adding the working write-up link.
+  Earlier shell/list/editor batch improvements are included in this baseline comparison.
+  Physical iPhone keyboard and actual A4/PDF pagination remain unverified; Gateway was not
+  exercised. The separate interaction-browser screenshot timed out; audit PNGs were available.
+
 ## Development UI audit harness — 2026-10-17
 
 - Added a dependency-free CDP runner with real mobile metrics, light/dark captures,

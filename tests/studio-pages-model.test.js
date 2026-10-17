@@ -4,7 +4,9 @@ import { DOMAINS, emptyRecord, recordProgress } from '../src/portfolio-model.js'
 import { CHILDREN, seedRecords } from '../src/portfolio-seed.js';
 import { homeModel } from '../src/studio/models/home-model.js';
 import { studentsModel } from '../src/studio/models/students-model.js';
-import { profileModel, profileComparison } from '../src/studio/models/profile-model.js';
+import {
+  profileModel, profileComparison, groupProfileEvidence
+} from '../src/studio/models/profile-model.js';
 import { evidenceModel } from '../src/studio/models/evidence-model.js';
 import { buildRoute, parseRoute } from '../src/studio/router.js';
 
@@ -121,4 +123,19 @@ test('evidence deep links round-trip the source domain and semester', () => {
     { name: 'reports', childId: 'C-05', semester: '2026-S1' });
   assert.equal(parseRoute('#/classes/class-a/children/C-05?sem=2026-S2&domain=invalid').unknown,
     true);
+});
+
+test('profile groups preserve every evidence item and isolate semester and domain', () => {
+  const items = evidenceModel([CHILDREN[4]], records);
+  const before = structuredClone(items);
+  const groups = groupProfileEvidence(items);
+  assert.deepEqual(groups.flatMap(group => group.items).sort((a, b) =>
+    items.indexOf(a) - items.indexOf(b)), items);
+  for (const group of groups) {
+    assert.ok(group.items.every(item =>
+      item.semester === group.semester && item.domain === group.domain));
+  }
+  assert.equal(new Set(groups.map(group => `${group.semester}:${group.domain}`)).size,
+    groups.length);
+  assert.deepEqual(items, before);
 });

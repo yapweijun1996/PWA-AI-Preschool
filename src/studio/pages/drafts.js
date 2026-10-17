@@ -43,9 +43,6 @@ export function render(ctx) {
       row.append(el('p', message));
       failures.append(row);
     }
-    if (!ctx.failures?.length) {
-      failures.append(emptyState('No request failures in this session.'));
-    }
   };
   root.append(heading, provider, batch, queue, rejected, failures,
     el('p', 'Rejected drafts and request failures are session memory only; reloading clears '
@@ -97,5 +94,4 @@ function rejectionQueue(root, rejected, ctx) {
     row.prepend(el('h3', `${item.child.name} · ${item.domain.label}`));
     root.append(row);
   }
-  if (!rejected.length) root.append(emptyState('No rejected drafts in this session.'));
 }

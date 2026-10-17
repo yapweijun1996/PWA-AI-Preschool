@@ -5,6 +5,7 @@
  */
 export const STUDIO_CONFIG = Object.freeze({
   productName: 'AI Preschool Studio',
+  repositoryUrl: 'https://github.com/yapweijun1996/PWA-AI-Preschool',
   organizationName: '', // Optional licensed organisation display name (blank by default)
   portfolioTitle: 'Learning & Development Portfolio',
   logoUrl: '', // Optional public logo asset URL; blank preserves the neutral mark.

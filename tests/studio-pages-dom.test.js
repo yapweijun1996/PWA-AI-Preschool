@@ -104,10 +104,10 @@ test('profile exposes comparison, mock provenance and selected-semester report e
 test('home counts refresh from edits and Continue uses the next unfinished child', async t => {
   const { page, ctx } = mount(t, home);
   assert.equal(page.querySelectorAll('article').length, 3);
+  const dashboard = page.querySelectorAll('div').find(node => node.className === 'home-dashboard');
+  assert.equal(dashboard.children[0].className, 'card home-actions');
   const viewAll = page.querySelectorAll('a').find(node => node.href === '#/classes');
   assert.equal(viewAll.href, '#/classes');
-  assert.match(page.textContent, /Good morning, Ms\. Jordan/);
-  assert.match(page.textContent, /Semester 2, 2026/);
   assert.match(page.textContent, /Ready to draft: 3/);
   const record = ctx.get('C-01');
   record.domains.english.comment = '';

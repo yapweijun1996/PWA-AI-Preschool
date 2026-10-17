@@ -15,7 +15,7 @@ export const NOT_IMPLEMENTED = Object.freeze([
 export function writeupHref(config = STUDIO_CONFIG) {
   const repository = config.repositoryUrl?.replace(/\.git\/?$/, '').replace(/\/$/, '');
   return /^https:\/\/github\.com\/[\w.-]+\/[\w.-]+$/.test(repository ?? '')
-    ? `${repository}/blob/HEAD/docs/26-submission-writeup.md` : null;
+    ? `${repository}/blob/main/docs/26-submission-writeup.md` : null;
 }
 
 export function render(ctx) {

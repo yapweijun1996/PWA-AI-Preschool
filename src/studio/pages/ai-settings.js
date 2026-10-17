@@ -72,6 +72,12 @@ function providerChoices(model) {
     label.append(radio, copy);
     group.append(label);
   }
+  const help = el('details', undefined, 'provider-choice-help');
+  help.append(el('summary', 'Provider descriptions'));
+  for (const choice of PROVIDER_CHOICES) {
+    help.append(el('p', `${choice.label}: ${choice.description}`));
+  }
+  group.append(help);
   return group;
 }
 

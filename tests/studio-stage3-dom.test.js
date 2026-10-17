@@ -23,6 +23,10 @@ const anchor = (root, text) => root.querySelectorAll('a')
 test('drafts show current ready progress, provenance, review deep links and memory-only reasons',
   async t => {
     const { page, ctx } = mount(t, drafts);
+    const emptyQueues = page.querySelectorAll('section').filter(node =>
+      ['Rejected drafts · 0', 'Request failures · 0'].includes(node.textContent));
+    assert.equal(emptyQueues.length, 2);
+    assert.ok(emptyQueues.every(node => node.children.length === 1));
     assert.equal(control(page, 'Draft all ready children (3)').disabled, false);
     assert.match(page.textContent, /0 of 3 children/);
     assert.equal(anchor(page, 'Open ready class portfolios').href,
@@ -60,6 +64,9 @@ test('offline drafts cannot start remote work but explicit mock still works', as
 test('report selectors update warnings, class preview and print destination', async t => {
   const { page } = mount(t, reports, { childId: 'C-05', semester: '2026-S2' });
   assert.equal(page.querySelectorAll('h1').length, 1);
+  const preview = page.querySelectorAll('details').find(node =>
+    node.className === 'card report-preview');
+  assert.equal(preview.open, false);
   assert.match(page.textContent, /Chinese: narrative not drafted/);
   assert.match(page.textContent, /Mathematics: rating not recorded/);
   const [type, semester, child] = page.querySelectorAll('select');
@@ -130,7 +137,8 @@ test('about contains the full nonimplemented scope, honest storage limits and le
   assert.match(page.textContent, /Alt \+ ArrowLeft/);
   assert.match(page.textContent, /Alt \+ ArrowRight/);
   assert.match(page.textContent, /CJK fonts/);
-  assert.match(page.textContent, /docs\/26-submission-writeup\.md/);
+  assert.equal(anchor(page, 'Read the submission write-up').href,
+    'https://github.com/yapweijun1996/PWA-AI-Preschool/blob/main/docs/26-submission-writeup.md');
   assert.equal(anchor(page, 'Open the legacy demo').href, './index.html');
 });
 

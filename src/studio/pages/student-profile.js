@@ -1,6 +1,5 @@
-import { profileModel } from '../models/profile-model.js';
+import { profileModel, groupProfileEvidence } from '../models/profile-model.js';
 import { el, link, ratingChip, statusChip, emptyState, errorState } from '../ui.js';
-import { evidenceCard } from '../page-controls.js';
 import { buildRoute } from '../router.js';
 import { CLASS } from '../../portfolio-seed.js';
 
@@ -85,10 +84,22 @@ function timeline(semesters) {
   for (const semester of semesters) {
     const group = el('section', undefined, 'timeline-semester');
     group.append(el('h3', semester.semester));
-    for (const item of semester.evidence) {
-      const card = evidenceCard(item);
-      card.className += ' timeline-evidence';
-      group.append(card);
+    for (const entry of groupProfileEvidence(semester.evidence)) {
+      const row = el('article', undefined, 'profile-evidence-row');
+      row.append(el('h4', entry.domainLabel));
+      for (const item of entry.items) {
+        if (item.type === 'comment') row.append(el('p', item.text, 'evidence-text'));
+        else {
+          const image = el('img');
+          image.src = item.src;
+          image.alt = item.text;
+          row.append(image);
+        }
+      }
+      row.append(link('Open in editor', buildRoute('child-editor', {
+        childId: entry.childId, semester: entry.semester, domain: entry.domain
+      })));
+      group.append(row);
     }
     if (!semester.evidence.length) {
       group.append(emptyState('No evidence recorded for this semester.'));

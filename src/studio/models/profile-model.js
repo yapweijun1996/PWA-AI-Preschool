@@ -27,3 +27,13 @@ export function profileModel(child, records) {
   const current = records.find(r => r.childId === child.id && r.semester === '2026-S2');
   return { comparison: profileComparison(previous, current), semesters };
 }
+
+export function groupProfileEvidence(items) {
+  const groups = new Map();
+  for (const item of items) {
+    const key = `${item.semester}:${item.domain}`;
+    if (!groups.has(key)) groups.set(key, { ...item, items: [] });
+    groups.get(key).items.push(item);
+  }
+  return [...groups.values()];
+}

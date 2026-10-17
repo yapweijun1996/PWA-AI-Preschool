@@ -175,6 +175,6 @@ test('review and ready-filter links roundtrip; write-up never invents a reposito
     { name: 'classes', filter: 'ready-for-draft' });
   assert.equal(writeupHref({}), null);
   assert.equal(writeupHref({ repositoryUrl: 'https://github.com/example/studio.git' }),
-    'https://github.com/example/studio/blob/HEAD/docs/26-submission-writeup.md');
+    'https://github.com/example/studio/blob/main/docs/26-submission-writeup.md');
   assert.equal(writeupHref({ repositoryUrl: 'javascript:alert(1)' }), null);
 });

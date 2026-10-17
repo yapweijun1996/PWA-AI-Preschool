@@ -22,7 +22,8 @@ export function render(ctx, route = {}) {
     route.semester ?? ctx.semester, value => ctx.setSemester(value));
   controls.append(type, semester, child);
   const completeness = el('section', undefined, 'card report-completeness');
-  const preview = el('section', undefined, 'card report-preview');
+  const preview = el('details', undefined, 'card report-preview');
+  preview.open = globalThis.matchMedia?.('(min-width: 601px)').matches ?? false;
   const columns = el('div', undefined, 'report-columns');
   columns.append(completeness, preview);
   const print = link('Print / Save as PDF', '#/reports');
@@ -33,7 +34,7 @@ export function render(ctx, route = {}) {
     const model = reportsModel(ctx, selection);
     semester.querySelector('select').value = ctx.semester;
     showCompleteness(completeness, model);
-    preview.replaceChildren(el('h2', 'Live preview'),
+    preview.replaceChildren(el('summary', 'Live preview'),
       el('p', 'Preview updates when selections change.'));
     if (selection.type === 'class') {
       preview.append(el('p', `${ctx.children.length} fictional children`));
@@ -43,7 +44,7 @@ export function render(ctx, route = {}) {
     print.href = model.href;
     print.hidden = !model.reports.length;
   };
-  root.append(heading, controls, columns, actions);
+  root.append(heading, actions, controls, columns);
   root.dispose = ctx.subscribe(refresh);
   refresh();
   return root;

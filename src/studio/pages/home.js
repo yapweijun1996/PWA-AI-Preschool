@@ -8,7 +8,7 @@ import { buildRoute } from '../router.js';
 export function render(ctx) {
   const root = el('section', undefined, 'home-page');
   const [year, semester] = ctx.semester.split('-S');
-  root.append(el('h1', 'Good morning, Ms. Jordan'),
+  root.append(el('h1', 'Good morning'),
     el('p', `Your class portfolio work for Semester ${semester}, ${year}.`, 'page-intro'));
   const content = el('div');
   const refresh = () => content.replaceChildren(dashboard(ctx));
@@ -51,7 +51,7 @@ function dashboard(ctx) {
   completion.append(counts);
   const panels = el('div', undefined, 'home-panels');
   panels.append(workQueue(model, ctx.semester), draftPanel(statuses));
-  root.append(metrics, completion, panels, actions(ctx, model));
+  root.append(actions(ctx, model), metrics, completion, panels);
   return root;
 }
 
@@ -84,10 +84,8 @@ function draftPanel(statuses) {
   badge.append(icon('file'));
   body.append(badge, el('p', statuses.drafted
     ? `${statuses.drafted} drafts are waiting for review.` : 'No drafts are waiting for review.'),
-  el('p', `${statuses['ready-for-draft']} children are ready to draft.`, 'muted'),
-  link('Open AI drafts', '#/drafts'),
-  link('View ready children', '#/classes?filter=ready-for-draft'));
-  panel.append(el('h2', 'Drafts awaiting review'), body);
+  link('Open AI drafts', '#/drafts'));
+  panel.append(body);
   return panel;
 }
 
