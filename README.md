@@ -1,6 +1,6 @@
 # AI Preschool Studio — White-label Browser Demo
 
-**Status:** completed fictional-only static PWA demo; physical-device and newly deployed-origin acceptance remain separate checks. **Audience:** education product teams, prospective operators, engineers and reviewers. **No school affiliation is asserted.**
+**Status:** completed fictional-only static PWA demo; deployed-origin route, cache and Gateway checks recorded; physical-device and true offline-reload acceptance remain untested. **Audience:** education product teams, prospective operators, engineers and reviewers. **No school affiliation is asserted.**
 
 A browser-first, GitHub Pages–ready demonstration of evidence-grounded preschool learning portfolios. Visitors can try the default public GPT Demo Gateway (if configured and live), use a temporary **BYOK** OpenAI or Gemini test key, or choose **Offline Mock**. The UI uses **five fictional students** and synthetic observations across an illustrative **18-month** period.
 
@@ -35,9 +35,15 @@ successful initial caching and is not new-studio offline-reload acceptance evide
 
 ## Page-per-module studio
 
-Open [`class.html`](class.html) for the static, vanilla ES-module studio: 20 fictional
-children, semester comparison, browser-local autosave, editable drafts, review and printable
-reports. The original five-record `index.html` demo remains independent and unchanged.
+Open the [live class studio](https://yapweijun1996.github.io/PWA-AI-Preschool/class.html)
+for the static, vanilla ES-module studio: 20 fictional children, semester comparison,
+browser-local autosave, editable drafts, review and printable reports.
+The original five-record `index.html` demo remains independent and unchanged.
+
+Deployed merge commit: `0c30b26`. Previous stable release / rollback commit: `108c80f`.
+For this documentation update, `npm run check` passed and `npm test` confirmed
+**177 passed, 0 failed**. Supplied Actions run `39002277394` passed both check/test/build
+and GitHub Pages deployment jobs.
 
 ```bash
 npm run build && python3 -m http.server 4173 --directory dist
@@ -79,11 +85,15 @@ editing, persisted review, fake-key non-persistence and sanitized failure were e
 The C-01 S1 PDF had two A4 pages, embedded PingFang SC, correct Simplified Chinese and no
 app chrome. These are supplied observations, not checks rerun for this documentation edit.
 
-Service-worker offline reload with networking disabled, new-build deployed Gateway drafting,
-real hardware, screen readers, Safari/Firefox, Windows/Linux CJK fonts and real OpenAI/Gemini
-test keys remain untested. No teacher-time, edit-rate or quality measurement is claimed.
-Current command counts and HEAD were not verified here: this edit-only task forbids shell
-execution. Historical counts are not current acceptance evidence.
+Supplied deployed-origin verification (2026-10-17): all 14 route checks loaded with one h1
+and no horizontal overflow; the active service worker cached 56 entries. GPT Demo Gateway
+drafting for C-02 / 2026-S2 accepted three domains and visibly rejected English through
+grounding checks. This single non-deterministic sample is not a quality benchmark.
+
+Service-worker offline reload with networking disabled, real hardware, screen readers,
+Safari/Firefox, Windows/Linux CJK fonts and real OpenAI/Gemini test keys remain untested.
+Registration/cache population were verified, not a true offline reload.
+No teacher-time, edit-rate or quality measurement is claimed.
 
 Implementation: `src/studio/` contains routing, context, shared shell/UI, pages and models;
 `studio.css` uses `src/studio/tokens.css`. The [design SSOT](design/README.md) contains

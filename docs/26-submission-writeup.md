@@ -55,12 +55,8 @@ statements do not describe the current studio. Design files were left unchanged 
 
 ### What to try (3 minutes)
 
+Open the [live studio](https://yapweijun1996.github.io/PWA-AI-Preschool/class.html).
 Suggested walkthrough, not a measured duration:
-
-```bash
-npm run build && python3 -m http.server 4173 --directory dist
-# Open http://localhost:4173/class.html
-```
 
 1. Start on Home, inspect needing-work rows, then open Class portfolios and switch semesters.
 2. Open a child, choose Offline mock, Draft all four, edit a narrative and Mark reviewed.
@@ -97,20 +93,19 @@ Mobile uses a chip row and five fixed bottom tabs; print routes hide app navigat
 
 ## Verification evidence
 
-Earlier browser/PDF observations below were supplied by the owner for 2026-10-17.
-Compact-mobile measurements and command results were rerun locally on 2026-10-17.
-Earlier-release Gateway evidence remains separate from new-build deployment acceptance.
+Deployment, browser, Gateway and build observations below were supplied for 2026-10-17.
+`npm run check` and `npm test` were rerun for this documentation update; both passed.
 
 ### Commands and counts
 
-Current local command results for the compact-mobile regression fix:
+Current check/test results and supplied pre-merge build evidence:
 
 | Command | Current result |
 |---|---|
 | `npm run check` | Passed, including syntax and static CSP checks |
-| `npm test` | 176 tests passed; 0 failed, cancelled, skipped or todo |
-| `npm run build` | Passed; build ID `02c029b342966ece`; 56 precached routes |
-| Final commit | see git log |
+| `npm test` | 177 tests passed; 0 failed, cancelled, skipped or todo |
+| `npm run build` (supplied pre-merge result) | Passed; build ID `310aad36f9f29889`; 56 precached routes |
+| Deployed merge commit on `main` | `0c30b26` (`feat: page-per-module studio with design SSOT`) |
 
 ### Browser QA
 
@@ -127,21 +122,15 @@ Owner-supplied built-in browser QA, served from `dist`, light scheme:
 | Failed provider request | Fake OpenAI key produced sanitized “AI request failed ... No narratives were changed.”; narratives unchanged, no mock label |
 | Route recovery | Legacy redirect and unknown-hash Home notice verified |
 
-Locally measured compact-mobile regression fix, built `dist`, light scheme, seeded S2 data:
+Supplied final-build mobile measurements at 390 px width:
 
-| Route | Before, 390 × 844 | After, 390 × 844 | After, 430 px wide |
-|---|---|---|---|
-| `#/classes` | 8,480 px | 4,884 px | 4,766 px |
-| `#/students` | 8,750 px | 4,198 px | 4,198 px |
-| `#/evidence` | 8,695 px | 5,241 px | 5,006 px |
+| Route | Before compact-card fix | Final build |
+|---|---|---|
+| `#/classes` | 8,656 px | 4,884 px |
+| `#/students` | 8,750 px | 4,358 px |
+| `#/evidence` | 8,695 px | 5,241 px |
 
-Heights are `document.documentElement.scrollHeight`, including shell and bottom padding.
-The lists retain 20 children and 24 seeded S2 evidence items. All three routes had no
-horizontal overflow at 390/430 px; final 390 px checks found no undersized visible controls
-or overflowing card text. Whole-card pointer navigation opened C-01's editor/profile.
-At 1440 px, Classes retained four 274 px columns. Screenshot capture timed out; visual
-wireframe matching is not claimed. Complete comments wrap rather than being clipped to
-two lines; required mobile provider/PWA labels and actual seed counts remain present.
+Independent pre-merge QA also verified page-scoped error banners with a Dismiss button.
 
 ### PDF
 
@@ -151,22 +140,37 @@ No current class-PDF page count is claimed. Pagination depends on content and in
 
 ### Live Gateway
 
-Earlier-release verification, still applicable to the shared code paths: Demo Gateway session
-returned HTTP 201 with `token`, `token_type`, `expires_in` (900), `expires_at` and `model`.
-CORS allows only the GitHub Pages origin. This is not evidence of browser drafting from the
-new deployed build; that requires deployment verification. No credentials are reproduced.
+Supplied deployed-origin browser sample: GPT Demo Gateway, fictional child C-02, semester
+2026-S2, “Draft all four” accepted Chinese, Mathematics and Social-Emotional Development
+with provenance `ai / gateway / demo-auto`. Each accepted tab showed
+“AI DRAFT (GPT Demo Gateway) - teacher must review”. Grounding checks rejected English,
+which appeared under “Rejected drafts” on the AI drafts page.
+This is one non-deterministic sample, not a quality benchmark. Localhost is blocked by
+Gateway CORS; the deployed-origin result does not establish localhost support.
 
 ### Not tested
 
-- Service-worker offline reload with the network disabled.
-- Browser Gateway drafting from the new deployed build.
+- Service-worker offline reload with the network disabled. Registration and cache population
+  WERE verified on the deployed origin; a true offline reload was not.
 - Real phone/tablet hardware, screen readers, Safari/Firefox and Windows/Linux CJK fonts.
 - OpenAI/Gemini calls with real disposable test keys.
 - Teacher time saved, edit rate or draft quality.
 
 ### Deployment check
 
-Pending: to be filled after deployment is verified.
+Supplied verification for 2026-10-17; not rerun during this documentation update:
+
+| Check | Verified result |
+|---|---|
+| Live demo | https://yapweijun1996.github.io/PWA-AI-Preschool/class.html |
+| Repository | https://github.com/yapweijun1996/PWA-AI-Preschool |
+| Release | Merge `0c30b26` on `main`; previous stable release / rollback commit `108c80f` |
+| GitHub Actions | Run `39002277394`, “Static checks and Pages deployment”: “Check, test, and build” and “Deploy GitHub Pages” both succeeded |
+| HTTP | `class.html`, `src/studio/app.js`, `src/studio/router.js`, `studio.css`, `src/studio/tokens.css` and `sw.js` returned 200 |
+| Build identity | Deployed `build-info.json`: `0c30b2667ac4-310aad36f9f29889`; source snapshot `310aad36f9f29889...` matched the verified local build |
+| Browser routes | After clearing old worker/caches and a real reload, all 14 checks loaded: Home, classes, editor, students, profile, evidence, drafts, reports, child print, class print, AI settings, about, legacy child redirect and unknown-hash Home fallback; exactly one h1 and no horizontal overflow each |
+| Service worker/cache | Active scope `https://yapweijun1996.github.io/PWA-AI-Preschool/`; 56 cached entries including `src/studio/app.js`; network-disabled reload not tested |
+| Gateway drafting | Deployed-origin C-02 / 2026-S2 sample accepted 3 of 4 domains; English visibly rejected by grounding checks; not a quality benchmark |
 
 ## Known limitations
 
@@ -177,7 +181,8 @@ Pending: to be filled after deployment is verified.
 - `localStorage` is browser/origin-specific, quota-limited, not secure storage and not a backup.
   Clearing it loses records; no cross-device sync exists. Keys remain in memory only.
 - Local review is editable state, not authenticated approval or finalisation.
-- Offline reload and new-build deployed Gateway drafting remain unverified as listed above.
+- True network-disabled offline reload remains unverified; deployed Gateway drafting was
+  exercised only in the single sample described above.
 - Production SQL, private hosting, retention and provider contracts are designs only.
   No compliance or measured efficiency benefit is claimed.
 

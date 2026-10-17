@@ -2,7 +2,7 @@
 
 ## Page-per-module studio and design SSOT — 2026-10-17
 
-- Fixed ≤600 px Classes/Students cards and Evidence rows; measured 390 px heights 4,884 / 4,198 / 5,241 px; retained desktop layouts and refreshed verification evidence.
+- Fixed ≤600 px Classes/Students cards and Evidence rows; final measured 390 px heights 4,884 / 4,358 / 5,241 px; retained desktop layouts and refreshed verification evidence.
 - Replaced the class prototype with the routed `class.html` studio: shared desktop sidebar,
   topbar, amber safety notice, mobile chip row and five bottom tabs; print routes hide chrome.
 - Added Home, class/editor, students/profile, evidence, drafts, reports, provider settings and
@@ -11,11 +11,10 @@
   Removed `src/class-app.js` and `class.css`; the original `index.html` demo is unchanged.
 - Design SSOT contains 12 page specs and 24 WebP wireframes generated with Codex CLI image
   generation. Specs own copy/behavior, images visual intent and tokens enforceable values.
-- Updated the README, submission walkthrough/evidence and documentation index. Recorded
-  owner-supplied responsive, mock/edit/review, key-failure and two-page child-PDF QA separately
-  from earlier-release Gateway session evidence. New-build deployment verification is pending.
-- Documentation-stage check/test/build and current HEAD were not measured because shell
-  execution is prohibited; no historical count or hash is presented as a current result.
+- Updated the README and submission walkthrough/evidence with supplied responsive,
+  mock/edit/review, key-failure and two-page child-PDF QA.
+- Deployment verified on `main` at `0c30b26`: Actions run `39002277394` check/test/build and Pages jobs succeeded; live assets returned HTTP 200; deployed build `0c30b2667ac4-310aad36f9f29889` matched the local source snapshot. All 14 deployed route checks passed; active service worker/cache held 56 entries; Gateway C-02 / 2026-S2 accepted 3 of 4 domains with English visibly rejected. True offline reload remains untested; previous stable rollback commit `108c80f`.
+- Documentation-update verification: `npm run check` passed; `npm test` confirmed 177 passed / 0 failed. Build, deployment and browser observations are supplied evidence, not rerun here.
 - Real login, server/database, tenant isolation, server PDF, vector RAG and audit log remain
   NOT IMPLEMENTED. No code, tests, design files or workflows changed in this documentation stage.
 
